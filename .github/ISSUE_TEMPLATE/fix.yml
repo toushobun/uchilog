@@ -1,5 +1,5 @@
 name: Fix
-about: Bug 修正・问题修复相关 Issue
+description: Bug 修正・问题修复相关 Issue
 title: "fix: "
 labels: ["fix"]
 body:
@@ -22,8 +22,8 @@ body:
     id: branch
     attributes:
       label: Branch 命名
-      description: 创建分支时请使用 fix/#issue_number_xxx 格式。
-      placeholder: fix/#192_account_error
+      description: 创建分支时请使用 fix/issue_number_xxx 格式。
+      placeholder: fix/192_account_error
     validations:
       required: false
   - type: textarea
