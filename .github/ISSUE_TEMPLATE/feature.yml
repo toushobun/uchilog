@@ -1,6 +1,6 @@
 name: Feature
 about: 新功能・功能改善相关 Issue
-title: "【feat: 】"
+title: "feat: "
 labels: ["feature"]
 body:
   - type: textarea
@@ -16,6 +16,14 @@ body:
     attributes:
       label: 背景 / 目的
       description: 为什么需要这个功能？解决什么问题？
+    validations:
+      required: false
+  - type: textarea
+    id: branch
+    attributes:
+      label: Branch 命名
+      description: 创建分支时请使用 feature/#issue_number_xxx 格式。
+      placeholder: feature/#302_new_bill_can_change_account
     validations:
       required: false
   - type: textarea

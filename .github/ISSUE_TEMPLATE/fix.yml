@@ -1,6 +1,6 @@
 name: Fix
 about: Bug 修正・问题修复相关 Issue
-title: "【fix: 】"
+title: "fix: "
 labels: ["fix"]
 body:
   - type: textarea
@@ -16,6 +16,14 @@ body:
     attributes:
       label: 期望结果
       description: 正常情况下应该是什么样？
+    validations:
+      required: false
+  - type: textarea
+    id: branch
+    attributes:
+      label: Branch 命名
+      description: 创建分支时请使用 fix/#issue_number_xxx 格式。
+      placeholder: fix/#192_account_error
     validations:
       required: false
   - type: textarea
