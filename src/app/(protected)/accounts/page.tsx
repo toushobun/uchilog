@@ -30,7 +30,7 @@ export default async function AccountsPage({
 }: AccountsPageProps) {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const params = await searchParams;
-  const errorMessage = params.error ? errorMessages[params.error] : null;
+  const errorMessage = params.error ? (errorMessages[params.error] ?? null) : null;
   const supabase = await createClient();
 
   const { data, error } = await supabase

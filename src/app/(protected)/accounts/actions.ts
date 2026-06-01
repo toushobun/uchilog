@@ -143,19 +143,22 @@ export async function updateAccount(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from("account")
-    .update({
-      name,
-      type,
-      currency,
-      updated_by: userId,
-    })
+    .update(
+      {
+        name,
+        type,
+        currency,
+        updated_by: userId,
+      },
+      { count: "exact" },
+    )
     .eq("id", accountId)
     .eq("ledger_id", currentLedger.id)
     .eq("is_archived", false);
 
-  if (error) {
+  if (error || count !== 1) {
     redirect("/accounts?error=update_failed");
   }
 
@@ -172,19 +175,22 @@ export async function archiveAccount(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from("account")
-    .update({
-      archived_at: new Date().toISOString(),
-      archived_by: userId,
-      is_archived: true,
-      updated_by: userId,
-    })
+    .update(
+      {
+        archived_at: new Date().toISOString(),
+        archived_by: userId,
+        is_archived: true,
+        updated_by: userId,
+      },
+      { count: "exact" },
+    )
     .eq("id", accountId)
     .eq("ledger_id", currentLedger.id)
     .eq("is_archived", false);
 
-  if (error) {
+  if (error || count !== 1) {
     redirect("/accounts?error=archive_failed");
   }
 

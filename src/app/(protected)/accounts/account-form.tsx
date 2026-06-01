@@ -69,7 +69,7 @@ export function AccountForm({ defaultCurrency }: AccountFormProps) {
         <TextField
           defaultValue={defaultCurrency}
           fullWidth
-          helperText="MVP 阶段默认使用当前账本的基础货币。"
+          helperText="默认使用当前账本的基础货币。"
           label="货币"
           name="currency"
           required
