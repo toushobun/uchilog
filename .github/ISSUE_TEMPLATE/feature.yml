@@ -34,7 +34,7 @@ body:
       value: |
         - [ ] 
         - [ ] 
-        - [ ]
+        - [ ] 
     validations:
       required: false
   - type: textarea
