@@ -3,7 +3,6 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { redirect } from "next/navigation";
 
@@ -52,11 +51,9 @@ export default async function LedgersPage() {
         ))}
       </List>
 
-      <Stack sx={{ mt: 2 }}>
-        <Typography color="text.secondary" variant="body2">
-          多账本切换和成员管理将在后续版本中完善。
-        </Typography>
-      </Stack>
+      <Typography color="text.secondary" sx={{ mt: 2 }} variant="body2">
+        多账本切换和成员管理将在后续版本中完善。
+      </Typography>
     </Paper>
   );
 }

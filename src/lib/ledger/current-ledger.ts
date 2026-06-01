@@ -16,10 +16,12 @@ type LedgerRow = {
 };
 
 type LedgerMemberRow = {
-  ledger: LedgerRow | LedgerRow[] | null;
+  ledger: LedgerRow | null;
 };
 
 function normalizeLedger(ledger: LedgerRow | LedgerRow[] | null) {
+  // Supabase 外键 select 在当前查询中应返回单个对象或 null。
+  // 这里保留数组防御处理，避免后续类型生成或查询形状变化时直接炸掉。
   if (Array.isArray(ledger)) {
     return ledger[0] ?? null;
   }
@@ -28,6 +30,8 @@ function normalizeLedger(ledger: LedgerRow | LedgerRow[] | null) {
 }
 
 export const getCurrentLedgerContext = cache(async () => {
+  // cache() 的缓存范围是单次 server request。
+  // redirect() 抛出的控制流即使在同一请求内被复用，也只会在该请求内重新触发跳转，不会跨请求污染登录状态。
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
 
