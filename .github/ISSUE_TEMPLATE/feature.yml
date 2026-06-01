@@ -32,9 +32,9 @@ body:
       label: TODO
       description: 拆分需要完成的任务。
       value: |
-        - [ ] 
-        - [ ] 
-        - [ ] 
+        - [ ]
+        - [ ]
+        - [ ]
     validations:
       required: false
   - type: textarea

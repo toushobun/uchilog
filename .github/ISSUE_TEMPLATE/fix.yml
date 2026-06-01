@@ -31,9 +31,9 @@ body:
     attributes:
       label: TODO
       value: |
-        - [ ] 
-        - [ ] 
-        - [ ] 
+        - [ ]
+        - [ ]
+        - [ ]
     validations:
       required: false
   - type: textarea
