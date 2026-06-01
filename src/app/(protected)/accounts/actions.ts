@@ -29,8 +29,8 @@ function parseAccountType(value: string): AccountType | null {
   return null;
 }
 
-function parseCurrency(value: string, fallbackCurrency: string) {
-  const currency = (value || fallbackCurrency).trim().toUpperCase();
+function parseCurrency(value: string) {
+  const currency = value.trim().toUpperCase();
 
   if (!/^[A-Z]{3}$/.test(currency)) {
     return null;
@@ -74,10 +74,7 @@ export async function createAccount(formData: FormData) {
   const { currentLedger, userId } = await getCurrentUserAndLedger();
   const name = getText(formData, "name");
   const type = parseAccountType(getText(formData, "type"));
-  const currency = parseCurrency(
-    getText(formData, "currency"),
-    currentLedger.baseCurrency,
-  );
+  const currency = parseCurrency(getText(formData, "currency"));
   const initialBalance = parseNumber(formData.get("initialBalance"), 0);
 
   if (name.length === 0) {
@@ -121,10 +118,7 @@ export async function updateAccount(formData: FormData) {
   const accountId = getText(formData, "accountId");
   const name = getText(formData, "name");
   const type = parseAccountType(getText(formData, "type"));
-  const currency = parseCurrency(
-    getText(formData, "currency"),
-    currentLedger.baseCurrency,
-  );
+  const currency = parseCurrency(getText(formData, "currency"));
 
   if (!isUuid(accountId)) {
     redirect("/accounts?error=account_invalid");

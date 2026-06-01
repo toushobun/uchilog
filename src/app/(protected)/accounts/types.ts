@@ -33,8 +33,12 @@ export function formatAmount(amount: number | string, currency: string) {
     return `${amount} ${currency}`;
   }
 
-  return new Intl.NumberFormat(undefined, {
-    currency,
-    style: "currency",
-  }).format(numberAmount);
+  try {
+    return new Intl.NumberFormat(undefined, {
+      currency,
+      style: "currency",
+    }).format(numberAmount);
+  } catch {
+    return `${numberAmount} ${currency}`;
+  }
 }
