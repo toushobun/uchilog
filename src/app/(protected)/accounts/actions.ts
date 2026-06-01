@@ -33,17 +33,19 @@ function parseCurrency(value: string, fallbackCurrency: string) {
 }
 
 function parseNumber(value: FormDataEntryValue | null, fallback: number) {
-  if (value === null || String(value).trim().length === 0) {
+  const text = String(value ?? "").trim();
+
+  if (text.length === 0) {
     return fallback;
   }
 
-  const parsed = Number(String(value));
+  if (!/^-?\d+(\.\d{1,2})?$/.test(text)) {
+    return null;
+  }
+
+  const parsed = Number(text);
 
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function hasAtMostTwoDecimalPlaces(value: number) {
-  return Number.isInteger(Math.round(value * 100));
 }
 
 async function getCurrentUserAndLedger() {
@@ -83,7 +85,7 @@ export async function createAccount(formData: FormData) {
     redirect("/accounts?error=currency_invalid");
   }
 
-  if (initialBalance === null || !hasAtMostTwoDecimalPlaces(initialBalance)) {
+  if (initialBalance === null) {
     redirect("/accounts?error=initial_balance_invalid");
   }
 
