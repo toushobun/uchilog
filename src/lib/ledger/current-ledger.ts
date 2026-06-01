@@ -16,12 +16,12 @@ type LedgerRow = {
 };
 
 type LedgerMemberRow = {
-  ledger: LedgerRow | null;
+  // Supabase 的外键 select 在 TypeScript 推断上可能表现为数组。
+  // 运行时这里通常是单个 ledger 对象或 null，但为了兼容推断结果，保留数组防御处理。
+  ledger: LedgerRow | LedgerRow[] | null;
 };
 
 function normalizeLedger(ledger: LedgerRow | LedgerRow[] | null) {
-  // Supabase 外键 select 在当前查询中应返回单个对象或 null。
-  // 这里保留数组防御处理，避免后续类型生成或查询形状变化时直接炸掉。
   if (Array.isArray(ledger)) {
     return ledger[0] ?? null;
   }
