@@ -47,14 +47,6 @@ export function AccountEditForm({ account }: AccountEditFormProps) {
         slotProps={{ htmlInput: { maxLength: 3 } }}
       />
 
-      <TextField
-        defaultValue={account.sort_order}
-        fullWidth
-        label="排序顺序"
-        name="sortOrder"
-        type="number"
-      />
-
       <Button type="submit" variant="outlined">
         保存修改
       </Button>

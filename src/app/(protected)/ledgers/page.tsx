@@ -29,7 +29,8 @@ export default async function LedgersPage() {
       </Typography>
 
       <Typography color="text.secondary" sx={{ mt: 2 }}>
-        当前 MVP 阶段默认使用列表中的第一个账本。正式的账本切换功能将在后续 Issue 中实现。
+        当前 MVP 阶段默认使用列表中的第一个账本。正式的账本切换功能将在后续
+        Issue 中实现。
       </Typography>
 
       <List sx={{ mt: 3 }}>

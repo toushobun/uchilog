@@ -21,7 +21,9 @@ export type AccountRow = {
 };
 
 export function getAccountTypeLabel(type: string) {
-  return accountTypeOptions.find((option) => option.value === type)?.label ?? "其他";
+  return (
+    accountTypeOptions.find((option) => option.value === type)?.label ?? "其他"
+  );
 }
 
 export function formatAmount(amount: number | string, currency: string) {

@@ -14,10 +14,7 @@ export default async function ProtectedLayout({
   const { email, currentLedger } = await getCurrentLedgerContext();
 
   return (
-    <AppShell
-      currentLedgerName={currentLedger?.name ?? null}
-      email={email}
-    >
+    <AppShell currentLedgerName={currentLedger?.name ?? null} email={email}>
       {children}
     </AppShell>
   );

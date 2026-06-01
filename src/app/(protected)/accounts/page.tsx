@@ -21,12 +21,13 @@ const errorMessages: Record<string, string> = {
   currency_invalid: "货币必须是 3 位大写字母，例如 JPY。",
   initial_balance_invalid: "初始余额必须是数字。",
   name_required: "请输入账户名称。",
-  sort_order_invalid: "排序顺序必须是整数。",
   type_invalid: "账户类型不正确。",
   update_failed: "账户更新失败。请确认账户名称是否重复。",
 };
 
-export default async function AccountsPage({ searchParams }: AccountsPageProps) {
+export default async function AccountsPage({
+  searchParams,
+}: AccountsPageProps) {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const params = await searchParams;
   const errorMessage = params.error ? errorMessages[params.error] : null;
@@ -34,7 +35,9 @@ export default async function AccountsPage({ searchParams }: AccountsPageProps) 
 
   const { data, error } = await supabase
     .from("account")
-    .select("id, name, type, currency, initial_balance, current_balance, sort_order, created_at")
+    .select(
+      "id, name, type, currency, initial_balance, current_balance, sort_order, created_at",
+    )
     .eq("ledger_id", currentLedger.id)
     .eq("is_archived", false)
     .order("sort_order", { ascending: true })

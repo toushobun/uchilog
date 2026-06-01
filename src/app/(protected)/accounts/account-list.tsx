@@ -49,17 +49,23 @@ export function AccountList({ accounts }: AccountListProps) {
                 spacing={1}
                 sx={{ alignItems: "center", flexWrap: "wrap" }}
               >
-                <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography
+                  component="h2"
+                  variant="h6"
+                  sx={{ fontWeight: 700 }}
+                >
                   {account.name}
                 </Typography>
                 <Chip label={getAccountTypeLabel(account.type)} size="small" />
               </Stack>
 
               <Typography color="text.secondary">
-                当前余额：{formatAmount(account.current_balance, account.currency)}
+                当前余额：
+                {formatAmount(account.current_balance, account.currency)}
               </Typography>
               <Typography color="text.secondary" variant="body2">
-                初始余额：{formatAmount(account.initial_balance, account.currency)} / 排序：{account.sort_order}
+                初始余额：
+                {formatAmount(account.initial_balance, account.currency)}
               </Typography>
             </Stack>
 

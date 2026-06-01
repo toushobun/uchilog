@@ -27,7 +27,12 @@ export function AccountForm({ defaultCurrency }: AccountFormProps) {
         新增账户
       </Typography>
 
-      <Stack component="form" action={createAccount} spacing={2.5} sx={{ mt: 3 }}>
+      <Stack
+        component="form"
+        action={createAccount}
+        spacing={2.5}
+        sx={{ mt: 3 }}
+      >
         <TextField
           autoComplete="off"
           fullWidth
@@ -37,7 +42,14 @@ export function AccountForm({ defaultCurrency }: AccountFormProps) {
           required
         />
 
-        <TextField defaultValue="cash" fullWidth label="账户类型" name="type" required select>
+        <TextField
+          defaultValue="cash"
+          fullWidth
+          label="账户类型"
+          name="type"
+          required
+          select
+        >
           {accountTypeOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
@@ -50,8 +62,8 @@ export function AccountForm({ defaultCurrency }: AccountFormProps) {
           fullWidth
           label="初始余额"
           name="initialBalance"
-          slotProps={{ htmlInput: { step: "0.01" } }}
-          type="number"
+          slotProps={{ htmlInput: { inputMode: "decimal" } }}
+          type="text"
         />
 
         <TextField
@@ -62,15 +74,6 @@ export function AccountForm({ defaultCurrency }: AccountFormProps) {
           name="currency"
           required
           slotProps={{ htmlInput: { maxLength: 3 } }}
-        />
-
-        <TextField
-          defaultValue="0"
-          fullWidth
-          helperText="数字越小越靠前。"
-          label="排序顺序"
-          name="sortOrder"
-          type="number"
         />
 
         <Button type="submit" variant="contained">

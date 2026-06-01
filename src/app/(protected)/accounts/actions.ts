@@ -65,9 +65,11 @@ export async function createAccount(formData: FormData) {
   const { currentLedger, userId } = await getCurrentUserAndLedger();
   const name = getText(formData, "name");
   const type = parseAccountType(getText(formData, "type"));
-  const currency = parseCurrency(getText(formData, "currency"), currentLedger.baseCurrency);
+  const currency = parseCurrency(
+    getText(formData, "currency"),
+    currentLedger.baseCurrency,
+  );
   const initialBalance = parseNumber(formData.get("initialBalance"), 0);
-  const sortOrder = parseNumber(formData.get("sortOrder"), 0);
 
   if (name.length === 0) {
     redirect("/accounts?error=name_required");
@@ -85,10 +87,6 @@ export async function createAccount(formData: FormData) {
     redirect("/accounts?error=initial_balance_invalid");
   }
 
-  if (sortOrder === null || !Number.isInteger(sortOrder)) {
-    redirect("/accounts?error=sort_order_invalid");
-  }
-
   const supabase = await createClient();
   const { error } = await supabase.from("account").insert({
     ledger_id: currentLedger.id,
@@ -96,7 +94,7 @@ export async function createAccount(formData: FormData) {
     type,
     currency,
     initial_balance: initialBalance,
-    sort_order: sortOrder,
+    sort_order: 0,
     created_by: userId,
     updated_by: userId,
   });
@@ -114,8 +112,10 @@ export async function updateAccount(formData: FormData) {
   const accountId = getText(formData, "accountId");
   const name = getText(formData, "name");
   const type = parseAccountType(getText(formData, "type"));
-  const currency = parseCurrency(getText(formData, "currency"), currentLedger.baseCurrency);
-  const sortOrder = parseNumber(formData.get("sortOrder"), 0);
+  const currency = parseCurrency(
+    getText(formData, "currency"),
+    currentLedger.baseCurrency,
+  );
 
   if (accountId.length === 0) {
     redirect("/accounts?error=account_required");
@@ -133,10 +133,6 @@ export async function updateAccount(formData: FormData) {
     redirect("/accounts?error=currency_invalid");
   }
 
-  if (sortOrder === null || !Number.isInteger(sortOrder)) {
-    redirect("/accounts?error=sort_order_invalid");
-  }
-
   const supabase = await createClient();
   const { error } = await supabase
     .from("account")
@@ -144,7 +140,6 @@ export async function updateAccount(formData: FormData) {
       name,
       type,
       currency,
-      sort_order: sortOrder,
       updated_by: userId,
     })
     .eq("id", accountId)
