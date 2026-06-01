@@ -42,6 +42,10 @@ function parseNumber(value: FormDataEntryValue | null, fallback: number) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function hasAtMostTwoDecimalPlaces(value: number) {
+  return Number.isInteger(Math.round(value * 100));
+}
+
 async function getCurrentUserAndLedger() {
   const context = await getCurrentLedgerContext();
 
@@ -49,6 +53,8 @@ async function getCurrentUserAndLedger() {
     redirect("/ledger-setup");
   }
 
+  // getCurrentLedgerContext reads ledger_member for the current user and only returns active ledgers.
+  // Later update/archive queries also filter by currentLedger.id, so client-submitted ledger_id is not trusted.
   return {
     currentLedger: context.currentLedger,
     userId: context.userId,
@@ -75,7 +81,7 @@ export async function createAccount(formData: FormData) {
     redirect("/accounts?error=currency_invalid");
   }
 
-  if (initialBalance === null) {
+  if (initialBalance === null || !hasAtMostTwoDecimalPlaces(initialBalance)) {
     redirect("/accounts?error=initial_balance_invalid");
   }
 
