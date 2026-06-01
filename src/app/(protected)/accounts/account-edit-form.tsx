@@ -41,10 +41,10 @@ export function AccountEditForm({ account }: AccountEditFormProps) {
       <TextField
         defaultValue={account.currency}
         fullWidth
-        inputProps={{ maxLength: 3 }}
         label="货币"
         name="currency"
         required
+        slotProps={{ htmlInput: { maxLength: 3 } }}
       />
 
       <TextField
