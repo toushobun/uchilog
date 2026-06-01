@@ -1,7 +1,11 @@
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 
-export default function TransactionsPage() {
+import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
+
+export default async function TransactionsPage() {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+
   return (
     <Paper
       elevation={0}
@@ -13,6 +17,9 @@ export default function TransactionsPage() {
     >
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         记账
+      </Typography>
+      <Typography color="text.secondary" sx={{ mt: 2 }}>
+        当前账本：{currentLedger.name}
       </Typography>
       <Typography color="text.secondary" sx={{ mt: 2 }}>
         记账列表和新增入口将在后续 Issue 中实现。

@@ -1,7 +1,6 @@
-import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentLedgerContext } from "@/lib/ledger/current-ledger";
 
 import { AppShell } from "./app-shell";
 
@@ -12,15 +11,14 @@ type ProtectedLayoutProps = {
 export default async function ProtectedLayout({
   children,
 }: ProtectedLayoutProps) {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getClaims();
+  const { email, currentLedger } = await getCurrentLedgerContext();
 
-  if (error || !data?.claims) {
-    redirect("/login");
-  }
-
-  const email =
-    typeof data.claims.email === "string" ? data.claims.email : "登录用户";
-
-  return <AppShell email={email}>{children}</AppShell>;
+  return (
+    <AppShell
+      currentLedgerName={currentLedger?.name ?? null}
+      email={email}
+    >
+      {children}
+    </AppShell>
+  );
 }

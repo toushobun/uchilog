@@ -22,30 +22,52 @@ const navItems = [
 ];
 
 type AppShellProps = {
+  currentLedgerName: string | null;
   email: string;
   children: ReactNode;
 };
 
-export function AppShell({ email, children }: AppShellProps) {
+export function AppShell({
+  currentLedgerName,
+  email,
+  children,
+}: AppShellProps) {
   const pathname = usePathname();
 
   return (
     <Box sx={{ minHeight: "100vh", pb: 10 }}>
       <AppBar position="sticky" color="default" elevation={0}>
         <Toolbar sx={{ gap: 2 }}>
-          <Typography
-            component={Link}
-            href="/dashboard"
-            variant="h6"
-            sx={{
-              color: "inherit",
-              flexGrow: 1,
-              fontWeight: 700,
-              textDecoration: "none",
-            }}
-          >
-            UchiLog
-          </Typography>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography
+              component={Link}
+              href="/dashboard"
+              variant="h6"
+              sx={{
+                color: "inherit",
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              UchiLog
+            </Typography>
+
+            <Typography
+              component={Link}
+              href={currentLedgerName ? "/ledgers" : "/ledger-setup"}
+              color="text.secondary"
+              sx={{
+                display: "block",
+                mt: 0.5,
+                textDecoration: "none",
+              }}
+              variant="body2"
+            >
+              {currentLedgerName
+                ? `当前账本：${currentLedgerName}`
+                : "还没有账本"}
+            </Typography>
+          </Box>
 
           <Typography
             color="text.secondary"
