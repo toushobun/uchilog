@@ -1,4 +1,3 @@
-import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
@@ -7,6 +6,7 @@ import Typography from "@mui/material/Typography";
 
 import { archiveAccount } from "./actions";
 import { AccountEditForm } from "./account-edit-form";
+import { ArchiveAccountButton } from "./archive-account-button";
 import { formatAmount, getAccountTypeLabel, type AccountRow } from "./types";
 
 type AccountListProps = {
@@ -69,9 +69,7 @@ export function AccountList({ accounts }: AccountListProps) {
               sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
             >
               <input name="accountId" type="hidden" value={account.id} />
-              <Button color="error" type="submit" variant="outlined">
-                归档
-              </Button>
+              <ArchiveAccountButton />
             </Stack>
           </Stack>
 
