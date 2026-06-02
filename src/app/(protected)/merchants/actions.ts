@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { getCurrentLedgerContext } from "@/lib/ledger/current-ledger";
 import { createClient } from "@/lib/supabase/server";
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{12}$/i;
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const localePattern = /^[a-zA-Z]{2,8}(-[a-zA-Z0-9]{1,8})*$/;
 const merchantNameMaxLength = 100;
 const textMaxLength = 1000;
