@@ -14,10 +14,16 @@ import { MerchantEditForm } from "./merchant-edit-form";
 import { getMerchantInitial, type MerchantRow } from "./types";
 
 type MerchantListProps = {
+  errorMerchantId: string | null;
+  errorMessage: string | null;
   merchants: MerchantRow[];
 };
 
-export function MerchantList({ merchants }: MerchantListProps) {
+export function MerchantList({
+  errorMerchantId,
+  errorMessage,
+  merchants,
+}: MerchantListProps) {
   if (merchants.length === 0) {
     return (
       <Paper
@@ -36,118 +42,133 @@ export function MerchantList({ merchants }: MerchantListProps) {
 
   return (
     <Stack spacing={2.5} sx={{ mt: 4 }}>
-      {merchants.map((merchant) => (
-        <Paper
-          key={merchant.id}
-          elevation={0}
-          sx={{ p: 3, border: "1px solid", borderColor: "divider" }}
-        >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            sx={{ justifyContent: "space-between" }}
+      {merchants.map((merchant) => {
+        const merchantErrorMessage =
+          errorMerchantId === merchant.id ? errorMessage : null;
+
+        return (
+          <Paper
+            key={merchant.id}
+            elevation={0}
+            sx={{
+              p: 3,
+              border: "1px solid",
+              borderColor: merchantErrorMessage ? "error.main" : "divider",
+            }}
           >
-            <Stack direction="row" spacing={2} sx={{ minWidth: 0 }}>
-              <Avatar src={merchant.icon_url ?? undefined}>
-                {getMerchantInitial(merchant.name)}
-              </Avatar>
-
-              <Box sx={{ minWidth: 0 }}>
-                <Typography
-                  component="h2"
-                  variant="h6"
-                  sx={{ fontWeight: 700 }}
-                >
-                  {merchant.name}
-                </Typography>
-
-                {merchant.website_url ? (
-                  <Link
-                    href={merchant.website_url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {merchant.website_url}
-                  </Link>
-                ) : (
-                  <Typography color="text.secondary" variant="body2">
-                    网址未设置
-                  </Typography>
-                )}
-
-                {merchant.note ? (
-                  <Typography
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                    variant="body2"
-                  >
-                    {merchant.note}
-                  </Typography>
-                ) : null}
-              </Box>
-            </Stack>
+            {merchantErrorMessage ? (
+              <Typography color="error" role="alert" sx={{ mb: 2 }}>
+                {merchantErrorMessage}
+              </Typography>
+            ) : null}
 
             <Stack
-              component="form"
-              action={archiveMerchant}
-              sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              sx={{ justifyContent: "space-between" }}
             >
-              <input name="merchantId" type="hidden" value={merchant.id} />
-              <Button color="error" type="submit" variant="outlined">
-                归档商家
-              </Button>
-            </Stack>
-          </Stack>
+              <Stack direction="row" spacing={2} sx={{ minWidth: 0 }}>
+                <Avatar src={merchant.icon_url ?? undefined}>
+                  {getMerchantInitial(merchant.name)}
+                </Avatar>
 
-          <Divider sx={{ my: 3 }} />
-
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-            别名
-          </Typography>
-
-          {merchant.aliases.length > 0 ? (
-            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
-              {merchant.aliases.map((alias) => (
-                <Stack
-                  key={alias.id}
-                  component="form"
-                  action={archiveMerchantAlias}
-                  direction="row"
-                  spacing={1}
-                  sx={{ alignItems: "center" }}
-                >
-                  <input name="aliasId" type="hidden" value={alias.id} />
-                  <Chip
-                    label={
-                      alias.locale
-                        ? `${alias.alias} / ${alias.locale}`
-                        : alias.alias
-                    }
-                    size="small"
-                  />
-                  <Button
-                    color="error"
-                    size="small"
-                    type="submit"
-                    variant="text"
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    component="h2"
+                    variant="h6"
+                    sx={{ fontWeight: 700 }}
                   >
-                    移除
-                  </Button>
-                </Stack>
-              ))}
+                    {merchant.name}
+                  </Typography>
+
+                  {merchant.website_url ? (
+                    <Link
+                      href={merchant.website_url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {merchant.website_url}
+                    </Link>
+                  ) : (
+                    <Typography color="text.secondary" variant="body2">
+                      网址未设置
+                    </Typography>
+                  )}
+
+                  {merchant.note ? (
+                    <Typography
+                      color="text.secondary"
+                      sx={{ mt: 1 }}
+                      variant="body2"
+                    >
+                      {merchant.note}
+                    </Typography>
+                  ) : null}
+                </Box>
+              </Stack>
+
+              <Stack
+                component="form"
+                action={archiveMerchant}
+                sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
+              >
+                <input name="merchantId" type="hidden" value={merchant.id} />
+                <Button color="error" type="submit" variant="outlined">
+                  归档商家
+                </Button>
+              </Stack>
             </Stack>
-          ) : (
-            <Typography color="text.secondary" sx={{ mt: 1 }} variant="body2">
-              还没有别名。
+
+            <Divider sx={{ my: 3 }} />
+
+            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              别名
             </Typography>
-          )}
 
-          <MerchantAliasForm merchantId={merchant.id} />
+            {merchant.aliases.length > 0 ? (
+              <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
+                {merchant.aliases.map((alias) => (
+                  <Stack
+                    key={alias.id}
+                    component="form"
+                    action={archiveMerchantAlias}
+                    direction="row"
+                    spacing={1}
+                    sx={{ alignItems: "center" }}
+                  >
+                    <input name="aliasId" type="hidden" value={alias.id} />
+                    <Chip
+                      label={
+                        alias.locale
+                          ? `${alias.alias} / ${alias.locale}`
+                          : alias.alias
+                      }
+                      size="small"
+                    />
+                    <Button
+                      color="error"
+                      size="small"
+                      type="submit"
+                      variant="text"
+                    >
+                      移除
+                    </Button>
+                  </Stack>
+                ))}
+              </Stack>
+            ) : (
+              <Typography color="text.secondary" sx={{ mt: 1 }} variant="body2">
+                还没有别名。
+              </Typography>
+            )}
 
-          <Divider sx={{ my: 3 }} />
-          <MerchantEditForm merchant={merchant} />
-        </Paper>
-      ))}
+            <MerchantAliasForm merchantId={merchant.id} />
+
+            <Divider sx={{ my: 3 }} />
+            <MerchantEditForm merchant={merchant} />
+          </Paper>
+        );
+      })}
     </Stack>
   );
 }
