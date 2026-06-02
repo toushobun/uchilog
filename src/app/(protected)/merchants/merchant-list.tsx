@@ -141,14 +141,7 @@ export function MerchantList({
                     sx={{ alignItems: "center" }}
                   >
                     <input name="aliasId" type="hidden" value={alias.id} />
-                    <Chip
-                      label={
-                        alias.locale
-                          ? `${alias.alias} / ${alias.locale}`
-                          : alias.alias
-                      }
-                      size="small"
-                    />
+                    <Chip label={alias.alias} size="small" />
                     <Button
                       color="error"
                       size="small"
