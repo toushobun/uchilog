@@ -176,24 +176,24 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-local-publishable-key
 
 `.env.local` 只用于本地开发，不应提交到仓库。
 
-### 创建本地测试用户
+### 本地测试用户
 
-当前 MVP 阶段暂不提供注册页面。  
-测试用户需要在 Supabase Studio 中手动创建。
+`npx supabase db reset` 会自动执行 `supabase/seed.sql`，并创建本地开发用测试用户。
 
-打开：
+登录信息：
+
+```text
+邮箱：local@example.test
+密码：password123
+```
+
+seed 还会创建家庭账本、账户、商家、商家别名和基础分类数据，方便 reset 后直接做 UI 手动验证。
+
+如需手动查看或调整本地 Auth 用户，可以打开 Supabase Studio：
 
 ```text
 http://127.0.0.1:54323
 ```
-
-然后进入：
-
-```text
-Authentication → Users → Create new user
-```
-
-创建用户时需要确保该用户可以在本地环境中正常登录。
 
 ### 启动 Next.js 开发服务器
 
