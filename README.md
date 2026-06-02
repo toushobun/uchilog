@@ -2,7 +2,7 @@
 
 UchiLog 是一个面向家庭使用的轻量级记账 PWA，用于记录和整理日常收入、支出、账户流转、分类消费以及家庭共享支出。
 
-本仓库同时作为个人开发过程记录使用。  
+本仓库同时作为个人开发过程记录使用。
 项目目前仍处于 MVP 开发阶段。
 
 ## 项目简介
@@ -18,7 +18,7 @@ UchiLog 的目标是做一个适合日常使用的家庭记账应用。
 - 优先优化手机端的日常使用体验
 - 保持功能清晰、操作简单，避免记账软件常见的复杂膨胀
 
-本项目当前主要使用中文进行需求整理、Issue 编写和开发记录。  
+本项目当前主要使用中文进行需求整理、Issue 编写和开发记录。
 代码、目录名、变量名和技术标识使用英文。
 
 ## 当前开发状态
@@ -37,16 +37,22 @@ UchiLog 的目标是做一个适合日常使用的家庭记账应用。
 - Supabase Auth 邮箱密码登录
 - 登录后受保护页面
 - 登录后基础 App Shell
+- 当前账本初始化 / 账本选择基础
+- 账户管理基础功能
+- 商家管理基础功能
+- 商家别名 schema 与基础搜索支持
+- 本地开发用 seed 数据
+- Vitest 单元测试基础设施
+- Storybook 基础设施
 - GitHub Actions CI
+- Storybook build CI
 
 尚未实现：
 
-- 账本初始化和账本切换
-- 账户列表和账户新增
-- 分类列表和分类新增
-- 记账新增
+- 记账新增最小闭环
 - 记账列表
-- 商家管理
+- 分类管理页面完善
+- 账户所属权
 - 数据统计和图表
 - PWA 配置
 - 正式部署
@@ -74,6 +80,8 @@ UchiLog 的目标是做一个适合日常使用的家庭记账应用。
 - GitHub Actions
 - Supabase CLI
 - Figma
+- Vitest
+- Storybook
 
 ## 已实现功能
 
@@ -92,14 +100,61 @@ UchiLog 的目标是做一个适合日常使用的家庭记账应用。
 - 底部导航
 - Dashboard 占位页面
 - 记账占位页面
-- 账户占位页面
 - 分类占位页面
+
+### 账本
+
+- 登录后获取当前用户所属账本
+- 没有账本时跳转到账本初始化页面
+- 创建初始账本
+- 账本列表基础页面
+
+### 账户管理
+
+- 当前账本下的账户列表
+- 新增账户
+- 编辑账户基础信息
+- 归档账户
+- 账户类型中文显示
+- 金额格式化显示
+- 基础账户展示组件
+- 账户组件 Storybook story
+
+### 商家管理
+
+- 当前账本下的商家列表
+- 新增商家
+- 编辑商家基础信息
+- 归档商家
+- 商家别名 schema
+- 新增商家别名
+- 归档商家别名
+- 商家名称 / 别名基础搜索支持
+
+### 本地开发数据
+
+- `supabase/seed.sql`
+- 本地测试用户
+- 家庭账本 seed
+- 账户 seed
+- 商家和商家别名 seed
+- 基础分类 seed
 
 ### 工程化
 
 - GitHub Actions CI
-- Pull Request 时自动执行 lint 和 build
-- main 分支更新时自动执行 lint 和 build
+  - Pull Request 时自动执行检查
+  - main 分支更新时自动执行检查
+  - Type check
+  - Format check
+  - Lint
+  - Test
+  - Build
+  - Storybook build
+- 本地开发工具
+  - Prettier
+  - Vitest
+  - Storybook
 
 ## 开发路线
 
@@ -114,13 +169,18 @@ UchiLog 的目标是做一个适合日常使用的家庭记账应用。
 7. 添加 GitHub Actions CI
 8. 实现登录后基础 App Shell
 9. 实现当前账本初始化 / 账本选择
-10. 实现账户列表和账户新增
-11. 实现分类列表和分类新增
-12. 实现记账新增最小闭环
-13. 实现记账列表
-14. 实现基础统计和汇总
-15. 配置 PWA
-16. 整理部署方式
+10. 实现账户管理基础功能
+11. 实现商家管理基础功能
+12. 追加本地 seed 数据
+13. 追加 unit test 和 CI
+14. 追加 Storybook 和 CI
+15. 完善分类管理页面
+16. 实现记账新增最小闭环
+17. 实现记账列表
+18. 实现账户所属权
+19. 实现基础统计和汇总
+20. 配置 PWA
+21. 整理部署方式
 
 ## 本地启动
 
@@ -137,6 +197,12 @@ UchiLog 的目标是做一个适合日常使用的家庭记账应用。
 
 ```bash
 npm install
+```
+
+如果希望严格按照 `package-lock.json` 安装，也可以使用：
+
+```bash
+npm ci
 ```
 
 ### 启动本地 Supabase
@@ -198,6 +264,14 @@ seed 还会创建家庭账本、账户、商家、商家别名和基础分类数
 http://127.0.0.1:54323
 ```
 
+### 重置本地数据库
+
+```bash
+npx supabase db reset
+```
+
+重置后如果浏览器中残留旧登录状态，可能会出现 refresh token 相关错误。重新登录即可。
+
 ### 启动 Next.js 开发服务器
 
 ```bash
@@ -210,6 +284,18 @@ npm run dev
 http://localhost:3000
 ```
 
+### 启动 Storybook 并确认组件展示
+
+```bash
+npm run storybook
+```
+
+打开 Storybook：
+
+```text
+http://localhost:6006
+```
+
 ## 常用命令
 
 ### 启动开发服务器
@@ -218,16 +304,52 @@ http://localhost:3000
 npm run dev
 ```
 
+### 执行格式检查
+
+```bash
+npm run format:check
+```
+
+### 自动格式化
+
+```bash
+npm run format
+```
+
 ### 执行 lint
 
 ```bash
 npm run lint
 ```
 
+### 执行单元测试
+
+```bash
+npm run test
+```
+
 ### 执行 build
 
 ```bash
 npm run build
+```
+
+### 启动 Storybook 开发服务器
+
+```bash
+npm run storybook
+```
+
+### 执行 Storybook build
+
+```bash
+npm run build-storybook
+```
+
+### 重置本地 Supabase 数据库并执行 seed
+
+```bash
+npx supabase db reset
 ```
 
 ## 开发流程
@@ -269,9 +391,11 @@ chore: 添加 GitHub Actions CI
 - 登录页
 - 登录后 App Shell
 - Dashboard
-- 记账新增页面
 - 账户管理页面
+- 商家管理页面
 - 分类管理页面
+- 记账新增页面
+- 记账列表页面
 
 ## 作为求职作品的说明
 
@@ -283,8 +407,13 @@ chore: 添加 GitHub Actions CI
 - Issue 驱动开发
 - 数据库结构设计
 - Supabase Auth 接入
+- Row Level Security 设计
 - 受保护路由设计
 - 前端 App Shell 设计
+- 账户管理和商家管理基础功能
+- 本地 seed 数据设计
+- 单元测试基础设施
+- Storybook 组件展示
 - CI 配置
 - MVP 迭代推进过程
 
