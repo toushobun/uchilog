@@ -58,7 +58,11 @@ export function MerchantList({ merchants }: MerchantListProps) {
                 </Typography>
 
                 {merchant.website_url ? (
-                  <Link href={merchant.website_url} target="_blank" rel="noreferrer">
+                  <Link
+                    href={merchant.website_url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     {merchant.website_url}
                   </Link>
                 ) : (
@@ -106,7 +110,9 @@ export function MerchantList({ merchants }: MerchantListProps) {
                 >
                   <input name="aliasId" type="hidden" value={alias.id} />
                   <Chip
-                    label={alias.locale ? `${alias.alias} / ${alias.locale}` : alias.alias}
+                    label={
+                      alias.locale ? `${alias.alias} / ${alias.locale}` : alias.alias
+                    }
                     size="small"
                   />
                   <Button color="error" size="small" type="submit" variant="text">
