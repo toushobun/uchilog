@@ -31,7 +31,6 @@ const errorMessages: Record<string, string> = {
   alias_too_long: "商家别名不能超过 100 个字符。",
   archive_failed: "商家归档失败。",
   create_failed: "商家新增失败。请确认商家名称是否重复，或稍后重试。",
-  locale_invalid: "语言标记格式不正确。",
   merchant_invalid: "商家指定不正确。",
   name_required: "请输入商家名称。",
   name_too_long: "商家名称不能超过 100 个字符。",
@@ -110,7 +109,7 @@ export default async function MerchantsPage({
   const { data: aliasData, error: aliasError } = merchantIds.length
     ? await supabase
         .from("merchant_alias")
-        .select("id, merchant_id, alias, locale, sort_order, created_at")
+        .select("id, merchant_id, alias, sort_order, created_at")
         .in("merchant_id", merchantIds)
         .eq("is_archived", false)
         .order("sort_order", { ascending: true })
