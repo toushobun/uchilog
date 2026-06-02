@@ -2,7 +2,6 @@ export type MerchantAliasRow = {
   id: string;
   merchant_id: string;
   alias: string;
-  locale: string | null;
   sort_order: number;
   created_at: string;
 };
