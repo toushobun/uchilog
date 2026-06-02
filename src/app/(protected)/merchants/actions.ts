@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/server";
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const localePattern = /^[a-zA-Z]{2,8}(-[a-zA-Z0-9]{1,8})*$/;
 const merchantNameMaxLength = 100;
 const textMaxLength = 1000;
 const aliasMaxLength = 100;
@@ -58,18 +57,6 @@ function parseWebsiteUrl(value: string) {
   } catch {
     return undefined;
   }
-}
-
-function parseLocale(value: string) {
-  if (value.length === 0) {
-    return null;
-  }
-
-  if (value.length > 20 || !localePattern.test(value)) {
-    return undefined;
-  }
-
-  return value;
 }
 
 async function getCurrentUserAndLedger() {
@@ -233,7 +220,6 @@ export async function createMerchantAlias(formData: FormData) {
   const { currentLedger, userId } = await getCurrentUserAndLedger();
   const merchantId = getText(formData, "merchantId");
   const alias = getText(formData, "alias");
-  const locale = parseLocale(getText(formData, "locale"));
 
   if (!isUuid(merchantId)) {
     redirect("/merchants?error=merchant_invalid");
@@ -247,10 +233,6 @@ export async function createMerchantAlias(formData: FormData) {
     redirectMerchantError("alias_too_long", merchantId);
   }
 
-  if (locale === undefined) {
-    redirectMerchantError("locale_invalid", merchantId);
-  }
-
   if (!(await ensureMerchantInCurrentLedger(merchantId, currentLedger.id))) {
     redirect("/merchants?error=merchant_invalid");
   }
@@ -259,7 +241,6 @@ export async function createMerchantAlias(formData: FormData) {
   const { error } = await supabase.from("merchant_alias").insert({
     merchant_id: merchantId,
     alias,
-    locale,
     sort_order: 0,
     created_by: userId,
     updated_by: userId,
