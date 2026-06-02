@@ -11,8 +11,7 @@ on:
 env:
   RUN_CODE_CI: &run_code_ci >-
     github.event_name != 'pull_request' ||
-    startsWith(github.head_ref, 'feature/') ||
-    startsWith(github.head_ref, 'fix/')
+    startsWith(github.head_ref, 'docs/') == false
 
 jobs:
   type-check:
