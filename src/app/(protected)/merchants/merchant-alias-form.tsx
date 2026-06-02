@@ -29,17 +29,6 @@ export function MerchantAliasForm({ merchantId }: MerchantAliasFormProps) {
         size="small"
       />
 
-      <TextField
-        autoComplete="off"
-        fullWidth
-        helperText="可选，例如 ja、zh-Hans、en"
-        slotProps={{ htmlInput: { maxLength: 20 } }}
-        label="语言标记"
-        name="locale"
-        placeholder="ja"
-        size="small"
-      />
-
       <Button size="small" type="submit" variant="outlined">
         新增别名
       </Button>
