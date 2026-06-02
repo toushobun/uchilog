@@ -28,7 +28,7 @@ export function getAccountTypeLabel(type: string) {
 
 export function formatAmount(amount: number | string | null, currency: string) {
   if (amount === null) {
-    return `${amount} ${currency}`;
+    return `-- ${currency}`;
   }
 
   const numberAmount = typeof amount === "number" ? amount : Number(amount);

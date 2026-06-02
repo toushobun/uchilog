@@ -16,7 +16,7 @@ describe("formatAmount", () => {
   });
 
   it("金额输入为 null 时使用 fallback 文案", () => {
-    expect(formatAmount(null, "JPY")).toBe("null JPY");
+    expect(formatAmount(null, "JPY")).toBe("-- JPY");
   });
 
   it("Intl 无法格式化货币时使用 fallback 文案", () => {
