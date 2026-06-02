@@ -7,7 +7,11 @@ import { getCurrentLedgerContext } from "@/lib/ledger/current-ledger";
 import { createClient } from "@/lib/supabase/server";
 
 const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{12}$/i;
+const localePattern = /^[a-zA-Z]{2,8}(-[a-zA-Z0-9]{1,8})*$/;
+const merchantNameMaxLength = 100;
+const textMaxLength = 1000;
+const aliasMaxLength = 100;
 
 type OptionalTextResult = { ok: true; value: string | null } | { ok: false };
 
@@ -17,6 +21,10 @@ function isUuid(value: string) {
 
 function getText(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
+}
+
+function redirectMerchantError(error: string, merchantId: string): never {
+  redirect(`/merchants?error=${error}&merchantId=${merchantId}`);
 }
 
 function parseOptionalText(
@@ -57,7 +65,7 @@ function parseLocale(value: string) {
     return null;
   }
 
-  if (value.length < 2 || value.length > 20) {
+  if (value.length > 20 || !localePattern.test(value)) {
     return undefined;
   }
 
@@ -101,10 +109,14 @@ export async function createMerchant(formData: FormData) {
   const { currentLedger, userId } = await getCurrentUserAndLedger();
   const name = getText(formData, "name");
   const websiteUrl = parseWebsiteUrl(getText(formData, "websiteUrl"));
-  const note = parseOptionalText(getText(formData, "note"), 1000);
+  const note = parseOptionalText(getText(formData, "note"), textMaxLength);
 
   if (name.length === 0) {
     redirect("/merchants?error=name_required");
+  }
+
+  if (name.length > merchantNameMaxLength) {
+    redirect("/merchants?error=name_too_long");
   }
 
   if (websiteUrl === undefined) {
@@ -139,22 +151,26 @@ export async function updateMerchant(formData: FormData) {
   const merchantId = getText(formData, "merchantId");
   const name = getText(formData, "name");
   const websiteUrl = parseWebsiteUrl(getText(formData, "websiteUrl"));
-  const note = parseOptionalText(getText(formData, "note"), 1000);
+  const note = parseOptionalText(getText(formData, "note"), textMaxLength);
 
   if (!isUuid(merchantId)) {
     redirect("/merchants?error=merchant_invalid");
   }
 
   if (name.length === 0) {
-    redirect("/merchants?error=name_required");
+    redirectMerchantError("name_required", merchantId);
+  }
+
+  if (name.length > merchantNameMaxLength) {
+    redirectMerchantError("name_too_long", merchantId);
   }
 
   if (websiteUrl === undefined) {
-    redirect("/merchants?error=website_url_invalid");
+    redirectMerchantError("website_url_invalid", merchantId);
   }
 
   if (!note.ok) {
-    redirect("/merchants?error=note_too_long");
+    redirectMerchantError("note_too_long", merchantId);
   }
 
   const supabase = await createClient();
@@ -174,7 +190,7 @@ export async function updateMerchant(formData: FormData) {
     .eq("is_archived", false);
 
   if (error || count !== 1) {
-    redirect("/merchants?error=update_failed");
+    redirectMerchantError("update_failed", merchantId);
   }
 
   revalidatePath("/merchants");
@@ -206,7 +222,7 @@ export async function archiveMerchant(formData: FormData) {
     .eq("is_archived", false);
 
   if (error || count !== 1) {
-    redirect("/merchants?error=archive_failed");
+    redirectMerchantError("archive_failed", merchantId);
   }
 
   revalidatePath("/merchants");
@@ -224,15 +240,15 @@ export async function createMerchantAlias(formData: FormData) {
   }
 
   if (alias.length === 0) {
-    redirect("/merchants?error=alias_required");
+    redirectMerchantError("alias_required", merchantId);
   }
 
-  if (alias.length > 100) {
-    redirect("/merchants?error=alias_too_long");
+  if (alias.length > aliasMaxLength) {
+    redirectMerchantError("alias_too_long", merchantId);
   }
 
   if (locale === undefined) {
-    redirect("/merchants?error=locale_invalid");
+    redirectMerchantError("locale_invalid", merchantId);
   }
 
   if (!(await ensureMerchantInCurrentLedger(merchantId, currentLedger.id))) {
@@ -250,7 +266,7 @@ export async function createMerchantAlias(formData: FormData) {
   });
 
   if (error) {
-    redirect("/merchants?error=alias_create_failed");
+    redirectMerchantError("alias_create_failed", merchantId);
   }
 
   revalidatePath("/merchants");
@@ -301,7 +317,7 @@ export async function archiveMerchantAlias(formData: FormData) {
     .eq("is_archived", false);
 
   if (error || count !== 1) {
-    redirect("/merchants?error=alias_archive_failed");
+    redirectMerchantError("alias_archive_failed", aliasRow.merchant_id);
   }
 
   revalidatePath("/merchants");
