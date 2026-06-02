@@ -14,15 +14,18 @@ create table public.merchant_alias (
     merchant_id uuid not null references public.merchant(id) on delete restrict,
 
     alias text not null,
+    -- 预期使用 BCP 47 风格，例如 ja、zh-Hans、en；MVP 阶段允许为空且不参与搜索逻辑
     locale text,
     note text,
 
     sort_order integer not null default 0,
 
+    -- 归档规则与现有业务表保持一致：允许 archived_by 为空，以兼容系统处理或旧数据修正场景
     is_archived boolean not null default false,
     archived_by uuid references public.app_user(id),
     archived_at timestamptz,
 
+    -- 审计字段与现有业务表保持一致：允许为空，由服务端业务流程尽量写入用户 ID
     created_by uuid references public.app_user(id),
     created_at timestamptz not null default now(),
     updated_by uuid references public.app_user(id),
@@ -83,11 +86,8 @@ create unique index merchant_alias_active_alias_unique
 on public.merchant_alias (merchant_id, lower(alias))
 where is_archived = false;
 
--- 按商家查询别名列表时使用
-create index merchant_alias_merchant_id_idx
-on public.merchant_alias (merchant_id, sort_order, id);
-
--- 查询未归档别名时使用
+-- 查询未归档别名列表时使用
+-- MVP 阶段默认不查询归档别名，因此不额外创建包含归档数据的 merchant_id 普通索引
 create index merchant_alias_active_idx
 on public.merchant_alias (merchant_id, sort_order, id)
 where is_archived = false;
