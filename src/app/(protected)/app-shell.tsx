@@ -18,6 +18,7 @@ const navItems = [
   { label: "首页", href: "/dashboard" },
   { label: "记账", href: "/transactions" },
   { label: "账户", href: "/accounts" },
+  { label: "商家", href: "/merchants" },
   { label: "分类", href: "/categories" },
 ];
 
