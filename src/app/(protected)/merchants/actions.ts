@@ -9,9 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
 
-type OptionalTextResult =
-  | { ok: true; value: string | null }
-  | { ok: false };
+type OptionalTextResult = { ok: true; value: string | null } | { ok: false };
 
 function isUuid(value: string) {
   return uuidPattern.test(value);
@@ -79,7 +77,10 @@ async function getCurrentUserAndLedger() {
   };
 }
 
-async function ensureMerchantInCurrentLedger(merchantId: string, ledgerId: string) {
+async function ensureMerchantInCurrentLedger(
+  merchantId: string,
+  ledgerId: string,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("merchant")
@@ -276,7 +277,12 @@ export async function archiveMerchantAlias(formData: FormData) {
     redirect("/merchants?error=alias_invalid");
   }
 
-  if (!(await ensureMerchantInCurrentLedger(aliasRow.merchant_id, currentLedger.id))) {
+  if (
+    !(await ensureMerchantInCurrentLedger(
+      aliasRow.merchant_id,
+      currentLedger.id,
+    ))
+  ) {
     redirect("/merchants?error=alias_invalid");
   }
 

@@ -53,7 +53,11 @@ export function MerchantList({ merchants }: MerchantListProps) {
               </Avatar>
 
               <Box sx={{ minWidth: 0 }}>
-                <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography
+                  component="h2"
+                  variant="h6"
+                  sx={{ fontWeight: 700 }}
+                >
                   {merchant.name}
                 </Typography>
 
@@ -72,7 +76,11 @@ export function MerchantList({ merchants }: MerchantListProps) {
                 )}
 
                 {merchant.note ? (
-                  <Typography color="text.secondary" sx={{ mt: 1 }} variant="body2">
+                  <Typography
+                    color="text.secondary"
+                    sx={{ mt: 1 }}
+                    variant="body2"
+                  >
                     {merchant.note}
                   </Typography>
                 ) : null}
@@ -111,11 +119,18 @@ export function MerchantList({ merchants }: MerchantListProps) {
                   <input name="aliasId" type="hidden" value={alias.id} />
                   <Chip
                     label={
-                      alias.locale ? `${alias.alias} / ${alias.locale}` : alias.alias
+                      alias.locale
+                        ? `${alias.alias} / ${alias.locale}`
+                        : alias.alias
                     }
                     size="small"
                   />
-                  <Button color="error" size="small" type="submit" variant="text">
+                  <Button
+                    color="error"
+                    size="small"
+                    type="submit"
+                    variant="text"
+                  >
                     移除
                   </Button>
                 </Stack>
