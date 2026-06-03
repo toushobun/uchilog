@@ -1,17 +1,23 @@
 import Stack from "@mui/material/Stack";
 
 import { EmptyState } from "@/components/ui/EmptyState";
-import { archiveAccount } from "./actions";
-import { AccountCard } from "./account-card";
-import { AccountEditForm } from "./account-edit-form";
-import { ArchiveAccountButton } from "./archive-account-button";
-import { type AccountRow } from "./types";
+import { type AccountRow } from "accounts-route/types";
+
+import { AccountCard } from "./AccountCard";
+import { AccountEditForm } from "./AccountEditForm";
+import { ArchiveAccountButton } from "./ArchiveAccountButton";
 
 type AccountListProps = {
   accounts: AccountRow[];
+  archiveAccountAction: (formData: FormData) => void | Promise<void>;
+  updateAccountAction: (formData: FormData) => void | Promise<void>;
 };
 
-export function AccountList({ accounts }: AccountListProps) {
+export function AccountList({
+  accounts,
+  archiveAccountAction,
+  updateAccountAction,
+}: AccountListProps) {
   if (accounts.length === 0) {
     return <EmptyState title="还没有账户" description="请先新增一个账户。" />;
   }
@@ -30,14 +36,19 @@ export function AccountList({ accounts }: AccountListProps) {
           actions={
             <Stack
               component="form"
-              action={archiveAccount}
+              action={archiveAccountAction}
               sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
             >
               <input name="accountId" type="hidden" value={account.id} />
               <ArchiveAccountButton />
             </Stack>
           }
-          footer={<AccountEditForm account={account} />}
+          footer={
+            <AccountEditForm
+              account={account}
+              updateAccountAction={updateAccountAction}
+            />
+          }
         />
       ))}
     </Stack>

@@ -3,16 +3,24 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { updateAccount } from "./actions";
-import { accountTypeOptions, type AccountRow } from "./types";
+import { accountTypeOptions, type AccountRow } from "accounts-route/types";
 
 type AccountEditFormProps = {
   account: AccountRow;
+  updateAccountAction: (formData: FormData) => void | Promise<void>;
 };
 
-export function AccountEditForm({ account }: AccountEditFormProps) {
+export function AccountEditForm({
+  account,
+  updateAccountAction,
+}: AccountEditFormProps) {
   return (
-    <Stack component="form" action={updateAccount} spacing={2} sx={{ mt: 3 }}>
+    <Stack
+      component="form"
+      action={updateAccountAction}
+      spacing={2}
+      sx={{ mt: 3 }}
+    >
       <input name="accountId" type="hidden" value={account.id} />
 
       <TextField

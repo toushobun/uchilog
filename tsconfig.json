@@ -19,7 +19,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "accounts/*": ["./src/components/accounts/*"],
+      "accounts-route/*": ["./src/app/(protected)/accounts/*"]
     }
   },
   "include": [

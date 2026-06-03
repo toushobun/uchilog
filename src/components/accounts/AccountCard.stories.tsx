@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { AccountCard } from "./account-card";
+
+import { AccountCard } from "./AccountCard";
 
 const meta: Meta<typeof AccountCard> = {
   component: AccountCard,

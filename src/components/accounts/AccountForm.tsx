@@ -5,14 +5,17 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { createAccount } from "./actions";
-import { accountTypeOptions } from "./types";
+import { accountTypeOptions } from "accounts-route/types";
 
 type AccountFormProps = {
+  createAccountAction: (formData: FormData) => void | Promise<void>;
   defaultCurrency: string;
 };
 
-export function AccountForm({ defaultCurrency }: AccountFormProps) {
+export function AccountForm({
+  createAccountAction,
+  defaultCurrency,
+}: AccountFormProps) {
   return (
     <Paper
       elevation={0}
@@ -29,7 +32,7 @@ export function AccountForm({ defaultCurrency }: AccountFormProps) {
 
       <Stack
         component="form"
-        action={createAccount}
+        action={createAccountAction}
         spacing={2.5}
         sx={{ mt: 3 }}
       >

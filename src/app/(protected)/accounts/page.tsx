@@ -4,8 +4,10 @@ import Typography from "@mui/material/Typography";
 import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
 import { createClient } from "@/lib/supabase/server";
 
-import { AccountForm } from "./account-form";
-import { AccountList } from "./account-list";
+import { AccountForm } from "accounts/AccountForm";
+import { AccountList } from "accounts/AccountList";
+
+import { archiveAccount, createAccount, updateAccount } from "./actions";
 import type { AccountHolderRole, AccountHolderRow, AccountRow } from "./types";
 
 type AccountsPageProps = {
@@ -168,8 +170,15 @@ export default async function AccountsPage({
         </Typography>
       ) : null}
 
-      <AccountForm defaultCurrency={currentLedger.baseCurrency} />
-      <AccountList accounts={accounts} />
+      <AccountForm
+        createAccountAction={createAccount}
+        defaultCurrency={currentLedger.baseCurrency}
+      />
+      <AccountList
+        accounts={accounts}
+        archiveAccountAction={archiveAccount}
+        updateAccountAction={updateAccount}
+      />
     </Paper>
   );
 }

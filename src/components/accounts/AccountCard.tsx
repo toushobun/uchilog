@@ -10,7 +10,7 @@ import {
   getAccountTypeLabel,
   type AccountHolderRow,
   type AccountType,
-} from "./types";
+} from "accounts-route/types";
 
 type AccountCardProps = {
   name: string;
