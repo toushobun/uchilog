@@ -10,7 +10,7 @@ import {
   getAccountTypeLabel,
   type AccountHolderRow,
   type AccountType,
-} from "@/app/(protected)/accounts/types";
+} from "accounts/types";
 
 type AccountCardProps = {
   name: string;
