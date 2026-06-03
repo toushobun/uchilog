@@ -8,7 +8,12 @@ import { AccountForm } from "accounts/AccountForm";
 import { AccountList } from "accounts/AccountList";
 
 import { archiveAccount, createAccount, updateAccount } from "./actions";
-import type { AccountHolderRole, AccountHolderRow, AccountRow } from "./types";
+import type {
+  AccountHolderOption,
+  AccountHolderRole,
+  AccountHolderRow,
+  AccountRow,
+} from "./types";
 
 type AccountsPageProps = {
   searchParams: Promise<{
@@ -28,6 +33,11 @@ type AppUserRecord = {
   id: string;
   display_name: string;
   email: string | null;
+  status: string;
+};
+
+type LedgerMemberRecord = {
+  user_id: string;
 };
 
 const errorMessages: Record<string, string> = {
@@ -36,6 +46,7 @@ const errorMessages: Record<string, string> = {
   create_failed: "账户新增失败。请确认账户名称是否重复，或稍后重试。",
   update_failed: "账户更新失败。请确认账户名称是否重复，或稍后重试。",
   currency_invalid: "货币必须是 3 位大写字母，例如 JPY。",
+  holder_invalid: "账户持有人指定不正确。",
   initial_balance_invalid: "初始余额必须是数字。",
   name_required: "请输入账户名称。",
   type_invalid: "账户类型不正确。",
@@ -43,14 +54,13 @@ const errorMessages: Record<string, string> = {
 
 function buildAccountsWithHolders({
   accounts,
-  appUsers,
+  appUserById,
   holders,
 }: {
   accounts: Omit<AccountRow, "holders">[];
-  appUsers: AppUserRecord[];
+  appUserById: Map<string, AppUserRecord>;
   holders: AccountHolderRecord[];
 }) {
-  const appUserById = new Map(appUsers.map((user) => [user.id, user]));
   const holdersByAccountId = new Map<string, AccountHolderRow[]>();
 
   for (const holder of holders) {
@@ -78,6 +88,35 @@ function buildAccountsWithHolders({
     ...account,
     holders: holdersByAccountId.get(account.id) ?? [],
   }));
+}
+
+function buildHolderOptions({
+  appUserById,
+  members,
+}: {
+  appUserById: Map<string, AppUserRecord>;
+  members: LedgerMemberRecord[];
+}) {
+  return members
+    .map((member): AccountHolderOption | null => {
+      const appUser = appUserById.get(member.user_id);
+
+      if (!appUser || appUser.status !== "active") {
+        return null;
+      }
+
+      return {
+        user_id: member.user_id,
+        display_name: appUser.display_name,
+        email: appUser.email,
+      };
+    })
+    .filter((option): option is AccountHolderOption => option !== null)
+    .sort((a, b) =>
+      (a.display_name || a.email || "").localeCompare(
+        b.display_name || b.email || "",
+      ),
+    );
 }
 
 export default async function AccountsPage({
@@ -108,41 +147,71 @@ export default async function AccountsPage({
   const accountIds = accountRows.map((account) => account.id);
 
   let holderRows: AccountHolderRecord[] = [];
-  let appUserRows: AppUserRecord[] = [];
+  const appUserById = new Map<string, AppUserRecord>();
 
-  if (accountIds.length > 0) {
-    const { data: holderData, error: holderError } = await supabase
-      .from("account_holder")
-      .select("id, account_id, user_id, role, share_ratio")
-      .eq("ledger_id", currentLedger.id)
-      .in("account_id", accountIds);
+  const memberRequest = supabase
+    .from("ledger_member")
+    .select("user_id")
+    .eq("ledger_id", currentLedger.id)
+    .eq("status", "active");
 
-    if (holderError) {
-      throw new Error("Failed to load account holders");
+  const holderRequest =
+    accountIds.length > 0
+      ? supabase
+          .from("account_holder")
+          .select("id, account_id, user_id, role, share_ratio")
+          .eq("ledger_id", currentLedger.id)
+          .in("account_id", accountIds)
+      : Promise.resolve({ data: [], error: null });
+
+  const [
+    { data: memberData, error: memberError },
+    { data: holderData, error: holderError },
+  ] = await Promise.all([memberRequest, holderRequest]);
+
+  if (memberError) {
+    throw new Error("Failed to load ledger members");
+  }
+
+  const memberRows = (memberData ?? []) as LedgerMemberRecord[];
+  const memberUserIds = memberRows.map((member) => member.user_id);
+
+  if (holderError) {
+    throw new Error("Failed to load account holders");
+  }
+
+  holderRows = (holderData ?? []) as AccountHolderRecord[];
+
+  const userIds = [
+    ...new Set([
+      ...memberUserIds,
+      ...holderRows.map((holder) => holder.user_id),
+    ]),
+  ];
+
+  if (userIds.length > 0) {
+    const { data: appUserData, error: appUserError } = await supabase
+      .from("app_user")
+      .select("id, display_name, email, status")
+      .in("id", userIds);
+
+    if (appUserError) {
+      throw new Error("Failed to load account holder users");
     }
 
-    holderRows = (holderData ?? []) as AccountHolderRecord[];
-
-    const userIds = [...new Set(holderRows.map((holder) => holder.user_id))];
-
-    if (userIds.length > 0) {
-      const { data: appUserData, error: appUserError } = await supabase
-        .from("app_user")
-        .select("id, display_name, email")
-        .in("id", userIds);
-
-      if (appUserError) {
-        throw new Error("Failed to load account holder users");
-      }
-
-      appUserRows = (appUserData ?? []) as AppUserRecord[];
+    for (const appUser of (appUserData ?? []) as AppUserRecord[]) {
+      appUserById.set(appUser.id, appUser);
     }
   }
 
   const accounts = buildAccountsWithHolders({
     accounts: accountRows,
-    appUsers: appUserRows,
+    appUserById,
     holders: holderRows,
+  });
+  const holderOptions = buildHolderOptions({
+    appUserById,
+    members: memberRows,
   });
 
   return (
@@ -173,10 +242,12 @@ export default async function AccountsPage({
       <AccountForm
         createAccountAction={createAccount}
         defaultCurrency={currentLedger.baseCurrency}
+        holderOptions={holderOptions}
       />
       <AccountList
         accounts={accounts}
         archiveAccountAction={archiveAccount}
+        holderOptions={holderOptions}
         updateAccountAction={updateAccount}
       />
     </Paper>

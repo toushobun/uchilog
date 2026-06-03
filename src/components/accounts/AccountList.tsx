@@ -1,7 +1,10 @@
 import Stack from "@mui/material/Stack";
 
 import { EmptyState } from "@/components/ui/EmptyState";
-import { type AccountRow } from "accounts-route/types";
+import {
+  type AccountHolderOption,
+  type AccountRow,
+} from "accounts-route/types";
 
 import { AccountCard } from "./AccountCard";
 import { AccountEditForm } from "./AccountEditForm";
@@ -10,12 +13,14 @@ import { ArchiveAccountButton } from "./ArchiveAccountButton";
 type AccountListProps = {
   accounts: AccountRow[];
   archiveAccountAction: (formData: FormData) => void | Promise<void>;
+  holderOptions: AccountHolderOption[];
   updateAccountAction: (formData: FormData) => void | Promise<void>;
 };
 
 export function AccountList({
   accounts,
   archiveAccountAction,
+  holderOptions,
   updateAccountAction,
 }: AccountListProps) {
   if (accounts.length === 0) {
@@ -46,6 +51,7 @@ export function AccountList({
           footer={
             <AccountEditForm
               account={account}
+              holderOptions={holderOptions}
               updateAccountAction={updateAccountAction}
             />
           }

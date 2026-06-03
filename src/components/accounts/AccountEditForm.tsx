@@ -3,17 +3,36 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { accountTypeOptions, type AccountRow } from "accounts-route/types";
+import {
+  accountTypeOptions,
+  type AccountHolderOption,
+  type AccountRow,
+} from "accounts-route/types";
+
+import { AccountHolderCheckboxGroup } from "./AccountHolderCheckboxGroup";
 
 type AccountEditFormProps = {
   account: AccountRow;
+  holderOptions: AccountHolderOption[];
   updateAccountAction: (formData: FormData) => void | Promise<void>;
 };
 
 export function AccountEditForm({
   account,
+  holderOptions,
   updateAccountAction,
 }: AccountEditFormProps) {
+  const selectableHolderUserIds = new Set(
+    holderOptions.map((option) => option.user_id),
+  );
+  const preservedHolderOptions = account.holders
+    .filter((holder) => !selectableHolderUserIds.has(holder.user_id))
+    .map((holder) => ({
+      user_id: holder.user_id,
+      display_name: holder.display_name,
+      email: holder.email,
+    }));
+
   return (
     <Stack
       component="form"
@@ -53,6 +72,12 @@ export function AccountEditForm({
         name="currency"
         required
         slotProps={{ htmlInput: { maxLength: 3 } }}
+      />
+
+      <AccountHolderCheckboxGroup
+        holderOptions={holderOptions}
+        preservedHolderOptions={preservedHolderOptions}
+        selectedUserIds={account.holders.map((holder) => holder.user_id)}
       />
 
       <Button type="submit" variant="outlined">

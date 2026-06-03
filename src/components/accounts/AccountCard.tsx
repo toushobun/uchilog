@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 
 import {
   formatAmount,
+  getAccountHolderLabel,
   getAccountTypeLabel,
   type AccountHolderRow,
   type AccountType,
@@ -22,10 +23,6 @@ type AccountCardProps = {
   actions?: ReactNode;
   footer?: ReactNode;
 };
-
-function getHolderLabel(holder: AccountHolderRow) {
-  return holder.display_name || holder.email || "名称未设置";
-}
 
 export function AccountCard({
   name,
@@ -71,7 +68,7 @@ export function AccountCard({
               holders.map((holder) => (
                 <Chip
                   key={holder.id}
-                  label={getHolderLabel(holder)}
+                  label={getAccountHolderLabel(holder)}
                   size="small"
                   variant="outlined"
                 />

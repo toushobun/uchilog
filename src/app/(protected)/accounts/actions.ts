@@ -55,6 +55,16 @@ function parseNumber(value: FormDataEntryValue | null, fallback: number) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseHolderUserIds(formData: FormData) {
+  const holderUserIds = formData
+    .getAll("holderUserIds")
+    .map((value) => String(value).trim())
+    .filter((value) => value.length > 0);
+  const uniqueHolderUserIds = [...new Set(holderUserIds)];
+
+  return uniqueHolderUserIds.every(isUuid) ? uniqueHolderUserIds : null;
+}
+
 async function getCurrentUserAndLedger() {
   const context = await getCurrentLedgerContext();
 
@@ -71,11 +81,12 @@ async function getCurrentUserAndLedger() {
 }
 
 export async function createAccount(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger } = await getCurrentUserAndLedger();
   const name = getText(formData, "name");
   const type = parseAccountType(getText(formData, "type"));
   const currency = parseCurrency(getText(formData, "currency"));
   const initialBalance = parseNumber(formData.get("initialBalance"), 0);
+  const holderUserIds = parseHolderUserIds(formData);
 
   if (name.length === 0) {
     redirect("/accounts?error=name_required");
@@ -93,16 +104,18 @@ export async function createAccount(formData: FormData) {
     redirect("/accounts?error=initial_balance_invalid");
   }
 
+  if (!holderUserIds) {
+    redirect("/accounts?error=holder_invalid");
+  }
+
   const supabase = await createClient();
-  const { error } = await supabase.from("account").insert({
-    ledger_id: currentLedger.id,
-    name,
-    type,
-    currency,
-    initial_balance: initialBalance,
-    sort_order: 0,
-    created_by: userId,
-    updated_by: userId,
+  const { error } = await supabase.rpc("create_account_with_holders", {
+    p_currency: currency,
+    p_holder_user_ids: holderUserIds,
+    p_initial_balance: initialBalance,
+    p_ledger_id: currentLedger.id,
+    p_name: name,
+    p_type: type,
   });
 
   if (error) {
@@ -114,11 +127,12 @@ export async function createAccount(formData: FormData) {
 }
 
 export async function updateAccount(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger } = await getCurrentUserAndLedger();
   const accountId = getText(formData, "accountId");
   const name = getText(formData, "name");
   const type = parseAccountType(getText(formData, "type"));
   const currency = parseCurrency(getText(formData, "currency"));
+  const holderUserIds = parseHolderUserIds(formData);
 
   if (!isUuid(accountId)) {
     redirect("/accounts?error=account_invalid");
@@ -136,23 +150,21 @@ export async function updateAccount(formData: FormData) {
     redirect("/accounts?error=currency_invalid");
   }
 
-  const supabase = await createClient();
-  const { error, count } = await supabase
-    .from("account")
-    .update(
-      {
-        name,
-        type,
-        currency,
-        updated_by: userId,
-      },
-      { count: "exact" },
-    )
-    .eq("id", accountId)
-    .eq("ledger_id", currentLedger.id)
-    .eq("is_archived", false);
+  if (!holderUserIds) {
+    redirect("/accounts?error=holder_invalid");
+  }
 
-  if (error || count !== 1) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_account_with_holders", {
+    p_account_id: accountId,
+    p_currency: currency,
+    p_holder_user_ids: holderUserIds,
+    p_ledger_id: currentLedger.id,
+    p_name: name,
+    p_type: type,
+  });
+
+  if (error) {
     redirect("/accounts?error=update_failed");
   }
 

@@ -5,16 +5,23 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { accountTypeOptions } from "accounts-route/types";
+import {
+  accountTypeOptions,
+  type AccountHolderOption,
+} from "accounts-route/types";
+
+import { AccountHolderCheckboxGroup } from "./AccountHolderCheckboxGroup";
 
 type AccountFormProps = {
   createAccountAction: (formData: FormData) => void | Promise<void>;
   defaultCurrency: string;
+  holderOptions: AccountHolderOption[];
 };
 
 export function AccountForm({
   createAccountAction,
   defaultCurrency,
+  holderOptions,
 }: AccountFormProps) {
   return (
     <Paper
@@ -78,6 +85,8 @@ export function AccountForm({
           required
           slotProps={{ htmlInput: { maxLength: 3 } }}
         />
+
+        <AccountHolderCheckboxGroup holderOptions={holderOptions} />
 
         <Button type="submit" variant="contained">
           新增账户

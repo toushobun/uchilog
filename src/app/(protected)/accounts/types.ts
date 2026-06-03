@@ -20,6 +20,12 @@ export type AccountHolderRow = {
   share_ratio: number | string | null;
 };
 
+export type AccountHolderOption = {
+  user_id: string;
+  display_name: string;
+  email: string | null;
+};
+
 export type AccountRow = {
   id: string;
   name: string;
@@ -37,6 +43,16 @@ export function getAccountTypeLabel(type: string) {
   return (
     accountTypeOptions.find((option) => option.value === type)?.label ?? "其他"
   );
+}
+
+export function getAccountHolderLabel({
+  display_name,
+  email,
+}: {
+  display_name: string;
+  email: string | null;
+}) {
+  return display_name || email || "名称未设置";
 }
 
 export function formatAmount(amount: number | string | null, currency: string) {
