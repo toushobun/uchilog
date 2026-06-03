@@ -44,7 +44,7 @@ function buildAccountsWithHolders({
   appUsers,
   holders,
 }: {
-  accounts: AccountRow[];
+  accounts: Omit<AccountRow, "holders">[];
   appUsers: AppUserRecord[];
   holders: AccountHolderRecord[];
 }) {
@@ -138,7 +138,7 @@ export default async function AccountsPage({
   }
 
   const accounts = buildAccountsWithHolders({
-    accounts: accountRows.map((account) => ({ ...account, holders: [] })),
+    accounts: accountRows,
     appUsers: appUserRows,
     holders: holderRows,
   });
