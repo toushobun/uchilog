@@ -1,8 +1,8 @@
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 
-import { AccountForm } from "@/components/accounts/AccountForm";
-import { AccountList } from "@/components/accounts/AccountList";
+import { AccountForm } from "accounts/AccountForm";
+import { AccountList } from "accounts/AccountList";
 import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
 import { createClient } from "@/lib/supabase/server";
 
