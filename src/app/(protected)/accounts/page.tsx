@@ -6,11 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 
 import { AccountForm } from "./account-form";
 import { AccountList } from "./account-list";
-import type {
-  AccountHolderRole,
-  AccountHolderRow,
-  AccountRow,
-} from "./types";
+import type { AccountHolderRole, AccountHolderRow, AccountRow } from "./types";
 
 type AccountsPageProps = {
   searchParams: Promise<{
