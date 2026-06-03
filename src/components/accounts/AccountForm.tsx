@@ -5,8 +5,8 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { createAccount } from "@/app/(protected)/accounts/actions";
-import { accountTypeOptions } from "@/app/(protected)/accounts/types";
+import { createAccount } from "accounts/actions";
+import { accountTypeOptions } from "accounts/types";
 
 type AccountFormProps = {
   defaultCurrency: string;
