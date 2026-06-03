@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "accounts/*": ["./src/components/accounts/*"],
-      "account-page/*": ["./src/app/(protected)/accounts/*"]
+      "accounts-route/*": ["./src/app/(protected)/accounts/*"]
     }
   },
   "include": [

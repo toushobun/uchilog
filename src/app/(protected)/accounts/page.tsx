@@ -1,11 +1,13 @@
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 
-import { AccountForm } from "accounts/AccountForm";
-import { AccountList } from "accounts/AccountList";
 import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
 import { createClient } from "@/lib/supabase/server";
 
+import { AccountForm } from "accounts/AccountForm";
+import { AccountList } from "accounts/AccountList";
+
+import { archiveAccount } from "./actions";
 import type { AccountHolderRole, AccountHolderRow, AccountRow } from "./types";
 
 type AccountsPageProps = {
@@ -169,7 +171,7 @@ export default async function AccountsPage({
       ) : null}
 
       <AccountForm defaultCurrency={currentLedger.baseCurrency} />
-      <AccountList accounts={accounts} />
+      <AccountList accounts={accounts} archiveAccountAction={archiveAccount} />
     </Paper>
   );
 }
