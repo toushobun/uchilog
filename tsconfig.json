@@ -19,7 +19,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "accounts/*": [
+        "./src/components/accounts/*",
+        "./src/app/(protected)/accounts/*"
+      ]
     }
   },
   "include": [
