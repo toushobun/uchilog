@@ -24,7 +24,7 @@ type AccountCardProps = {
 };
 
 function getHolderLabel(holder: AccountHolderRow) {
-  return holder.display_name || holder.email || "名称未設定";
+  return holder.display_name || holder.email || "名称未设置";
 }
 
 export function AccountCard({
