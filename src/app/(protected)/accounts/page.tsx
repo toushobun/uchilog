@@ -6,12 +6,30 @@ import { createClient } from "@/lib/supabase/server";
 
 import { AccountForm } from "./account-form";
 import { AccountList } from "./account-list";
-import type { AccountRow } from "./types";
+import type {
+  AccountHolderRole,
+  AccountHolderRow,
+  AccountRow,
+} from "./types";
 
 type AccountsPageProps = {
   searchParams: Promise<{
     error?: string;
   }>;
+};
+
+type AccountHolderRecord = {
+  id: string;
+  account_id: string;
+  user_id: string;
+  role: AccountHolderRole;
+  share_ratio: number | string | null;
+};
+
+type AppUserRecord = {
+  id: string;
+  display_name: string;
+  email: string | null;
 };
 
 const errorMessages: Record<string, string> = {
@@ -24,6 +42,45 @@ const errorMessages: Record<string, string> = {
   name_required: "请输入账户名称。",
   type_invalid: "账户类型不正确。",
 };
+
+function buildAccountsWithHolders({
+  accounts,
+  appUsers,
+  holders,
+}: {
+  accounts: AccountRow[];
+  appUsers: AppUserRecord[];
+  holders: AccountHolderRecord[];
+}) {
+  const appUserById = new Map(appUsers.map((user) => [user.id, user]));
+  const holdersByAccountId = new Map<string, AccountHolderRow[]>();
+
+  for (const holder of holders) {
+    const appUser = appUserById.get(holder.user_id);
+
+    if (!appUser) {
+      continue;
+    }
+
+    const accountHolders = holdersByAccountId.get(holder.account_id) ?? [];
+
+    accountHolders.push({
+      id: holder.id,
+      user_id: holder.user_id,
+      display_name: appUser.display_name,
+      email: appUser.email,
+      role: holder.role,
+      share_ratio: holder.share_ratio,
+    });
+
+    holdersByAccountId.set(holder.account_id, accountHolders);
+  }
+
+  return accounts.map((account) => ({
+    ...account,
+    holders: holdersByAccountId.get(account.id) ?? [],
+  }));
+}
 
 export default async function AccountsPage({
   searchParams,
@@ -49,7 +106,46 @@ export default async function AccountsPage({
     throw new Error("Failed to load accounts");
   }
 
-  const accounts = (data ?? []) as AccountRow[];
+  const accountRows = (data ?? []) as Omit<AccountRow, "holders">[];
+  const accountIds = accountRows.map((account) => account.id);
+
+  let holderRows: AccountHolderRecord[] = [];
+  let appUserRows: AppUserRecord[] = [];
+
+  if (accountIds.length > 0) {
+    const { data: holderData, error: holderError } = await supabase
+      .from("account_holder")
+      .select("id, account_id, user_id, role, share_ratio")
+      .eq("ledger_id", currentLedger.id)
+      .in("account_id", accountIds);
+
+    if (holderError) {
+      throw new Error("Failed to load account holders");
+    }
+
+    holderRows = (holderData ?? []) as AccountHolderRecord[];
+
+    const userIds = [...new Set(holderRows.map((holder) => holder.user_id))];
+
+    if (userIds.length > 0) {
+      const { data: appUserData, error: appUserError } = await supabase
+        .from("app_user")
+        .select("id, display_name, email")
+        .in("id", userIds);
+
+      if (appUserError) {
+        throw new Error("Failed to load account holder users");
+      }
+
+      appUserRows = (appUserData ?? []) as AppUserRecord[];
+    }
+  }
+
+  const accounts = buildAccountsWithHolders({
+    accounts: accountRows.map((account) => ({ ...account, holders: [] })),
+    appUsers: appUserRows,
+    holders: holderRows,
+  });
 
   return (
     <Paper
