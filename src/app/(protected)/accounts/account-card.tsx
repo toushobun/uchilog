@@ -5,7 +5,12 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { ReactNode } from "react";
 
-import { formatAmount, getAccountTypeLabel, type AccountType } from "./types";
+import {
+  formatAmount,
+  getAccountTypeLabel,
+  type AccountHolderRow,
+  type AccountType,
+} from "./types";
 
 type AccountCardProps = {
   name: string;
@@ -13,9 +18,14 @@ type AccountCardProps = {
   currency: string;
   initialBalance: number | string;
   currentBalance: number | string;
+  holders?: AccountHolderRow[];
   actions?: ReactNode;
   footer?: ReactNode;
 };
+
+function getHolderLabel(holder: AccountHolderRow) {
+  return holder.display_name || holder.email || "名称未设置";
+}
 
 export function AccountCard({
   name,
@@ -23,6 +33,7 @@ export function AccountCard({
   currency,
   initialBalance,
   currentBalance,
+  holders = [],
   actions,
   footer,
 }: AccountCardProps) {
@@ -46,6 +57,30 @@ export function AccountCard({
               {name}
             </Typography>
             <Chip label={getAccountTypeLabel(type)} size="small" />
+          </Stack>
+
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: "center", flexWrap: "wrap" }}
+          >
+            <Typography color="text.secondary" variant="body2">
+              持有人：
+            </Typography>
+            {holders.length > 0 ? (
+              holders.map((holder) => (
+                <Chip
+                  key={holder.id}
+                  label={getHolderLabel(holder)}
+                  size="small"
+                  variant="outlined"
+                />
+              ))
+            ) : (
+              <Typography color="text.secondary" variant="body2">
+                未设置
+              </Typography>
+            )}
           </Stack>
 
           <Typography color="text.secondary">

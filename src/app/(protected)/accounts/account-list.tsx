@@ -24,6 +24,7 @@ export function AccountList({ accounts }: AccountListProps) {
           name={account.name}
           type={account.type}
           currency={account.currency}
+          holders={account.holders}
           initialBalance={account.initial_balance}
           currentBalance={account.current_balance}
           actions={

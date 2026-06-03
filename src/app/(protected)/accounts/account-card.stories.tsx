@@ -17,6 +17,57 @@ export const BankAccount: Story = {
     currency: "JPY",
     initialBalance: 100000,
     currentBalance: 85000,
+    holders: [
+      {
+        id: "holder-1",
+        user_id: "user-1",
+        display_name: "本地开发用户",
+        email: "local1@example.test",
+        role: "owner",
+        share_ratio: null,
+      },
+    ],
+  },
+};
+
+export const SharedCashAccount: Story = {
+  name: "共同持有现金账户",
+  args: {
+    name: "日元现金",
+    type: "cash",
+    currency: "JPY",
+    initialBalance: 10000,
+    currentBalance: 4560,
+    holders: [
+      {
+        id: "holder-1",
+        user_id: "user-1",
+        display_name: "本地开发用户",
+        email: "local1@example.test",
+        role: "co_owner",
+        share_ratio: null,
+      },
+      {
+        id: "holder-2",
+        user_id: "user-2",
+        display_name: "本地开发用户2",
+        email: "local2@example.test",
+        role: "co_owner",
+        share_ratio: null,
+      },
+    ],
+  },
+};
+
+export const AccountWithoutHolder: Story = {
+  name: "未设置持有人",
+  args: {
+    name: "未分类账户",
+    type: "other",
+    currency: "JPY",
+    initialBalance: 0,
+    currentBalance: 0,
+    holders: [],
   },
 };
 
@@ -28,6 +79,16 @@ export const CreditCard: Story = {
     currency: "JPY",
     initialBalance: 0,
     currentBalance: -12500,
+    holders: [
+      {
+        id: "holder-3",
+        user_id: "user-1",
+        display_name: "本地开发用户",
+        email: "local1@example.test",
+        role: "owner",
+        share_ratio: null,
+      },
+    ],
   },
 };
 
@@ -39,16 +100,15 @@ export const EMoney: Story = {
     currency: "JPY",
     initialBalance: 0,
     currentBalance: 3200,
-  },
-};
-
-export const Cash: Story = {
-  name: "现金",
-  args: {
-    name: "财布",
-    type: "cash",
-    currency: "JPY",
-    initialBalance: 10000,
-    currentBalance: 4560,
+    holders: [
+      {
+        id: "holder-4",
+        user_id: "user-2",
+        display_name: "本地开发用户2",
+        email: "local2@example.test",
+        role: "owner",
+        share_ratio: null,
+      },
+    ],
   },
 };
