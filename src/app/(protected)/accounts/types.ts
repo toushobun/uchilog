@@ -1,3 +1,5 @@
+import type { ThemeColorKey } from "@/theme/themeColorTokens";
+
 export const accountTypeOptions = [
   { label: "现金", value: "cash" },
   { label: "银行账户", value: "bank" },
@@ -15,6 +17,7 @@ export type AccountHolderRow = {
   user_id: string;
   display_name: string;
   email: string | null;
+  display_color: ThemeColorKey;
   role: AccountHolderRole;
   // Supabase numeric may be returned as string to avoid precision loss.
   share_ratio: number | string | null;

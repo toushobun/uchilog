@@ -5,6 +5,8 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { ReactNode } from "react";
 
+import { themeColorTokens } from "@/theme/themeColorTokens";
+
 import {
   formatAmount,
   getAccountHolderLabel,
@@ -65,14 +67,24 @@ export function AccountCard({
               持有人：
             </Typography>
             {holders.length > 0 ? (
-              holders.map((holder) => (
-                <Chip
-                  key={holder.id}
-                  label={getAccountHolderLabel(holder)}
-                  size="small"
-                  variant="outlined"
-                />
-              ))
+              holders.map((holder) => {
+                const colorToken = themeColorTokens[holder.display_color];
+
+                return (
+                  <Chip
+                    key={holder.id}
+                    label={getAccountHolderLabel(holder)}
+                    size="small"
+                    sx={{
+                      bgcolor: colorToken.chipBackground,
+                      borderColor: colorToken.chipBorder,
+                      color: colorToken.chipText,
+                      fontWeight: 600,
+                    }}
+                    variant="outlined"
+                  />
+                );
+              })
             ) : (
               <Typography color="text.secondary" variant="body2">
                 未设置

@@ -3,6 +3,12 @@ import Typography from "@mui/material/Typography";
 
 import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
 import { createClient } from "@/lib/supabase/server";
+import {
+  getFallbackThemeColorKey,
+  getStableFallbackThemeColorKey,
+  isThemeColorKey,
+  type ThemeColorKey,
+} from "@/theme/themeColorTokens";
 
 import { AccountForm } from "accounts/AccountForm";
 import { AccountList } from "accounts/AccountList";
@@ -38,6 +44,13 @@ type AppUserRecord = {
 
 type LedgerMemberRecord = {
   user_id: string;
+  joined_at: string | null;
+  created_at: string;
+};
+
+type LedgerMemberDisplaySettingRecord = {
+  user_id: string;
+  display_color: string;
 };
 
 const errorMessages: Record<string, string> = {
@@ -55,10 +68,12 @@ const errorMessages: Record<string, string> = {
 function buildAccountsWithHolders({
   accounts,
   appUserById,
+  displayColorByUserId,
   holders,
 }: {
   accounts: Omit<AccountRow, "holders">[];
   appUserById: Map<string, AppUserRecord>;
+  displayColorByUserId: Map<string, ThemeColorKey>;
   holders: AccountHolderRecord[];
 }) {
   const holdersByAccountId = new Map<string, AccountHolderRow[]>();
@@ -77,6 +92,9 @@ function buildAccountsWithHolders({
       user_id: holder.user_id,
       display_name: appUser.display_name,
       email: appUser.email,
+      display_color:
+        displayColorByUserId.get(holder.user_id) ??
+        getStableFallbackThemeColorKey(holder.user_id),
       role: holder.role,
       share_ratio: holder.share_ratio,
     });
@@ -119,6 +137,35 @@ function buildHolderOptions({
     );
 }
 
+function buildDisplayColorByUserId({
+  members,
+  settings,
+}: {
+  members: LedgerMemberRecord[];
+  settings: LedgerMemberDisplaySettingRecord[];
+}) {
+  const displayColorByUserId = new Map<string, ThemeColorKey>();
+  const sortedMembers = [...members].sort((a, b) => {
+    const timeCompare = (a.joined_at ?? a.created_at).localeCompare(
+      b.joined_at ?? b.created_at,
+    );
+
+    return timeCompare || a.user_id.localeCompare(b.user_id);
+  });
+
+  sortedMembers.forEach((member, index) => {
+    displayColorByUserId.set(member.user_id, getFallbackThemeColorKey(index));
+  });
+
+  for (const setting of settings) {
+    if (isThemeColorKey(setting.display_color)) {
+      displayColorByUserId.set(setting.user_id, setting.display_color);
+    }
+  }
+
+  return displayColorByUserId;
+}
+
 export default async function AccountsPage({
   searchParams,
 }: AccountsPageProps) {
@@ -151,9 +198,14 @@ export default async function AccountsPage({
 
   const memberRequest = supabase
     .from("ledger_member")
-    .select("user_id")
+    .select("user_id, joined_at, created_at")
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active");
+
+  const displaySettingRequest = supabase
+    .from("ledger_member_display_setting")
+    .select("user_id, display_color")
+    .eq("ledger_id", currentLedger.id);
 
   const holderRequest =
     accountIds.length > 0
@@ -166,8 +218,9 @@ export default async function AccountsPage({
 
   const [
     { data: memberData, error: memberError },
+    { data: displaySettingData, error: displaySettingError },
     { data: holderData, error: holderError },
-  ] = await Promise.all([memberRequest, holderRequest]);
+  ] = await Promise.all([memberRequest, displaySettingRequest, holderRequest]);
 
   if (memberError) {
     throw new Error("Failed to load ledger members");
@@ -175,6 +228,13 @@ export default async function AccountsPage({
 
   const memberRows = (memberData ?? []) as LedgerMemberRecord[];
   const memberUserIds = memberRows.map((member) => member.user_id);
+
+  if (displaySettingError) {
+    throw new Error("Failed to load ledger member display settings");
+  }
+
+  const displaySettingRows = (displaySettingData ??
+    []) as LedgerMemberDisplaySettingRecord[];
 
   if (holderError) {
     throw new Error("Failed to load account holders");
@@ -207,6 +267,10 @@ export default async function AccountsPage({
   const accounts = buildAccountsWithHolders({
     accounts: accountRows,
     appUserById,
+    displayColorByUserId: buildDisplayColorByUserId({
+      members: memberRows,
+      settings: displaySettingRows,
+    }),
     holders: holderRows,
   });
   const holderOptions = buildHolderOptions({

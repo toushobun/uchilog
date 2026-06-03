@@ -42,7 +42,7 @@ begin
               and lm.user_id = any(v_holder_user_ids)
               and lm.status = 'active'
               and au.status = 'active'
-            for update of lm, au
+            for update of lm
         )
         select coalesce(array_agg(user_id), '{}'::uuid[])
         into v_active_holder_user_ids
@@ -144,7 +144,7 @@ begin
               and lm.user_id = any(v_holder_user_ids)
               and lm.status = 'active'
               and au.status = 'active'
-            for update of lm, au
+            for update of lm
         )
         select coalesce(array_agg(user_id), '{}'::uuid[])
         into v_active_holder_user_ids
