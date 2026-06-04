@@ -50,5 +50,6 @@ export async function createTransaction(formData: FormData) {
   }
 
   revalidatePath("/transactions");
+  revalidatePath("/transactions/new");
   redirect("/transactions");
 }
