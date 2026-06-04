@@ -22,7 +22,6 @@
       "@/*": ["./src/*"],
       "accounts/*": ["./src/components/accounts/*"],
       "accounts-route/*": ["./src/app/(protected)/accounts/*"],
-      "account-page/*": ["./src/app/(protected)/accounts/*"],
       "theme/*": ["./src/theme/*"],
       "ui/*": ["./src/components/ui/*"]
     }
