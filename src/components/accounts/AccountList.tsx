@@ -1,6 +1,6 @@
 import Stack from "@mui/material/Stack";
 
-import { EmptyState } from "@/components/ui/EmptyState";
+import { EmptyState } from "ui/EmptyState";
 import {
   type AccountHolderOption,
   type AccountRow,

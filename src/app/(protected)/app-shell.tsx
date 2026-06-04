@@ -12,7 +12,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { UserThemeProvider } from "@/theme/UserThemeProvider";
+import { UserThemeProvider } from "theme/UserThemeProvider";
 
 import { logout } from "./actions";
 

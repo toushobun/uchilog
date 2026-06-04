@@ -7,8 +7,8 @@ import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { EmptyState } from "@/components/ui/EmptyState";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { EmptyState } from "ui/EmptyState";
+import { GlassCard } from "ui/GlassCard";
 import { archiveMerchant, archiveMerchantAlias } from "./actions";
 import { MerchantAliasForm } from "./merchant-alias-form";
 import { MerchantEditForm } from "./merchant-edit-form";

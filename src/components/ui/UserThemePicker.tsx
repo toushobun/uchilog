@@ -2,19 +2,40 @@
 
 import Box from "@mui/material/Box";
 import ButtonBase from "@mui/material/ButtonBase";
+import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
-import { useUserTheme } from "@/theme/UserThemeProvider";
+import { useUserTheme } from "theme/UserThemeProvider";
 
 export function UserThemePicker() {
   const { isThemeReady, themeKey, setThemeKey, themeKeys, tokens } =
     useUserTheme();
 
+  if (!isThemeReady) {
+    return (
+      <Stack
+        aria-hidden="true"
+        direction="row"
+        spacing={0.75}
+        sx={{ overflow: "hidden", pb: 0.25 }}
+      >
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Skeleton
+            key={`theme-placeholder-${index}`}
+            height={30}
+            sx={{ borderRadius: 999, flexShrink: 0 }}
+            variant="rounded"
+            width={96}
+          />
+        ))}
+      </Stack>
+    );
+  }
+
   return (
     <Stack
-      aria-hidden={isThemeReady ? undefined : true}
       aria-label="个人主题"
       direction="row"
       role="listbox"
@@ -24,7 +45,6 @@ export function UserThemePicker() {
         overflowX: "auto",
         pb: 0.25,
         scrollbarWidth: "none",
-        visibility: isThemeReady ? "visible" : "hidden",
         "&::-webkit-scrollbar": {
           display: "none",
         },

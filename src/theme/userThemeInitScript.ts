@@ -1,13 +1,14 @@
-import { getUserThemeCssVariables } from "./userThemeCssVariables";
+import { getUserThemeCssVariables } from "theme/userThemeCssVariables";
 import {
   defaultUserThemeKey,
   type UserThemeKey,
   userThemeKeys,
-} from "./userThemeTokens";
+} from "theme/userThemeTokens";
 import {
   getUserThemeStorageKey,
+  lastUserThemeStorageKey,
   legacyUserThemeStorageKey,
-} from "./userThemeStorage";
+} from "theme/userThemeStorage";
 
 const userThemeCssVariablesByKey = Object.fromEntries(
   userThemeKeys.map((themeKey) => [
@@ -16,24 +17,32 @@ const userThemeCssVariablesByKey = Object.fromEntries(
   ]),
 ) as Record<UserThemeKey, ReturnType<typeof getUserThemeCssVariables>>;
 
-export function createUserThemeInitScript(storageScope: string) {
-  const storageKey = getUserThemeStorageKey(storageScope);
-
+function createApplyThemeScriptBody({
+  scopedStorageKey,
+}: {
+  scopedStorageKey?: string;
+}) {
   return `
     (() => {
-      const storageKey = ${JSON.stringify(storageKey)};
+      const scopedStorageKey = ${JSON.stringify(scopedStorageKey ?? null)};
+      const lastStorageKey = ${JSON.stringify(lastUserThemeStorageKey)};
       const legacyStorageKey = ${JSON.stringify(legacyUserThemeStorageKey)};
       const defaultThemeKey = ${JSON.stringify(defaultUserThemeKey)};
       const cssVariablesByThemeKey = ${JSON.stringify(userThemeCssVariablesByKey)};
 
       try {
-        const savedThemeKey = window.localStorage.getItem(storageKey);
+        const scopedThemeKey = scopedStorageKey
+          ? window.localStorage.getItem(scopedStorageKey)
+          : null;
+        const lastThemeKey = window.localStorage.getItem(lastStorageKey);
         const legacyThemeKey = window.localStorage.getItem(legacyStorageKey);
-        const themeKey = cssVariablesByThemeKey[savedThemeKey]
-          ? savedThemeKey
-          : cssVariablesByThemeKey[legacyThemeKey]
-            ? legacyThemeKey
-            : defaultThemeKey;
+        const themeKey = cssVariablesByThemeKey[scopedThemeKey]
+          ? scopedThemeKey
+          : cssVariablesByThemeKey[lastThemeKey]
+            ? lastThemeKey
+            : cssVariablesByThemeKey[legacyThemeKey]
+              ? legacyThemeKey
+              : defaultThemeKey;
         const cssVariables = cssVariablesByThemeKey[themeKey];
         const root = document.documentElement;
 
@@ -47,4 +56,14 @@ export function createUserThemeInitScript(storageScope: string) {
       }
     })();
   `;
+}
+
+export function createLastUserThemeInitScript() {
+  return createApplyThemeScriptBody({});
+}
+
+export function createUserThemeInitScript(storageScope: string) {
+  return createApplyThemeScriptBody({
+    scopedStorageKey: getUserThemeStorageKey(storageScope),
+  });
 }

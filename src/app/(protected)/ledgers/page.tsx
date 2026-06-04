@@ -5,7 +5,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import { redirect } from "next/navigation";
 
-import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassCard } from "ui/GlassCard";
 import { getCurrentLedgerContext } from "@/lib/ledger/current-ledger";
 
 export default async function LedgersPage() {

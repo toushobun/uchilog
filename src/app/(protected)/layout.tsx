@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { getCurrentLedgerContext } from "@/lib/ledger/current-ledger";
-import { createUserThemeInitScript } from "@/theme/userThemeInitScript";
+import { createUserThemeInitScript } from "theme/userThemeInitScript";
 
 import { AppShell } from "./app-shell";
 

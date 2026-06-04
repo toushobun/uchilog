@@ -1,6 +1,6 @@
 import Typography from "@mui/material/Typography";
 
-import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassCard } from "ui/GlassCard";
 import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -8,7 +8,7 @@ import {
   getStableFallbackThemeColorKey,
   isThemeColorKey,
   type ThemeColorKey,
-} from "@/theme/themeColorTokens";
+} from "theme/themeColorTokens";
 
 import { AccountForm } from "accounts/AccountForm";
 import { AccountList } from "accounts/AccountList";

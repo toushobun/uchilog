@@ -4,8 +4,8 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { ReactNode } from "react";
 
-import { GlassCard } from "@/components/ui/GlassCard";
-import { themeColorTokens } from "@/theme/themeColorTokens";
+import { GlassCard } from "ui/GlassCard";
+import { themeColorTokens } from "theme/themeColorTokens";
 
 import {
   formatAmount,

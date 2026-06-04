@@ -3,7 +3,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassCard } from "ui/GlassCard";
 
 import { createMerchant } from "./actions";
 

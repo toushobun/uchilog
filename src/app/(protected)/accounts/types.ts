@@ -1,4 +1,4 @@
-import type { ThemeColorKey } from "@/theme/themeColorTokens";
+import type { ThemeColorKey } from "theme/themeColorTokens";
 
 export const accountTypeOptions = [
   { label: "现金", value: "cash" },

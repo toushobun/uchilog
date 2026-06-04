@@ -1,8 +1,8 @@
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { GlassCard } from "@/components/ui/GlassCard";
-import { UserThemePicker } from "@/components/ui/UserThemePicker";
+import { GlassCard } from "ui/GlassCard";
+import { UserThemePicker } from "ui/UserThemePicker";
 import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
 
 export default async function SettingsPage() {

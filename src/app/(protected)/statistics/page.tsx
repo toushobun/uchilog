@@ -1,6 +1,6 @@
 import Typography from "@mui/material/Typography";
 
-import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassCard } from "ui/GlassCard";
 import { getCurrentLedgerOrRedirect } from "@/lib/ledger/current-ledger";
 
 export default async function StatisticsPage() {

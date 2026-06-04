@@ -10,19 +10,20 @@ import {
   type ReactNode,
 } from "react";
 
-import { getUserThemeCssVariables } from "./userThemeCssVariables";
+import { getUserThemeCssVariables } from "theme/userThemeCssVariables";
 import {
   defaultUserThemeKey,
   isUserThemeKey,
   type UserThemeKey,
   userThemeKeys,
   userThemeTokens,
-} from "./userThemeTokens";
+} from "theme/userThemeTokens";
 import {
   getUserThemeStorageKey,
+  lastUserThemeStorageKey,
   legacyUserThemeStorageKey,
   userThemeChangeEventName,
-} from "./userThemeStorage";
+} from "theme/userThemeStorage";
 
 type UserThemeContextValue = {
   isThemeReady: boolean;
@@ -74,6 +75,8 @@ export function UserThemeProvider({
   const setThemeKey = useCallback(
     (nextThemeKey: UserThemeKey) => {
       window.localStorage.setItem(storageKey, nextThemeKey);
+      window.localStorage.setItem(lastUserThemeStorageKey, nextThemeKey);
+      applyUserTheme(nextThemeKey);
       window.dispatchEvent(new Event(userThemeChangeEventName));
     },
     [storageKey],
@@ -133,6 +136,12 @@ function getStoredUserThemeKey(storageKey: string): UserThemeKey {
 
   if (savedThemeKey && isUserThemeKey(savedThemeKey)) {
     return savedThemeKey;
+  }
+
+  const lastThemeKey = window.localStorage.getItem(lastUserThemeStorageKey);
+
+  if (lastThemeKey && isUserThemeKey(lastThemeKey)) {
+    return lastThemeKey;
   }
 
   const legacyThemeKey = window.localStorage.getItem(legacyUserThemeStorageKey);
