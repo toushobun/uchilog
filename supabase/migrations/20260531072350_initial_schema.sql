@@ -489,7 +489,7 @@ create table public.transaction_record (
     type text not null,
     status text not null default 'active',
 
-    transaction_date date not null,
+    transaction_at timestamptz not null,
     merchant_id uuid,
 
     title text,
@@ -548,13 +548,13 @@ before update on public.transaction_record
 for each row
 execute function public.set_updated_at();
 
--- 按账本和日期查询记账列表时使用
-create index transaction_record_ledger_date_idx
-on public.transaction_record (ledger_id, transaction_date desc, id desc);
+-- 按账本和发生时间查询记账列表时使用
+create index transaction_record_ledger_transaction_at_idx
+on public.transaction_record (ledger_id, transaction_at desc, id desc);
 
 -- 查询未删除记账时使用
 create index transaction_record_active_idx
-on public.transaction_record (ledger_id, transaction_date desc, id desc)
+on public.transaction_record (ledger_id, transaction_at desc, id desc)
 where status = 'active';
 
 -- 按商家查询记账时使用

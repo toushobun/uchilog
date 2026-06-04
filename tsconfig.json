@@ -24,7 +24,9 @@
       "accounts-route/*": ["./src/app/(protected)/accounts/*"],
       "theme/*": ["./src/theme/*"],
       "ui/*": ["./src/components/ui/*"],
-      "lib/*": ["./src/lib/*"]
+      "lib/*": ["./src/lib/*"],
+      "transactions/*": ["./src/components/transactions/*"],
+      "transactions-route/*": ["./src/app/(protected)/transactions/*"]
     }
   },
   "include": [
