@@ -19,6 +19,7 @@ import type {
 type TransactionListProps = {
   initialPage: TransactionListPage;
   loadMoreAction: (offset: number) => Promise<TransactionListPage>;
+  voidAction: (formData: FormData) => void;
 };
 
 function formatAmount(amount: string, currency: string) {
@@ -40,7 +41,13 @@ function getMerchantInitial(name: string) {
   return name.trim().charAt(0).toUpperCase() || "商";
 }
 
-function TransactionListRow({ item }: { item: TransactionListItem }) {
+function TransactionListRow({
+  item,
+  voidAction,
+}: {
+  item: TransactionListItem;
+  voidAction: (formData: FormData) => void;
+}) {
   return (
     <Stack spacing={1.2} sx={{ py: 2 }}>
       <Stack
@@ -86,12 +93,29 @@ function TransactionListRow({ item }: { item: TransactionListItem }) {
           </Typography>
         </Stack>
 
-        <Typography component="p" sx={{ fontWeight: 700 }} variant="h6">
-          {`${item.type === "expense" ? "-" : "+"}${formatAmount(
-            item.amount,
-            item.account_currency,
-          )}`}
-        </Typography>
+        <Stack spacing={1} sx={{ alignItems: { xs: "flex-start", sm: "flex-end" } }}>
+          <Typography component="p" sx={{ fontWeight: 700 }} variant="h6">
+            {`${item.type === "expense" ? "-" : "+"}${formatAmount(
+              item.amount,
+              item.account_currency,
+            )}`}
+          </Typography>
+
+          <Stack
+            action={voidAction}
+            component="form"
+            onSubmit={(event) => {
+              if (!window.confirm("この記録を取り消しますか？")) {
+                event.preventDefault();
+              }
+            }}
+          >
+            <input name="transactionRecordId" type="hidden" value={item.id} />
+            <Button color="error" size="small" type="submit" variant="text">
+              撤销
+            </Button>
+          </Stack>
+        </Stack>
       </Stack>
 
       {item.note ? (
@@ -106,6 +130,7 @@ function TransactionListRow({ item }: { item: TransactionListItem }) {
 export function TransactionList({
   initialPage,
   loadMoreAction,
+  voidAction,
 }: TransactionListProps) {
   const [prevInitialPage, setPrevInitialPage] = useState(initialPage);
   const [items, setItems] = useState(initialPage.items);
@@ -171,7 +196,7 @@ export function TransactionList({
     <Stack sx={{ mt: 4 }}>
       <Stack divider={<Divider flexItem />} spacing={0}>
         {items.map((item) => (
-          <TransactionListRow item={item} key={item.id} />
+          <TransactionListRow item={item} key={item.id} voidAction={voidAction} />
         ))}
       </Stack>
 
