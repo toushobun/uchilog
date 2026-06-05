@@ -109,7 +109,9 @@ export default async function TransactionsPage({
           >
             &lt;
           </Button>
-          <Typography sx={{ fontWeight: 800 }}>{monthView.monthLabel}</Typography>
+          <Typography sx={{ fontWeight: 800 }}>
+            {monthView.monthLabel}
+          </Typography>
           <Button
             href={`/transactions?month=${monthView.nextMonth}`}
             size="small"
@@ -126,7 +128,10 @@ export default async function TransactionsPage({
         ) : null}
       </Stack>
 
-      <TransactionMonthList monthView={monthView} voidAction={voidTransaction} />
+      <TransactionMonthList
+        monthView={monthView}
+        voidAction={voidTransaction}
+      />
     </GlassCard>
   );
 }
