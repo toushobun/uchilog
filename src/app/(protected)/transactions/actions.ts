@@ -8,6 +8,9 @@ import { createClient } from "lib/supabase/server";
 
 import { validateTransactionForm } from "./validation";
 
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 async function getCurrentUserAndLedger() {
   const context = await getCurrentLedgerContext();
 
@@ -50,5 +53,31 @@ export async function createTransaction(formData: FormData) {
   revalidatePath("/accounts");
   revalidatePath("/transactions");
   revalidatePath("/transactions/new");
+  redirect("/transactions");
+}
+
+export async function voidTransaction(formData: FormData) {
+  const transactionRecordId = String(
+    formData.get("transactionRecordId") ?? "",
+  ).trim();
+
+  if (!uuidPattern.test(transactionRecordId)) {
+    redirect("/transactions?error=void_invalid");
+  }
+
+  const { currentLedger } = await getCurrentUserAndLedger();
+  const supabase = await createClient();
+
+  const { error } = await supabase.rpc("void_transaction", {
+    p_ledger_id: currentLedger.id,
+    p_transaction_record_id: transactionRecordId,
+  });
+
+  if (error) {
+    redirect("/transactions?error=void_failed");
+  }
+
+  revalidatePath("/accounts");
+  revalidatePath("/transactions");
   redirect("/transactions");
 }
