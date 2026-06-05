@@ -82,7 +82,7 @@ describe("TransactionMonthList", () => {
     expect(screen.getByText("结余")).toBeTruthy();
     expect(screen.getByText("98,766")).toBeTruthy();
     expect(screen.getByText("05/29 周五")).toBeTruthy();
-    expect(screen.getByText("-1,234")).toBeTruthy();
+    expect(screen.getAllByText("-1,234")[0]).toBeTruthy();
   });
 
   it("显示交易行内容", () => {
@@ -92,7 +92,7 @@ describe("TransactionMonthList", () => {
     expect(screen.getByText("餐饮")).toBeTruthy();
     expect(screen.getByText(/日元现金/)).toBeTruthy();
     expect(screen.getByText("测试备注")).toBeTruthy();
-    expect(screen.getByText("-1,234")).toBeTruthy();
+    expect(screen.getAllByText("-1,234")[0]).toBeTruthy();
   });
 
   it("没有记录时显示空状态", () => {

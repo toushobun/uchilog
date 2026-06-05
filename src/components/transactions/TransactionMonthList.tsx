@@ -145,11 +145,7 @@ function TransactionRow({
   });
 
   return (
-    <Stack
-      direction="row"
-      spacing={1.5}
-      sx={{ alignItems: "center", py: 1.4 }}
-    >
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", py: 1.4 }}>
       <Avatar
         alt={merchantName}
         src={item.merchant_icon_url ?? undefined}
@@ -166,7 +162,10 @@ function TransactionRow({
       </Avatar>
 
       <Stack spacing={0.15} sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap sx={{ fontSize: 15, fontWeight: 800, lineHeight: 1.3 }}>
+        <Typography
+          noWrap
+          sx={{ fontSize: 15, fontWeight: 800, lineHeight: 1.3 }}
+        >
           {merchantName}
         </Typography>
         <Typography color="text.secondary" noWrap variant="caption">
