@@ -3,9 +3,17 @@
 import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
 import { createClient } from "lib/supabase/server";
 
-import type { TransactionListItem, TransactionListPage } from "./types";
+import type {
+  TransactionAmountSummary,
+  TransactionDateGroup,
+  TransactionListItem,
+  TransactionListPage,
+  TransactionMonthView,
+  TransactionType,
+} from "./types";
 
 const transactionListPageSize = 20;
+const weekDayLabels = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
 type TransactionRecordRow = {
   id: string;
@@ -41,38 +49,91 @@ type MerchantRow = {
   icon_url: string | null;
 };
 
-export async function loadTransactionListPage(
-  offset = 0,
-): Promise<TransactionListPage> {
-  const currentLedger = await getCurrentLedgerOrRedirect();
-  const supabase = await createClient();
-  const safeOffset = Math.max(0, offset);
-
-  const { data: recordData, error: recordError } = await supabase
-    .from("transaction_record")
-    .select("id, type, transaction_at, merchant_id, note, created_at")
-    .eq("ledger_id", currentLedger.id)
-    .eq("status", "active")
-    .in("type", ["expense", "income"])
-    .order("transaction_at", { ascending: false })
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .range(safeOffset, safeOffset + transactionListPageSize);
-
-  if (recordError) {
-    throw new Error("Failed to load transaction records");
+function normalizeMonth(month?: string | null) {
+  if (month && /^\d{4}-\d{2}$/.test(month)) {
+    return month;
   }
 
-  const fetchedRecords = (recordData ?? []) as TransactionRecordRow[];
-  const records = fetchedRecords.slice(0, transactionListPageSize);
-  const hasNextPage = fetchedRecords.length > transactionListPageSize;
+  const current = new Date();
+  const year = current.getFullYear();
+  const monthValue = String(current.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${monthValue}`;
+}
+
+function getMonthBounds(month: string) {
+  const [yearText, monthText] = month.split("-");
+  const year = Number(yearText);
+  const monthIndex = Number(monthText) - 1;
+  const start = new Date(Date.UTC(year, monthIndex, 1, 0, 0, 0));
+  const end = new Date(Date.UTC(year, monthIndex + 1, 1, 0, 0, 0));
+
+  return {
+    endIso: end.toISOString(),
+    startIso: start.toISOString(),
+  };
+}
+
+function shiftMonth(month: string, delta: number) {
+  const [yearText, monthText] = month.split("-");
+  const date = new Date(Date.UTC(Number(yearText), Number(monthText) - 1 + delta, 1));
+  const year = date.getUTCFullYear();
+  const monthValue = String(date.getUTCMonth() + 1).padStart(2, "0");
+
+  return `${year}-${monthValue}`;
+}
+
+function formatMonthLabel(month: string) {
+  const [yearText, monthText] = month.split("-");
+
+  return `${yearText}年${Number(monthText)}月`;
+}
+
+function formatDateKey(value: string) {
+  return value.slice(0, 10);
+}
+
+function formatDateLabel(dateKey: string) {
+  const date = new Date(`${dateKey}T00:00:00Z`);
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+
+  return `${month}/${day} ${weekDayLabels[date.getUTCDay()]}`;
+}
+
+function createSummary(currency: string): TransactionAmountSummary {
+  return {
+    balance: "0",
+    currency,
+    expense: "0",
+    income: "0",
+  };
+}
+
+function addAmount(summary: TransactionAmountSummary, type: TransactionType, amount: string) {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value)) {
+    return;
+  }
+
+  if (type === "income") {
+    summary.income = String(Number(summary.income) + value);
+    summary.balance = String(Number(summary.balance) + value);
+    return;
+  }
+
+  summary.expense = String(Number(summary.expense) + value);
+  summary.balance = String(Number(summary.balance) - value);
+}
+
+async function loadTransactionItems(records: TransactionRecordRow[]) {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+  const supabase = await createClient();
   const recordIds = records.map((record) => record.id);
 
   if (recordIds.length === 0) {
-    return {
-      items: [],
-      nextOffset: null,
-    };
+    return [] as TransactionListItem[];
   }
 
   const { data: itemData, error: itemError } = await supabase
@@ -151,12 +212,11 @@ export async function loadTransactionListPage(
   const merchantById = new Map(
     merchants.map((merchant) => [merchant.id, merchant] as const),
   );
-  // 当前只支持单明细。多明细场景需要改为 Map<string, TransactionItemRow[]> 并调整展示逻辑。
   const itemByRecordId = new Map(
     items.map((item) => [item.transaction_record_id, item] as const),
   );
 
-  const transactionItems: TransactionListItem[] = records.map((record) => {
+  return records.map((record) => {
     const item = itemByRecordId.get(record.id);
     const account = item ? accountById.get(item.account_id) : undefined;
     const category = item?.category_id
@@ -180,9 +240,92 @@ export async function loadTransactionListPage(
       type: record.type,
     };
   });
+}
+
+export async function loadTransactionMonthView(
+  month?: string | null,
+): Promise<TransactionMonthView> {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+  const supabase = await createClient();
+  const normalizedMonth = normalizeMonth(month);
+  const { startIso, endIso } = getMonthBounds(normalizedMonth);
+
+  const { data: recordData, error: recordError } = await supabase
+    .from("transaction_record")
+    .select("id, type, transaction_at, merchant_id, note, created_at")
+    .eq("ledger_id", currentLedger.id)
+    .eq("status", "active")
+    .in("type", ["expense", "income"])
+    .gte("transaction_at", startIso)
+    .lt("transaction_at", endIso)
+    .order("transaction_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+
+  if (recordError) {
+    throw new Error("Failed to load transaction records");
+  }
+
+  const records = (recordData ?? []) as TransactionRecordRow[];
+  const items = await loadTransactionItems(records);
+  const currency = currentLedger.base_currency;
+  const monthSummary = createSummary(currency);
+  const groupByDate = new Map<string, TransactionDateGroup>();
+
+  for (const item of items) {
+    addAmount(monthSummary, item.type, item.amount);
+
+    const dateKey = formatDateKey(item.transaction_at);
+    const group = groupByDate.get(dateKey) ?? {
+      date: dateKey,
+      items: [],
+      label: formatDateLabel(dateKey),
+      summary: createSummary(currency),
+    };
+
+    group.items.push(item);
+    addAmount(group.summary, item.type, item.amount);
+    groupByDate.set(dateKey, group);
+  }
 
   return {
-    items: transactionItems,
+    groups: [...groupByDate.values()],
+    month: normalizedMonth,
+    monthLabel: formatMonthLabel(normalizedMonth),
+    nextMonth: shiftMonth(normalizedMonth, 1),
+    previousMonth: shiftMonth(normalizedMonth, -1),
+    summary: monthSummary,
+  };
+}
+
+export async function loadTransactionListPage(
+  offset = 0,
+): Promise<TransactionListPage> {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+  const supabase = await createClient();
+  const safeOffset = Math.max(0, offset);
+
+  const { data: recordData, error: recordError } = await supabase
+    .from("transaction_record")
+    .select("id, type, transaction_at, merchant_id, note, created_at")
+    .eq("ledger_id", currentLedger.id)
+    .eq("status", "active")
+    .in("type", ["expense", "income"])
+    .order("transaction_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(safeOffset, safeOffset + transactionListPageSize);
+
+  if (recordError) {
+    throw new Error("Failed to load transaction records");
+  }
+
+  const fetchedRecords = (recordData ?? []) as TransactionRecordRow[];
+  const records = fetchedRecords.slice(0, transactionListPageSize);
+  const hasNextPage = fetchedRecords.length > transactionListPageSize;
+
+  return {
+    items: await loadTransactionItems(records),
     nextOffset: hasNextPage ? safeOffset + transactionListPageSize : null,
   };
 }
