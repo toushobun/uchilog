@@ -25,9 +25,7 @@ export async function createTransaction(formData: FormData) {
   const validation = validateTransactionForm(formData);
 
   if (!validation.ok) {
-    redirect(
-      `/transactions/new?error=${encodeURIComponent(validation.error)}`,
-    );
+    redirect(`/transactions/new?error=${encodeURIComponent(validation.error)}`);
   }
 
   const { currentLedger } = await getCurrentUserAndLedger();
