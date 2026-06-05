@@ -132,7 +132,7 @@ describe("TransactionList", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "撤销" }));
 
-    expect(window.confirm).toHaveBeenCalledWith("この記録を取り消しますか？");
+    expect(window.confirm).toHaveBeenCalledWith("确定要撤销这条记录吗？");
     expect(voidAction).toHaveBeenCalledTimes(1);
     expect(voidAction.mock.calls[0]?.[0].get("transactionRecordId")).toBe(
       "00000000-0000-4000-8000-000000009001",
@@ -153,7 +153,7 @@ describe("TransactionList", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "撤销" }));
 
-    expect(window.confirm).toHaveBeenCalledWith("この記録を取り消しますか？");
+    expect(window.confirm).toHaveBeenCalledWith("确定要撤销这条记录吗？");
     expect(voidAction).not.toHaveBeenCalled();
   });
 
