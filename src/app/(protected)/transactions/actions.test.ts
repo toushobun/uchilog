@@ -103,6 +103,7 @@ describe("createTransaction", () => {
       p_type: "expense",
     });
 
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/accounts");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions/new");
   });
