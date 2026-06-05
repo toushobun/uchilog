@@ -87,17 +87,12 @@ begin
         v_user_id, v_user_id
     );
 
-    update public.account a
-    set current_balance = a.current_balance + v_balance_delta,
-        updated_by = v_user_id,
-        updated_at = now()
-    where a.id = p_account_id
-      and a.ledger_id = p_ledger_id
-      and a.is_archived = false;
-
-    if not found then
-        raise exception 'account_invalid' using errcode = '22023';
-    end if;
+    perform public.apply_account_balance_delta(
+        p_ledger_id,
+        p_account_id,
+        v_balance_delta,
+        v_user_id
+    );
 
     return v_transaction_record_id;
 end;
