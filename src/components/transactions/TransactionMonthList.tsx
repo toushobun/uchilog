@@ -1,9 +1,8 @@
 "use client";
 
 import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -18,6 +17,12 @@ type TransactionMonthListProps = {
   monthView: TransactionMonthView;
   voidAction?: (formData: FormData) => void;
 };
+
+const incomeColor = "#d64b4b";
+const expenseColor = "#3f7f46";
+const primaryPurple = "#6d4bb3";
+const palePurple = "#f4efff";
+const borderPurple = "#e5dcf6";
 
 function formatAmount(amount: string, currency: string) {
   const value = Number(amount);
@@ -46,13 +51,39 @@ function getMerchantInitial(name: string | null) {
   return name?.trim().charAt(0).toUpperCase() || "记";
 }
 
-function SummaryItem({ label, value }: { label: string; value: string }) {
+function getAmountColor(type: "expense" | "income") {
+  return type === "income" ? incomeColor : expenseColor;
+}
+
+function SummaryItem({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+}) {
   return (
-    <Stack spacing={0.5} sx={{ minWidth: 0 }}>
-      <Typography color="text.secondary" variant="body2">
+    <Stack
+      spacing={0.4}
+      sx={{
+        alignItems: "center",
+        flex: 1,
+        minWidth: 0,
+      }}
+    >
+      <Typography color="text.secondary" variant="caption">
         {label}
       </Typography>
-      <Typography sx={{ fontWeight: 700 }} variant="body1">
+      <Typography
+        sx={{
+          color: color ?? "text.primary",
+          fontSize: 16,
+          fontWeight: 800,
+          lineHeight: 1.2,
+        }}
+      >
         {value}
       </Typography>
     </Stack>
@@ -61,24 +92,37 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
 
 function MonthSummary({ summary }: { summary: TransactionAmountSummary }) {
   return (
-    <Card variant="outlined" sx={{ mt: 3 }}>
-      <CardContent>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5}>
-          <SummaryItem
-            label="收入"
-            value={formatAmount(summary.income, summary.currency)}
-          />
-          <SummaryItem
-            label="支出"
-            value={formatAmount(summary.expense, summary.currency)}
-          />
-          <SummaryItem
-            label="结余"
-            value={formatAmount(summary.balance, summary.currency)}
-          />
-        </Stack>
-      </CardContent>
-    </Card>
+    <Box
+      sx={{
+        bgcolor: "background.paper",
+        border: `1px solid ${borderPurple}`,
+        borderRadius: 3,
+        boxShadow: "0 10px 24px rgba(77, 55, 120, 0.06)",
+        mt: 1.5,
+        overflow: "hidden",
+      }}
+    >
+      <Stack
+        direction="row"
+        divider={<Divider flexItem orientation="vertical" />}
+        sx={{ px: 2, py: 1.5 }}
+      >
+        <SummaryItem
+          color={incomeColor}
+          label="收入"
+          value={formatAmount(summary.income, summary.currency)}
+        />
+        <SummaryItem
+          color={expenseColor}
+          label="支出"
+          value={formatAmount(summary.expense, summary.currency)}
+        />
+        <SummaryItem
+          label="结余"
+          value={formatAmount(summary.balance, summary.currency)}
+        />
+      </Stack>
+    </Box>
   );
 }
 
@@ -90,22 +134,42 @@ function TransactionRow({
   voidAction?: (formData: FormData) => void;
 }) {
   const merchantName = item.merchant_name ?? "未指定商家";
+  const amountColor = getAmountColor(item.type);
 
   return (
-    <Stack direction="row" spacing={1.5} sx={{ py: 1.5 }}>
+    <Stack
+      direction="row"
+      spacing={1.5}
+      sx={{
+        alignItems: "center",
+        bgcolor: "background.paper",
+        px: 0,
+        py: 1.4,
+      }}
+    >
       <Avatar
         alt={merchantName}
         src={item.merchant_icon_url ?? undefined}
-        sx={{ height: 40, width: 40 }}
+        sx={{
+          bgcolor: palePurple,
+          color: primaryPurple,
+          fontSize: 18,
+          fontWeight: 800,
+          height: 42,
+          width: 42,
+        }}
       >
         {getMerchantInitial(item.merchant_name)}
       </Avatar>
 
-      <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontWeight: 700 }} variant="body1">
+      <Stack spacing={0.25} sx={{ flex: 1, minWidth: 0 }}>
+        <Typography
+          noWrap
+          sx={{ fontSize: 15, fontWeight: 800, lineHeight: 1.25 }}
+        >
           {merchantName}
         </Typography>
-        <Typography color="text.secondary" variant="body2">
+        <Typography color="text.secondary" noWrap variant="caption">
           {item.category_name ?? "未分类"} · {item.account_name} ·{" "}
           {new Date(item.transaction_at).toLocaleTimeString(undefined, {
             hour: "2-digit",
@@ -113,14 +177,22 @@ function TransactionRow({
           })}
         </Typography>
         {item.note ? (
-          <Typography color="text.secondary" variant="body2">
+          <Typography color="text.secondary" noWrap variant="caption">
             {item.note}
           </Typography>
         ) : null}
       </Stack>
 
-      <Stack spacing={0.5} sx={{ alignItems: "flex-end" }}>
-        <Typography sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
+      <Stack spacing={0.2} sx={{ alignItems: "flex-end", minWidth: 86 }}>
+        <Typography
+          sx={{
+            color: amountColor,
+            fontSize: 15,
+            fontWeight: 900,
+            lineHeight: 1.2,
+            whiteSpace: "nowrap",
+          }}
+        >
           {formatSignedAmount(item.type, item.amount, item.account_currency)}
         </Typography>
         {voidAction ? (
@@ -133,7 +205,13 @@ function TransactionRow({
             }}
           >
             <input name="transactionRecordId" type="hidden" value={item.id} />
-            <Button color="error" size="small" type="submit" variant="text">
+            <Button
+              color="error"
+              size="small"
+              sx={{ minWidth: 0, px: 0.5, py: 0, typography: "caption" }}
+              type="submit"
+              variant="text"
+            >
               撤销
             </Button>
           </form>
@@ -149,46 +227,78 @@ export function TransactionMonthList({
 }: TransactionMonthListProps) {
   if (monthView.groups.length === 0) {
     return (
-      <Stack spacing={3} sx={{ mt: 3 }}>
+      <Stack spacing={2.5} sx={{ mt: 1.5 }}>
         <MonthSummary summary={monthView.summary} />
-        <Typography color="text.secondary">这个月还没有记账记录。</Typography>
+        <Box
+          sx={{
+            bgcolor: "background.paper",
+            borderRadius: 3,
+            px: 2,
+            py: 4,
+            textAlign: "center",
+          }}
+        >
+          <Typography color="text.secondary">这个月还没有记账记录。</Typography>
+        </Box>
       </Stack>
     );
   }
 
   return (
-    <Stack spacing={3} sx={{ mt: 3 }}>
+    <Stack spacing={2} sx={{ mt: 1.5 }}>
       <MonthSummary summary={monthView.summary} />
 
-      <Stack spacing={2.5}>
-        {monthView.groups.map((group) => (
-          <Card key={group.date} variant="outlined">
-            <CardContent>
-              <Stack
-                direction="row"
-                spacing={2}
-                sx={{ alignItems: "center", justifyContent: "space-between" }}
+      <Stack
+        sx={{
+          bgcolor: "background.paper",
+          borderRadius: 3,
+          boxShadow: "0 10px 24px rgba(77, 55, 120, 0.05)",
+          overflow: "hidden",
+        }}
+      >
+        {monthView.groups.map((group, groupIndex) => (
+          <Box key={group.date}>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{
+                alignItems: "center",
+                bgcolor: palePurple,
+                justifyContent: "space-between",
+                px: 1.6,
+                py: 0.7,
+              }}
+            >
+              <Typography
+                color="text.secondary"
+                sx={{ fontSize: 13, fontWeight: 800 }}
               >
-                <Typography sx={{ fontWeight: 700 }} variant="h6">
-                  {group.label}
-                </Typography>
-                <Typography color="text.secondary" variant="body2">
-                  当日{" "}
-                  {formatAmount(group.summary.balance, group.summary.currency)}
-                </Typography>
-              </Stack>
+                {group.label}
+              </Typography>
+              <Typography
+                sx={{
+                  color: Number(group.summary.balance) >= 0 ? incomeColor : expenseColor,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                当日 {formatAmount(group.summary.balance, group.summary.currency)}
+              </Typography>
+            </Stack>
 
-              <Stack divider={<Divider flexItem />} sx={{ mt: 1 }}>
-                {group.items.map((item) => (
-                  <TransactionRow
-                    item={item}
-                    key={item.id}
-                    voidAction={voidAction}
-                  />
-                ))}
-              </Stack>
-            </CardContent>
-          </Card>
+            <Stack divider={<Divider flexItem sx={{ ml: 7.2 }} />} sx={{ px: 1.6 }}>
+              {group.items.map((item) => (
+                <TransactionRow
+                  item={item}
+                  key={item.id}
+                  voidAction={voidAction}
+                />
+              ))}
+            </Stack>
+
+            {groupIndex < monthView.groups.length - 1 ? <Divider /> : null}
+          </Box>
         ))}
       </Stack>
     </Stack>
