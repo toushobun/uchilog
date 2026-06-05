@@ -68,7 +68,8 @@ begin
         status = 'deleted',
         deleted_by = v_user_id,
         deleted_at = now(),
-        updated_by = v_user_id
+        updated_by = v_user_id,
+        updated_at = now()
     where tr.id = p_transaction_record_id
       and tr.ledger_id = p_ledger_id
       and tr.status = 'active';
