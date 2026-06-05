@@ -105,11 +105,10 @@ function TransactionListRow({
           </Typography>
 
           {voidAction ? (
-            <Stack
+            <form
               action={voidAction}
-              component="form"
               onSubmit={(event) => {
-                if (!window.confirm("この記録を取り消しますか？")) {
+                if (!window.confirm("确定要撤销这条记录吗？")) {
                   event.preventDefault();
                 }
               }}
@@ -118,7 +117,7 @@ function TransactionListRow({
               <Button color="error" size="small" type="submit" variant="text">
                 撤销
               </Button>
-            </Stack>
+            </form>
           ) : null}
         </Stack>
       </Stack>
