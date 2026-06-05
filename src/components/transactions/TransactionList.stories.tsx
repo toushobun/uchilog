@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import type { TransactionListItem, TransactionListPage } from "transactions-route/types";
+import type {
+  TransactionListItem,
+  TransactionListPage,
+} from "transactions-route/types";
 
 import { TransactionList } from "./TransactionList";
 
@@ -17,7 +20,9 @@ function createItem(index: number): TransactionListItem {
     merchant_icon_url: null,
     merchant_name: isExpense ? "便利店" : "共達",
     note: `Storybook 模拟记录 #${index}`,
-    transaction_at: new Date(Date.UTC(2026, 5, 5 - index, 3, 0, 0)).toISOString(),
+    transaction_at: new Date(
+      Date.UTC(2026, 5, 5 - index, 3, 0, 0),
+    ).toISOString(),
     type: isExpense ? "expense" : "income",
   };
 }

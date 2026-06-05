@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 type TransactionDateTimeProps = {
   value: string;
 };
@@ -19,11 +17,9 @@ function formatTransactionAt(value: string) {
 }
 
 export function TransactionDateTime({ value }: TransactionDateTimeProps) {
-  const [formattedValue, setFormattedValue] = useState("");
-
-  useEffect(() => {
-    setFormattedValue(formatTransactionAt(value));
-  }, [value]);
-
-  return <time dateTime={value}>{formattedValue || "..."}</time>;
+  return (
+    <time dateTime={value} suppressHydrationWarning>
+      {formatTransactionAt(value)}
+    </time>
+  );
 }

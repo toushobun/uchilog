@@ -107,17 +107,19 @@ export function TransactionList({
   initialPage,
   loadMoreAction,
 }: TransactionListProps) {
+  const [prevInitialPage, setPrevInitialPage] = useState(initialPage);
   const [items, setItems] = useState(initialPage.items);
   const [nextOffset, setNextOffset] = useState(initialPage.nextOffset);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
+  if (prevInitialPage !== initialPage) {
+    setPrevInitialPage(initialPage);
     setItems(initialPage.items);
     setNextOffset(initialPage.nextOffset);
     setErrorMessage(null);
-  }, [initialPage]);
+  }
 
   const loadNextPage = useCallback(() => {
     if (nextOffset === null || isPending) {

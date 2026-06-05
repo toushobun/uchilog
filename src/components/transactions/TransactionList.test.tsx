@@ -3,7 +3,10 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { TransactionListItem, TransactionListPage } from "transactions-route/types";
+import type {
+  TransactionListItem,
+  TransactionListPage,
+} from "transactions-route/types";
 
 import { TransactionList } from "./TransactionList";
 
@@ -28,7 +31,8 @@ vi.mock("transactions/TransactionDateTime", () => ({
 
 beforeEach(() => {
   intersectionCallback = null;
-  globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
+  globalThis.IntersectionObserver =
+    MockIntersectionObserver as unknown as typeof IntersectionObserver;
 });
 
 afterEach(() => {
@@ -36,7 +40,9 @@ afterEach(() => {
   globalThis.IntersectionObserver = originalIntersectionObserver;
 });
 
-function createItem(overrides: Partial<TransactionListItem> = {}): TransactionListItem {
+function createItem(
+  overrides: Partial<TransactionListItem> = {},
+): TransactionListItem {
   return {
     account_currency: "JPY",
     account_name: "日元现金",
