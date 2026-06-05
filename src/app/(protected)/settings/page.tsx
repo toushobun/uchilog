@@ -1,6 +1,7 @@
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { SettingsLinkCard } from "settings/SettingsLinkCard";
 import { GlassCard } from "ui/GlassCard";
 import { UserThemePicker } from "ui/UserThemePicker";
 import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
@@ -22,6 +23,13 @@ export default async function SettingsPage() {
           当前账本：{currentLedger.name}
         </Typography>
       </GlassCard>
+
+      <SettingsLinkCard
+        buttonLabel="打开账户管理"
+        description="管理当前账本的现金、银行卡、信用卡等账户，并可继续新增账户。"
+        href="/accounts"
+        title="账户管理"
+      />
 
       <GlassCard
         sx={{
