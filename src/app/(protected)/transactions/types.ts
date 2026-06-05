@@ -29,9 +29,15 @@ export type TransactionListItem = {
   transaction_at: string;
   amount: string;
   account_name: string;
-  category_name: string;
+  account_currency: string;
+  category_name: string | null;
   merchant_name: string | null;
   merchant_icon_url: string | null;
   note: string | null;
   created_at: string;
+};
+
+export type TransactionListPage = {
+  items: TransactionListItem[];
+  nextOffset: number | null;
 };
