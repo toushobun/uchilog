@@ -9,21 +9,24 @@ import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
 import { voidTransaction } from "./actions";
 import { loadTransactionListPage } from "./list-actions";
 
-export default async function TransactionsPage() {
+type TransactionsPageProps = {
+  searchParams: Promise<{ error?: string }>;
+};
+
+const errorMessages: Record<string, string> = {
+  void_failed: "记账撤销失败。请稍后重试。",
+  void_invalid: "撤销对象不正确。",
+};
+
+export default async function TransactionsPage({ searchParams }: TransactionsPageProps) {
   const currentLedger = await getCurrentLedgerOrRedirect();
+  const params = await searchParams;
+  const errorMessage = params.error ? (errorMessages[params.error] ?? null) : null;
   const initialPage = await loadTransactionListPage();
 
   return (
-    <GlassCard
-      sx={{
-        p: { xs: 4, sm: 5 },
-      }}
-    >
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{ alignItems: { xs: "flex-start", sm: "center" } }}
-      >
+    <GlassCard sx={{ p: { xs: 4, sm: 5 } }}>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ alignItems: { xs: "flex-start", sm: "center" } }}>
         <Stack sx={{ flex: 1 }}>
           <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
             记账
@@ -41,11 +44,13 @@ export default async function TransactionsPage() {
         </Button>
       </Stack>
 
-      <TransactionList
-        initialPage={initialPage}
-        loadMoreAction={loadTransactionListPage}
-        voidAction={voidTransaction}
-      />
+      {errorMessage ? (
+        <Typography color="error" sx={{ mt: 3 }}>
+          {errorMessage}
+        </Typography>
+      ) : null}
+
+      <TransactionList initialPage={initialPage} loadMoreAction={loadTransactionListPage} voidAction={voidTransaction} />
     </GlassCard>
   );
 }
