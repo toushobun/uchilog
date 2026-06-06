@@ -37,6 +37,35 @@ export type TransactionListItem = {
   created_at: string;
 };
 
+export type TransactionAmountSummary = {
+  income: string;
+  expense: string;
+  balance: string;
+  currency: string;
+};
+
+export type TransactionDateGroup = {
+  date: string;
+  label: string;
+  summary: TransactionAmountSummary;
+  items: TransactionListItem[];
+};
+
+export type TransactionMonthView = {
+  month: string;
+  monthLabel: string;
+  previousMonth: string;
+  nextMonth: string;
+  summary: TransactionAmountSummary;
+  groups: TransactionDateGroup[];
+  nextOffset: number | null;
+};
+
+export type TransactionMonthPage = {
+  groups: TransactionDateGroup[];
+  nextOffset: number | null;
+};
+
 export type TransactionListPage = {
   items: TransactionListItem[];
   nextOffset: number | null;

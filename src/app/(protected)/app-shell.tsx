@@ -1,20 +1,15 @@
 "use client";
 
-import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { UserThemeProvider } from "theme/UserThemeProvider";
-
-import { logout } from "./actions";
 
 const navItems = [
   { label: "首页", href: "/dashboard" },
@@ -24,16 +19,11 @@ const navItems = [
 ];
 
 type AppShellProps = {
-  currentLedgerName: string | null;
   email: string;
   children: ReactNode;
 };
 
-export function AppShell({
-  currentLedgerName,
-  email,
-  children,
-}: AppShellProps) {
+export function AppShell({ email, children }: AppShellProps) {
   const pathname = usePathname();
   const isCreateTransactionPage =
     pathname === "/transactions/new" ||
@@ -47,7 +37,7 @@ export function AppShell({
       <Box
         sx={{
           minHeight: "100vh",
-          overflow: "hidden",
+          overflowX: "hidden",
           pb: 10,
           position: "relative",
           "&::before": {
@@ -78,84 +68,6 @@ export function AppShell({
           },
         }}
       >
-        <AppBar
-          position="sticky"
-          elevation={0}
-          sx={{
-            bgcolor: "rgba(255, 255, 255, 0.58)",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.76)",
-            color: "var(--user-theme-status-text)",
-            backdropFilter: "blur(18px)",
-            WebkitBackdropFilter: "blur(18px)",
-          }}
-        >
-          <Toolbar sx={{ gap: 2, py: 1.5 }}>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ alignItems: "center", flexGrow: 1, width: "100%" }}
-            >
-              <Box sx={{ flexGrow: 1 }}>
-                <Typography
-                  component={Link}
-                  href="/dashboard"
-                  variant="h6"
-                  sx={{
-                    background: "var(--user-theme-title-gradient)",
-                    backgroundClip: "text",
-                    color: "transparent",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                    WebkitBackgroundClip: "text",
-                  }}
-                >
-                  UchiLog
-                </Typography>
-
-                <Typography
-                  component={Link}
-                  href={currentLedgerName ? "/ledgers" : "/ledger-setup"}
-                  sx={{
-                    color: "var(--user-theme-subtitle-text)",
-                    display: "block",
-                    mt: 0.5,
-                    textDecoration: "none",
-                  }}
-                  variant="body2"
-                >
-                  {currentLedgerName
-                    ? `当前账本：${currentLedgerName}`
-                    : "还没有账本"}
-                </Typography>
-              </Box>
-
-              <Typography
-                color="text.secondary"
-                sx={{ display: { xs: "none", sm: "block" } }}
-                variant="body2"
-              >
-                {email}
-              </Typography>
-
-              <Box component="form" action={logout}>
-                <Button
-                  type="submit"
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    borderColor: "rgba(255, 255, 255, 0.86)",
-                    bgcolor: "rgba(255, 255, 255, 0.46)",
-                    color: "var(--user-theme-section-text)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  登出
-                </Button>
-              </Box>
-            </Stack>
-          </Toolbar>
-        </AppBar>
-
         <Container
           component="main"
           maxWidth="md"

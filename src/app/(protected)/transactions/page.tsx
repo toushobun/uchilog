@@ -2,67 +2,85 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { TransactionList } from "transactions/TransactionList";
-import { GlassCard } from "ui/GlassCard";
-import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
+import { TransactionMonthList } from "transactions/TransactionMonthList";
 
 import { voidTransaction } from "./actions";
-import { loadTransactionListPage } from "./list-actions";
+import {
+  loadTransactionMonthPage,
+  loadTransactionMonthView,
+} from "./list-actions";
 
 type TransactionsPageProps = {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    month?: string;
+  }>;
 };
 
 const errorMessages: Record<string, string> = {
-  void_failed: "记账撤销失败。请稍后重试。",
-  void_invalid: "撤销对象不正确。",
+  void_failed: "记录删除失败。请稍后重试。",
+  void_invalid: "删除对象不正确。",
 };
+
+const monthNavigationBackground = "#f4efff";
 
 export default async function TransactionsPage({
   searchParams,
 }: TransactionsPageProps) {
-  const currentLedger = await getCurrentLedgerOrRedirect();
   const params = await searchParams;
   const errorMessage = params.error
     ? (errorMessages[params.error] ?? null)
     : null;
-  const initialPage = await loadTransactionListPage();
+  const monthView = await loadTransactionMonthView(params.month);
 
   return (
-    <GlassCard sx={{ p: { xs: 4, sm: 5 } }}>
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{ alignItems: { xs: "flex-start", sm: "center" } }}
-      >
-        <Stack sx={{ flex: 1 }}>
-          <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
-            记账
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 2 }}>
-            当前账本：{currentLedger.name}
-          </Typography>
-          <Typography color="text.secondary" sx={{ mt: 2 }}>
-            初始读取最近 20 条记录，向下滚动时自动继续读取。
-          </Typography>
-        </Stack>
+    <Stack spacing={2.2}>
+      <Stack direction="row" sx={{ alignItems: "center" }}>
+        <Typography component="h1" sx={{ fontSize: 24, fontWeight: 900 }}>
+          明细
+        </Typography>
+      </Stack>
 
-        <Button href="/transactions/new" variant="contained">
-          新增记录
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: "center",
+          bgcolor: monthNavigationBackground,
+          borderRadius: 999,
+          color: "text.secondary",
+          height: 44,
+          justifyContent: "space-between",
+          px: 1.3,
+        }}
+      >
+        <Button
+          href={`/transactions?month=${monthView.previousMonth}`}
+          size="small"
+          sx={{ color: "text.secondary", minWidth: 40 }}
+        >
+          ‹
+        </Button>
+        <Typography sx={{ fontWeight: 800 }}>{monthView.monthLabel}</Typography>
+        <Button
+          href={`/transactions?month=${monthView.nextMonth}`}
+          size="small"
+          sx={{ color: "text.secondary", minWidth: 40 }}
+        >
+          ›
         </Button>
       </Stack>
 
       {errorMessage ? (
-        <Typography color="error" sx={{ mt: 3 }}>
+        <Typography color="error" sx={{ fontWeight: 700 }} variant="body2">
           {errorMessage}
         </Typography>
       ) : null}
 
-      <TransactionList
-        initialPage={initialPage}
-        loadMoreAction={loadTransactionListPage}
+      <TransactionMonthList
+        monthView={monthView}
         voidAction={voidTransaction}
+        loadMoreAction={loadTransactionMonthPage.bind(null, monthView.month)}
       />
-    </GlassCard>
+    </Stack>
   );
 }

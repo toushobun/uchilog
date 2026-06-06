@@ -5,7 +5,13 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("lib/ledger/current-ledger", () => ({
-  getCurrentLedgerOrRedirect: vi.fn(),
+  getCurrentLedgerContext: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn((path: string) => {
+    throw new Error(`NEXT_REDIRECT:${path}`);
+  }),
 }));
 
 vi.mock("ui/UserThemePicker", () => ({
@@ -18,12 +24,23 @@ afterEach(() => {
 
 describe("SettingsPage", () => {
   beforeEach(async () => {
-    const { getCurrentLedgerOrRedirect } =
+    const { getCurrentLedgerContext } =
       await import("lib/ledger/current-ledger");
-    vi.mocked(getCurrentLedgerOrRedirect).mockResolvedValue({
-      id: "ledger-1",
-      name: "家庭账本",
-      baseCurrency: "JPY",
+    vi.mocked(getCurrentLedgerContext).mockResolvedValue({
+      userId: "user-1",
+      email: "test@example.com",
+      ledgers: [
+        {
+          id: "ledger-1",
+          name: "家庭账本",
+          baseCurrency: "JPY",
+        },
+      ],
+      currentLedger: {
+        id: "ledger-1",
+        name: "家庭账本",
+        baseCurrency: "JPY",
+      },
     });
   });
 
@@ -57,5 +74,24 @@ describe("SettingsPage", () => {
         .getByRole("link", { name: "打开账户管理" })
         .getAttribute("href"),
     ).toBe("/accounts");
+  });
+
+  it("没有当前账本时跳转到账本初始化页面", async () => {
+    const { getCurrentLedgerContext } =
+      await import("lib/ledger/current-ledger");
+    const emptyLedgerContext: Awaited<
+      ReturnType<typeof getCurrentLedgerContext>
+    > = {
+      userId: "user-1",
+      email: "test@example.com",
+      ledgers: [],
+      currentLedger: null,
+    };
+
+    vi.mocked(getCurrentLedgerContext).mockResolvedValue(emptyLedgerContext);
+
+    const { default: SettingsPage } = await import("./page");
+
+    await expect(SettingsPage()).rejects.toThrow("NEXT_REDIRECT:/ledger-setup");
   });
 });

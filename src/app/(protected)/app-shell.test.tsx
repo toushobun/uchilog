@@ -37,7 +37,7 @@ afterEach(() => {
 
 function renderAppShell() {
   return render(
-    <AppShell currentLedgerName="家庭账本" email="test@example.com">
+    <AppShell email="test@example.com">
       <div>内容</div>
     </AppShell>,
   );

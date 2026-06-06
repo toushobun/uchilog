@@ -12,7 +12,7 @@ type ProtectedLayoutProps = {
 export default async function ProtectedLayout({
   children,
 }: ProtectedLayoutProps) {
-  const { email, currentLedger } = await getCurrentLedgerContext();
+  const { email } = await getCurrentLedgerContext();
 
   return (
     <>
@@ -21,9 +21,7 @@ export default async function ProtectedLayout({
           __html: createUserThemeInitScript(email),
         }}
       />
-      <AppShell currentLedgerName={currentLedger?.name ?? null} email={email}>
-        {children}
-      </AppShell>
+      <AppShell email={email}>{children}</AppShell>
     </>
   );
 }

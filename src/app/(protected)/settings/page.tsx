@@ -1,14 +1,23 @@
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { GlassCard } from "ui/GlassCard";
 import { UserThemePicker } from "ui/UserThemePicker";
-import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
+import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
+import { logout } from "../actions";
 
 import { SettingsAccountsEntry } from "./SettingsAccountsEntry";
 
 export default async function SettingsPage() {
-  const currentLedger = await getCurrentLedgerOrRedirect();
+  const { email, currentLedger } = await getCurrentLedgerContext();
+
+  if (!currentLedger) {
+    redirect("/ledger-setup");
+  }
 
   return (
     <Stack spacing={3}>
@@ -17,11 +26,55 @@ export default async function SettingsPage() {
           p: { xs: 4, sm: 5 },
         }}
       >
-        <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
+        <Stack
+          direction="row"
+          sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
+        >
+          <Box>
+            <Link href="/dashboard" style={{ textDecoration: "none" }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  background: "var(--user-theme-title-gradient)",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  fontWeight: 700,
+                  WebkitBackgroundClip: "text",
+                }}
+              >
+                UchiLog
+              </Typography>
+            </Link>
+            <Link href="/ledgers" style={{ textDecoration: "none" }}>
+              <Typography
+                color="text.secondary"
+                variant="body2"
+                sx={{ mt: 0.5 }}
+              >
+                当前账本：{currentLedger.name}
+              </Typography>
+            </Link>
+            <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
+              {email}
+            </Typography>
+          </Box>
+          <form action={logout}>
+            <Button
+              type="submit"
+              variant="outlined"
+              size="small"
+              sx={{
+                borderColor: "rgba(0, 0, 0, 0.2)",
+                color: "text.secondary",
+                whiteSpace: "nowrap",
+              }}
+            >
+              登出
+            </Button>
+          </form>
+        </Stack>
+        <Typography component="h1" variant="h5" sx={{ fontWeight: 700, mt: 3 }}>
           设置
-        </Typography>
-        <Typography color="text.secondary" sx={{ mt: 2 }}>
-          当前账本：{currentLedger.name}
         </Typography>
       </GlassCard>
 

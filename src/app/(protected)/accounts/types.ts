@@ -73,7 +73,9 @@ export function formatAmount(amount: number | string | null, currency: string) {
     return new Intl.NumberFormat(undefined, {
       currency,
       style: "currency",
-    }).format(numberAmount);
+    })
+      .format(numberAmount)
+      .replace(/\uFFE5/g, "¥");
   } catch {
     return `${numberAmount} ${currency}`;
   }
