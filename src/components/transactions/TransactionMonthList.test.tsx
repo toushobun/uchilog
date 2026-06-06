@@ -146,6 +146,7 @@ describe("TransactionMonthList", () => {
         {
           date: "2026-05-29",
           items: [
+            createItem(),
             createItem({
               amount: "2000",
               id: "00000000-0000-4000-8000-000000009002",
@@ -155,9 +156,9 @@ describe("TransactionMonthList", () => {
           ],
           label: "05/29 周五",
           summary: {
-            balance: "-2000",
+            balance: "-3234",
             currency: "JPY",
-            expense: "2000",
+            expense: "3234",
             income: "0",
           },
         },
@@ -171,6 +172,10 @@ describe("TransactionMonthList", () => {
         constructor(private readonly callback: IntersectionObserverCallback) {}
 
         observe() {
+          this.callback(
+            [{ isIntersecting: true } as IntersectionObserverEntry],
+            this as unknown as IntersectionObserver,
+          );
           this.callback(
             [{ isIntersecting: true } as IntersectionObserverEntry],
             this as unknown as IntersectionObserver,
@@ -191,7 +196,9 @@ describe("TransactionMonthList", () => {
     await waitFor(() => expect(screen.getByText("超市")).toBeTruthy());
 
     expect(loadMoreAction).toHaveBeenCalledWith(20);
+    expect(loadMoreAction).toHaveBeenCalledTimes(1);
     expect(screen.getAllByText("05/29 周五")).toHaveLength(1);
+    expect(screen.getAllByText("便利店")).toHaveLength(1);
     expect(screen.getByText("-3,234")).toBeTruthy();
   });
 });

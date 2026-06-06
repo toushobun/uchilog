@@ -27,7 +27,7 @@ type TransactionMonthListProps = {
 const incomeColor = "#d64b4b";
 const expenseColor = "#3f7f46";
 const primaryPurple = "#6d4bb3";
-const palePurple = "#f4efff";
+const avatarBackground = "#f4efff";
 const borderPurple = "#e5dcf6";
 
 function formatNumber(amount: string) {
@@ -73,6 +73,34 @@ function getMerchantInitial(name: string | null) {
 
 function getAmountColor(type: "expense" | "income") {
   return type === "income" ? incomeColor : expenseColor;
+}
+
+function createEmptySummary(currency: string): TransactionAmountSummary {
+  return {
+    balance: "0",
+    currency,
+    expense: "0",
+    income: "0",
+  };
+}
+
+function addItemAmount(
+  summary: TransactionAmountSummary,
+  type: "expense" | "income",
+  amount: string,
+) {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value)) return;
+
+  if (type === "income") {
+    summary.income = String(Number(summary.income) + value);
+    summary.balance = String(Number(summary.balance) + value);
+    return;
+  }
+
+  summary.expense = String(Number(summary.expense) + value);
+  summary.balance = String(Number(summary.balance) - value);
 }
 
 function SummaryItem({
@@ -156,7 +184,7 @@ function TransactionRow({
         alt={merchantName}
         src={item.merchant_icon_url ?? undefined}
         sx={{
-          bgcolor: palePurple,
+          bgcolor: avatarBackground,
           color: primaryPurple,
           fontSize: 18,
           fontWeight: 800,
@@ -242,19 +270,29 @@ function mergeGroups(
     const prev = map.get(group.date);
 
     if (prev) {
+      const existingItemIds = new Set(prev.items.map((item) => item.id));
+      const newItems = group.items.filter(
+        (item) => !existingItemIds.has(item.id),
+      );
+      const addedSummary = createEmptySummary(prev.summary.currency);
+
+      for (const item of newItems) {
+        addItemAmount(addedSummary, item.type, item.amount);
+      }
+
       map.set(group.date, {
         ...prev,
-        items: [...prev.items, ...group.items],
+        items: [...prev.items, ...newItems],
         summary: {
           currency: prev.summary.currency,
           income: String(
-            Number(prev.summary.income) + Number(group.summary.income),
+            Number(prev.summary.income) + Number(addedSummary.income),
           ),
           expense: String(
-            Number(prev.summary.expense) + Number(group.summary.expense),
+            Number(prev.summary.expense) + Number(addedSummary.expense),
           ),
           balance: String(
-            Number(prev.summary.balance) + Number(group.summary.balance),
+            Number(prev.summary.balance) + Number(addedSummary.balance),
           ),
         },
       });
@@ -348,6 +386,7 @@ export function TransactionMonthList({
   const [groups, setGroups] = useState(monthView.groups);
   const [nextOffset, setNextOffset] = useState(monthView.nextOffset);
   const [isPending, startTransition] = useTransition();
+  const isLoadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   if (prevMonthView !== monthView) {
@@ -356,13 +395,28 @@ export function TransactionMonthList({
     setNextOffset(monthView.nextOffset);
   }
 
-  const loadMore = useCallback(() => {
-    if (nextOffset === null || isPending || !loadMoreAction) return;
+  useEffect(() => {
+    isLoadingRef.current = false;
+  }, [monthView]);
 
+  const loadMore = useCallback(() => {
+    if (
+      nextOffset === null ||
+      isPending ||
+      isLoadingRef.current ||
+      !loadMoreAction
+    )
+      return;
+
+    isLoadingRef.current = true;
     startTransition(async () => {
-      const page = await loadMoreAction(nextOffset);
-      setGroups((prev) => mergeGroups(prev, page.groups));
-      setNextOffset(page.nextOffset);
+      try {
+        const page = await loadMoreAction(nextOffset);
+        setGroups((prev) => mergeGroups(prev, page.groups));
+        setNextOffset(page.nextOffset);
+      } finally {
+        isLoadingRef.current = false;
+      }
     });
   }, [isPending, loadMoreAction, nextOffset]);
 

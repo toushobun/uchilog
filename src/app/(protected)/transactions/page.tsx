@@ -1,4 +1,3 @@
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -23,7 +22,7 @@ const errorMessages: Record<string, string> = {
   void_invalid: "删除对象不正确。",
 };
 
-const palePurple = "#f0e9fb";
+const monthNavigationBackground = "#f4efff";
 
 export default async function TransactionsPage({
   searchParams,
@@ -36,33 +35,17 @@ export default async function TransactionsPage({
 
   return (
     <Stack spacing={2.2}>
-      <Stack
-        direction="row"
-        sx={{ alignItems: "center", justifyContent: "space-between" }}
-      >
+      <Stack direction="row" sx={{ alignItems: "center" }}>
         <Typography component="h1" sx={{ fontSize: 24, fontWeight: 900 }}>
           明细
         </Typography>
-        <Box
-          aria-label="筛选"
-          component="span"
-          sx={{
-            color: "text.primary",
-            cursor: "pointer",
-            fontSize: 22,
-            fontWeight: 900,
-            lineHeight: 1,
-          }}
-        >
-          ≡
-        </Box>
       </Stack>
 
       <Stack
         direction="row"
         sx={{
           alignItems: "center",
-          bgcolor: palePurple,
+          bgcolor: monthNavigationBackground,
           borderRadius: 999,
           color: "text.secondary",
           height: 44,
@@ -75,7 +58,7 @@ export default async function TransactionsPage({
           size="small"
           sx={{ color: "text.secondary", minWidth: 40 }}
         >
-          &lt;
+          ‹
         </Button>
         <Typography sx={{ fontWeight: 800 }}>{monthView.monthLabel}</Typography>
         <Button
@@ -83,7 +66,7 @@ export default async function TransactionsPage({
           size="small"
           sx={{ color: "text.secondary", minWidth: 40 }}
         >
-          &gt;
+          ›
         </Button>
       </Stack>
 
