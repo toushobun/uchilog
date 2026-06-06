@@ -14,7 +14,7 @@ import type {
   TransactionMonthPage,
   TransactionMonthView,
   TransactionType,
-} from "./types";
+} from "types/transactions";
 
 const transactionListPageSize = 20;
 const monthPageSize = 20;
@@ -168,13 +168,6 @@ async function loadTransactionItems(
 
   const items = (itemData ?? []) as TransactionItemRow[];
   const accountIds = [...new Set(items.map((item) => item.account_id))];
-  const categoryIds = [
-    ...new Set(
-      items
-        .map((item) => item.category_id)
-        .filter((categoryId): categoryId is string => categoryId !== null),
-    ),
-  ];
   const merchantIds = [
     ...new Set(
       records

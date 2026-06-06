@@ -9,7 +9,7 @@ import { createTransaction } from "../actions";
 import type {
   TransactionAccountOption,
   TransactionMerchantOption,
-} from "../types";
+} from "types/transactions";
 
 type NewTransactionPageProps = {
   searchParams: Promise<{

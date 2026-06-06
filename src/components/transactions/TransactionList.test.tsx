@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   TransactionListItem,
   TransactionListPage,
-} from "transactions-route/types";
+} from "types/transactions";
 
 import { TransactionList } from "./TransactionList";
 

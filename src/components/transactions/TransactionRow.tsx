@@ -6,30 +6,15 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import type {
+  CategorySummaryItem,
+  TransactionRowItem,
+} from "types/transactions";
+
 const incomeColor = "#d64b4b";
 const expenseColor = "#3f7f46";
 const primaryPurple = "#6d4bb3";
 const avatarBackground = "#f4efff";
-
-export type CategorySummaryItem = {
-  categoryName: string;
-  parentCategoryName: string | null;
-  amount: string;
-};
-
-export type TransactionRowItem = {
-  id: string;
-  type: "expense" | "income";
-  transaction_at: string;
-  amount: string;
-  account_name: string;
-  account_currency: string;
-  categoryItems: CategorySummaryItem[];
-  merchant_name: string | null;
-  merchant_icon_url: string | null;
-  note?: string | null;
-  recorder_name?: string | null;
-};
 
 export type TransactionRowProps = {
   item: TransactionRowItem;

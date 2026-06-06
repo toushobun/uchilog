@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   TransactionListItem,
   TransactionMonthView,
-} from "transactions-route/types";
+} from "types/transactions";
 
 import { TransactionMonthList } from "./TransactionMonthList";
 

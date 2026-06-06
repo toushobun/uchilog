@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { TransactionRow } from "transactions/TransactionRow";
-import type { DashboardViewData } from "./summary-types";
+import type { DashboardViewData } from "types/dashboard";
 
 const incomeColor = "#d64b4b";
 const expenseColor = "#3f7f46";

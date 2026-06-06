@@ -7,6 +7,7 @@ export default defineConfig({
       accounts: new URL("./src/components/accounts", import.meta.url).pathname,
       lib: new URL("./src/lib", import.meta.url).pathname,
       theme: new URL("./src/theme", import.meta.url).pathname,
+      types: new URL("./src/types", import.meta.url).pathname,
       "transactions-route": new URL(
         "./src/app/(protected)/transactions",
         import.meta.url,

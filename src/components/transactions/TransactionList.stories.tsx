@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type {
   TransactionListItem,
   TransactionListPage,
-} from "transactions-route/types";
+} from "types/transactions";
 
 import { TransactionList } from "./TransactionList";
 

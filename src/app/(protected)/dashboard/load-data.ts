@@ -3,7 +3,7 @@
 import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
 import { createClient } from "lib/supabase/server";
 
-import type { DashboardViewData } from "./summary-types";
+import type { DashboardViewData } from "types/dashboard";
 
 type RecordRow = {
   id: string;

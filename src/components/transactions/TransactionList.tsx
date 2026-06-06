@@ -15,7 +15,7 @@ import { getCategoryLabel } from "transactions/TransactionRow";
 import type {
   TransactionListItem,
   TransactionListPage,
-} from "transactions-route/types";
+} from "types/transactions";
 
 type TransactionListProps = {
   initialPage: TransactionListPage;

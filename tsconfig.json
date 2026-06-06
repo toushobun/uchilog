@@ -22,6 +22,7 @@
       "@/*": ["./src/*"],
       "accounts/*": ["./src/components/accounts/*"],
       "accounts-route/*": ["./src/app/(protected)/accounts/*"],
+      "types/*": ["./src/types/*"],
       "theme/*": ["./src/theme/*"],
       "ui/*": ["./src/components/ui/*"],
       "lib/*": ["./src/lib/*"],

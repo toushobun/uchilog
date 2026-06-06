@@ -16,7 +16,7 @@ import {
   type TransactionCategoryOption,
   type TransactionMerchantOption,
   type TransactionType,
-} from "transactions-route/types";
+} from "types/transactions";
 
 type TransactionFormProps = {
   action: (formData: FormData) => Promise<void>;

@@ -12,10 +12,9 @@ import { TransactionRow } from "transactions/TransactionRow";
 import type {
   TransactionAmountSummary,
   TransactionDateGroup,
-  TransactionListItem,
   TransactionMonthPage,
   TransactionMonthView,
-} from "transactions-route/types";
+} from "types/transactions";
 
 type TransactionMonthListProps = {
   monthView: TransactionMonthView;

@@ -1,36 +1,6 @@
-import type { CategorySummaryItem } from "transactions/TransactionRow";
-
-export type DashboardAmountSummary = {
-  income: string;
-  expense: string;
-  balance: string;
-  currency: string;
-};
-
-export type DashboardRecentTransaction = {
-  id: string;
-  type: "expense" | "income";
-  transaction_at: string;
-  amount: string;
-  account_name: string;
-  account_currency: string;
-  categoryItems: CategorySummaryItem[];
-  merchant_name: string | null;
-  merchant_icon_url: string | null;
-  note: string | null;
-};
-
-export type DashboardPeriodExpense = {
-  expense: string;
-  currency: string;
-  recordCount: number;
-};
-
-export type DashboardViewData = {
-  ledgerName: string;
-  monthLabel: string;
-  monthSummary: DashboardAmountSummary;
-  recentTransactions: DashboardRecentTransaction[];
-  todayExpense: DashboardPeriodExpense;
-  weekExpense: DashboardPeriodExpense;
-};
+export {
+  type DashboardAmountSummary,
+  type DashboardPeriodExpense,
+  type DashboardRecentTransaction,
+  type DashboardViewData,
+} from "types/dashboard";
