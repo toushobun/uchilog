@@ -21,9 +21,7 @@ export default async function ProtectedLayout({
           __html: createUserThemeInitScript(email),
         }}
       />
-      <AppShell email={email}>
-        {children}
-      </AppShell>
+      <AppShell email={email}>{children}</AppShell>
     </>
   );
 }

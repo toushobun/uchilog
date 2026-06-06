@@ -6,7 +6,10 @@ import Typography from "@mui/material/Typography";
 import { TransactionMonthList } from "transactions/TransactionMonthList";
 
 import { voidTransaction } from "./actions";
-import { loadTransactionMonthPage, loadTransactionMonthView } from "./list-actions";
+import {
+  loadTransactionMonthPage,
+  loadTransactionMonthView,
+} from "./list-actions";
 
 type TransactionsPageProps = {
   searchParams: Promise<{
@@ -74,9 +77,7 @@ export default async function TransactionsPage({
         >
           &lt;
         </Button>
-        <Typography sx={{ fontWeight: 800 }}>
-          {monthView.monthLabel}
-        </Typography>
+        <Typography sx={{ fontWeight: 800 }}>{monthView.monthLabel}</Typography>
         <Button
           href={`/transactions?month=${monthView.nextMonth}`}
           size="small"

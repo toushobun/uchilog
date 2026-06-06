@@ -43,7 +43,11 @@ export default async function SettingsPage() {
               </Typography>
             </Link>
             <Link href="/ledgers" style={{ textDecoration: "none" }}>
-              <Typography color="text.secondary" variant="body2" sx={{ mt: 0.5 }}>
+              <Typography
+                color="text.secondary"
+                variant="body2"
+                sx={{ mt: 0.5 }}
+              >
                 当前账本：{currentLedger.name}
               </Typography>
             </Link>

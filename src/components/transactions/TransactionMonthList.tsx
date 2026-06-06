@@ -175,10 +175,7 @@ function TransactionRow({
         >
           {merchantName}
         </Typography>
-        <Typography
-          noWrap
-          sx={{ fontSize: 11, lineHeight: 1.4 }}
-        >
+        <Typography noWrap sx={{ fontSize: 11, lineHeight: 1.4 }}>
           {item.category_name ?? "未分类"}
         </Typography>
         <Typography
@@ -242,9 +239,15 @@ function mergeGroups(
         items: [...prev.items, ...group.items],
         summary: {
           currency: prev.summary.currency,
-          income: String(Number(prev.summary.income) + Number(group.summary.income)),
-          expense: String(Number(prev.summary.expense) + Number(group.summary.expense)),
-          balance: String(Number(prev.summary.balance) + Number(group.summary.balance)),
+          income: String(
+            Number(prev.summary.income) + Number(group.summary.income),
+          ),
+          expense: String(
+            Number(prev.summary.expense) + Number(group.summary.expense),
+          ),
+          balance: String(
+            Number(prev.summary.balance) + Number(group.summary.balance),
+          ),
         },
       });
     } else {
