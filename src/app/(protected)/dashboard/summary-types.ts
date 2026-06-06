@@ -23,10 +23,18 @@ export type DashboardRecentTransaction = {
   merchant_icon_url: string | null;
 };
 
+export type DashboardPeriodExpense = {
+  expense: string;
+  currency: string;
+  count: number;
+};
+
 export type DashboardViewData = {
   ledgerName: string;
   monthLabel: string;
   monthSummary: DashboardAmountSummary;
   accountSummary: DashboardAccountSummary;
   recentTransactions: DashboardRecentTransaction[];
+  todayExpense: DashboardPeriodExpense;
+  weekExpense: DashboardPeriodExpense;
 };

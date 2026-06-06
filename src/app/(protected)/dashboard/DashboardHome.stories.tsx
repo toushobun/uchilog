@@ -12,6 +12,8 @@ const meta = {
       monthLabel: "2026年6月",
       monthSummary: { balance: "180000", currency: "JPY", expense: "80000", income: "260000" },
       recentTransactions: [],
+      todayExpense: { expense: "331", currency: "JPY", count: 2 },
+      weekExpense: { expense: "2840", currency: "JPY", count: 8 },
     },
   },
 } satisfies Meta<typeof DashboardHome>;

@@ -1,118 +1,273 @@
-import Button from "@mui/material/Button";
+"use client";
+
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { formatAmount } from "../accounts/types";
+import type {
+  DashboardRecentTransaction,
+  DashboardViewData,
+} from "./summary-types";
 
-import type { DashboardViewData } from "./summary-types";
+const incomeColor = "#d64b4b";
+const expenseColor = "#3f7f46";
+const primaryPurple = "#6d4bb3";
+const avatarBackground = "#f4efff";
+const summaryCardBg = "#e8e0f8";
 
-type DashboardHomeProps = {
-  data: DashboardViewData;
-};
+function formatNumber(amount: string) {
+  const value = Number(amount);
 
-function SummaryRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+  if (!Number.isFinite(value)) return amount;
+
+  return new Intl.NumberFormat(undefined, {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+  }).format(value);
+}
+
+function getMerchantInitial(name: string | null) {
+  return name?.trim().charAt(0).toUpperCase() || "记";
+}
+
+function RecentTransactionRow({ item }: { item: DashboardRecentTransaction }) {
+  const merchantName = item.merchant_name ?? "未指定商家";
+  const amountColor = item.type === "income" ? incomeColor : expenseColor;
+  const time = new Date(item.transaction_at).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const signedAmount = `${item.type === "expense" ? "-" : "+"}${formatNumber(item.amount)}`;
+
   return (
-    <Stack spacing={0.5} sx={{ flex: 1 }}>
-      <Typography color="text.secondary" variant="caption">
-        {label}
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", py: 1.4 }}>
+      <Avatar
+        alt={merchantName}
+        src={item.merchant_icon_url ?? undefined}
+        sx={{
+          bgcolor: avatarBackground,
+          color: primaryPurple,
+          flexShrink: 0,
+          fontSize: 18,
+          fontWeight: 800,
+          height: 42,
+          width: 42,
+        }}
+      >
+        {getMerchantInitial(item.merchant_name)}
+      </Avatar>
+
+      <Stack spacing={0.3} sx={{ flex: 1, minWidth: 0 }}>
+        <Typography
+          noWrap
+          sx={{ fontSize: 14, fontWeight: 800, lineHeight: 1.3 }}
+        >
+          {merchantName}
+        </Typography>
+        <Typography noWrap sx={{ fontSize: 11, lineHeight: 1.4 }}>
+          {item.category_name ?? "未分类"}
+        </Typography>
+        <Typography
+          noWrap
+          sx={{ fontSize: 11, lineHeight: 1.4, opacity: 0.45 }}
+        >
+          {item.account_name} · {time}
+        </Typography>
+      </Stack>
+
+      <Typography
+        sx={{
+          color: amountColor,
+          fontSize: 15,
+          fontWeight: 900,
+          lineHeight: 1.2,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {signedAmount}
       </Typography>
-      <Typography sx={{ fontWeight: 800 }}>{value}</Typography>
     </Stack>
   );
 }
 
-export function DashboardHome({ data }: DashboardHomeProps) {
+function PeriodExpenseCard({
+  label,
+  expense,
+  count,
+}: {
+  label: string;
+  expense: string;
+  count: number;
+}) {
   return (
-    <Stack spacing={3}>
-      <Stack spacing={0.8}>
-        <Typography component="h1" sx={{ fontSize: 26, fontWeight: 900 }}>
-          首页
-        </Typography>
-        <Typography color="text.secondary" variant="body2">
-          当前账本：{data.ledgerName}
-        </Typography>
-      </Stack>
-
-      <Stack
-        spacing={1.5}
-        sx={{ bgcolor: "#f4efff", borderRadius: 4, p: 2 }}
+    <Box
+      sx={{
+        bgcolor: "background.paper",
+        borderRadius: 1,
+        boxShadow: "0 10px 24px rgba(77, 55, 120, 0.06)",
+        flex: 1,
+        p: 1.8,
+      }}
+    >
+      <Typography sx={{ color: "text.secondary", fontSize: 12, mb: 0.6 }}>
+        {label}
+      </Typography>
+      <Typography
+        sx={{
+          color: expenseColor,
+          fontSize: 20,
+          fontWeight: 900,
+          lineHeight: 1.2,
+        }}
       >
-        <Typography color="text.secondary" variant="caption">
-          {data.monthLabel}概况
+        -{formatNumber(expense)}
+      </Typography>
+      {count > 0 ? (
+        <Typography sx={{ color: "text.secondary", fontSize: 11, mt: 0.4 }}>
+          共 {count} 笔
         </Typography>
-        <Stack direction="row" spacing={1.5}>
-          <SummaryRow
-            label="收入"
-            value={formatAmount(
-              data.monthSummary.income,
-              data.monthSummary.currency,
-            )}
-          />
-          <SummaryRow
-            label="支出"
-            value={formatAmount(
-              data.monthSummary.expense,
-              data.monthSummary.currency,
-            )}
-          />
-          <SummaryRow
-            label="结余"
-            value={formatAmount(
-              data.monthSummary.balance,
-              data.monthSummary.currency,
-            )}
-          />
-        </Stack>
-      </Stack>
+      ) : null}
+    </Box>
+  );
+}
 
-      <Stack direction="row" spacing={1.5}>
-        <SummaryRow
-          label="账户总余额"
-          value={formatAmount(
-            data.accountSummary.totalBalance,
-            data.accountSummary.currency,
-          )}
-        />
-        <SummaryRow
-          label="账户数量"
-          value={`${data.accountSummary.accountCount} 个`}
-        />
-      </Stack>
+export function DashboardHome({ data }: { data: DashboardViewData }) {
+  const {
+    monthLabel,
+    monthSummary,
+    recentTransactions,
+    todayExpense,
+    weekExpense,
+  } = data;
 
-      <Stack direction="row" spacing={1.5}>
-        <Button href="/transactions/new" variant="contained">
-          新增记账
-        </Button>
-        <Button href="/transactions" variant="outlined">
-          查看明细
-        </Button>
-      </Stack>
-
-      <Stack spacing={1.2}>
-        <Typography sx={{ fontWeight: 800 }}>最近明细</Typography>
-        {data.recentTransactions.length > 0 ? (
-          data.recentTransactions.map((transaction) => (
-            <Stack direction="row" key={transaction.id} spacing={1.5}>
-              <Typography sx={{ flex: 1 }}>
-                {transaction.merchant_name ?? transaction.category_name ?? "记账记录"}
+  return (
+    <Stack spacing={2.5}>
+      {/* Month summary card */}
+      <Box
+        sx={{
+          bgcolor: summaryCardBg,
+          borderRadius: 2,
+          p: 2.5,
+        }}
+      >
+        <Typography
+          sx={{ color: primaryPurple, fontSize: 13, fontWeight: 700, mb: 0.8 }}
+        >
+          {monthLabel}
+        </Typography>
+        <Stack
+          direction="row"
+          sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
+        >
+          <Stack spacing={0.3}>
+            <Typography sx={{ color: "text.secondary", fontSize: 12 }}>
+              结余
+            </Typography>
+            <Typography
+              sx={{ fontSize: 32, fontWeight: 900, lineHeight: 1.15 }}
+            >
+              {formatNumber(monthSummary.balance)}
+            </Typography>
+          </Stack>
+          <Stack spacing={1}>
+            <Stack direction="row" spacing={0.6} sx={{ alignItems: "center" }}>
+              <Typography
+                sx={{ color: incomeColor, fontSize: 11, fontWeight: 700 }}
+              >
+                ▲ 收入
               </Typography>
-              <Typography sx={{ fontWeight: 800 }}>
-                {transaction.type === "expense" ? "-" : "+"}
-                {formatAmount(transaction.amount, transaction.account_currency)}
+              <Typography
+                sx={{ color: incomeColor, fontSize: 17, fontWeight: 900 }}
+              >
+                {formatNumber(monthSummary.income)}
               </Typography>
             </Stack>
-          ))
-        ) : (
-          <Typography color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
-            本月还没有记账记录。
+            <Stack direction="row" spacing={0.6} sx={{ alignItems: "center" }}>
+              <Typography
+                sx={{ color: expenseColor, fontSize: 11, fontWeight: 700 }}
+              >
+                ▼ 支出
+              </Typography>
+              <Typography
+                sx={{ color: expenseColor, fontSize: 17, fontWeight: 900 }}
+              >
+                {formatNumber(monthSummary.expense)}
+              </Typography>
+            </Stack>
+          </Stack>
+        </Stack>
+      </Box>
+
+      {/* Recent transactions */}
+      <Stack spacing={0}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 0.5,
+          }}
+        >
+          <Typography sx={{ fontSize: 15, fontWeight: 900 }}>
+            最近记录
           </Typography>
-        )}
+          <a
+            href="/transactions"
+            style={{
+              color: primaryPurple,
+              fontSize: 13,
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            全部 ›
+          </a>
+        </Stack>
+
+        <Box
+          sx={{
+            bgcolor: "background.paper",
+            boxShadow: "0 10px 24px rgba(77, 55, 120, 0.06)",
+            left: { xs: "50%", sm: "auto" },
+            overflow: "hidden",
+            position: { xs: "relative", sm: "static" },
+            px: 1.6,
+            transform: { xs: "translateX(-50%)", sm: "none" },
+            width: { xs: "100vw", sm: "auto" },
+          }}
+        >
+          {recentTransactions.length > 0 ? (
+            <Stack divider={<Divider flexItem sx={{ ml: 7.2 }} />} spacing={0}>
+              {recentTransactions.map((item) => (
+                <RecentTransactionRow item={item} key={item.id} />
+              ))}
+            </Stack>
+          ) : (
+            <Typography
+              color="text.secondary"
+              sx={{ py: 4, textAlign: "center" }}
+              variant="body2"
+            >
+              本月还没有记账记录。
+            </Typography>
+          )}
+        </Box>
+      </Stack>
+
+      {/* Today / week expense */}
+      <Stack direction="row" spacing={1.5}>
+        <PeriodExpenseCard
+          label="今日支出"
+          expense={todayExpense.expense}
+          count={todayExpense.count}
+        />
+        <PeriodExpenseCard
+          label="本周支出"
+          expense={weekExpense.expense}
+          count={weekExpense.count}
+        />
       </Stack>
     </Stack>
   );
