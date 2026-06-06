@@ -5,8 +5,6 @@ import { createClient } from "lib/supabase/server";
 
 import type { DashboardViewData } from "./summary-types";
 
-type AccountBalanceRow = { current_balance: number | string };
-
 type RecordRow = {
   id: string;
   type: "expense" | "income";
@@ -45,20 +43,6 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const supabase = await createClient();
   const { startIso, endIso, monthLabel } = getCurrentMonthBounds();
-
-  // Account balances
-  const { data: accountData, error: accountError } = await supabase
-    .from("account")
-    .select("current_balance")
-    .eq("ledger_id", currentLedger.id)
-    .eq("is_archived", false);
-
-  if (accountError) throw new Error("Failed to load dashboard accounts");
-
-  const totalBalance = ((accountData ?? []) as AccountBalanceRow[]).reduce(
-    (total, a) => total + Number(a.current_balance),
-    0,
-  );
 
   // All month records (for summary + today/week stats)
   const { data: recordData, error: recordError } = await supabase
@@ -114,12 +98,12 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   const todayExpense = {
     expense: "0",
     currency: currentLedger.baseCurrency,
-    count: 0,
+    recordCount: 0,
   };
   const weekExpense = {
     expense: "0",
     currency: currentLedger.baseCurrency,
-    count: 0,
+    recordCount: 0,
   };
 
   for (const record of records) {
@@ -136,11 +120,11 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
       const recordAt = new Date(record.transaction_at);
       if (recordAt >= weekStart) {
         weekExpense.expense = String(Number(weekExpense.expense) + total);
-        weekExpense.count += 1;
+        weekExpense.recordCount += 1;
       }
       if (recordAt >= todayStart) {
         todayExpense.expense = String(Number(todayExpense.expense) + total);
-        todayExpense.count += 1;
+        todayExpense.recordCount += 1;
       }
     }
   }
@@ -212,19 +196,22 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
       0,
     );
 
-    const categoryItems = recordItems
-      .filter((i) => i.category_id !== null)
-      .map((i) => {
-        const cat = categoryById.get(i.category_id!);
-        const parent = cat?.parent_id
-          ? categoryById.get(cat.parent_id)
-          : undefined;
-        return {
+    const categoryItems = recordItems.flatMap((i) => {
+      if (i.category_id === null) return [];
+
+      const cat = categoryById.get(i.category_id);
+      const parent = cat?.parent_id
+        ? categoryById.get(cat.parent_id)
+        : undefined;
+
+      return [
+        {
           categoryName: cat?.name ?? "",
           parentCategoryName: parent?.name ?? null,
           amount: i.amount,
-        };
-      });
+        },
+      ];
+    });
 
     return {
       account_currency: account?.currency ?? currentLedger.baseCurrency,
@@ -241,11 +228,6 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   });
 
   return {
-    accountSummary: {
-      accountCount: (accountData ?? []).length,
-      currency: currentLedger.baseCurrency,
-      totalBalance: String(totalBalance),
-    },
     ledgerName: currentLedger.name,
     monthLabel,
     monthSummary,

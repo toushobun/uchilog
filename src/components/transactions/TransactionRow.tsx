@@ -58,7 +58,7 @@ function formatNumber(amount: string) {
   }).format(value);
 }
 
-function getCategoryLabel(items: CategorySummaryItem[]): string | null {
+export function getCategoryLabel(items: CategorySummaryItem[]): string | null {
   if (items.length === 0) return null;
   const top = items.reduce((a, b) =>
     Number(a.amount) >= Number(b.amount) ? a : b,
@@ -89,6 +89,8 @@ export function TransactionRow({
     minute: "2-digit",
   });
   const signedAmount = `${item.type === "expense" ? "-" : "+"}${formatNumber(item.amount)}`;
+
+  const categoryLabel = getCategoryLabel(item.categoryItems);
 
   const accountTimeLine = [
     showAccount ? item.account_name : null,
@@ -133,9 +135,9 @@ export function TransactionRow({
           {merchantName}
         </Typography>
 
-        {getCategoryLabel(item.categoryItems) || (showNote && item.note) ? (
+        {categoryLabel || (showNote && item.note) ? (
           <Typography noWrap sx={{ fontSize: 11, lineHeight: 1.4 }}>
-            {[getCategoryLabel(item.categoryItems), showNote ? item.note : null]
+            {[categoryLabel, showNote ? item.note : null]
               .filter(Boolean)
               .join(" · ")}
           </Typography>

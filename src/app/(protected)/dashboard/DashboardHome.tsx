@@ -27,11 +27,11 @@ function formatNumber(amount: string) {
 function PeriodExpenseCard({
   label,
   expense,
-  count,
+  recordCount,
 }: {
   label: string;
   expense: string;
-  count: number;
+  recordCount: number;
 }) {
   return (
     <Box
@@ -56,9 +56,9 @@ function PeriodExpenseCard({
       >
         -{formatNumber(expense)}
       </Typography>
-      {count > 0 ? (
+      {recordCount > 0 ? (
         <Typography sx={{ color: "text.secondary", fontSize: 11, mt: 0.4 }}>
-          共 {count} 笔
+          共 {recordCount} 笔记录
         </Typography>
       ) : null}
     </Box>
@@ -199,12 +199,12 @@ export function DashboardHome({ data }: { data: DashboardViewData }) {
         <PeriodExpenseCard
           label="今日支出"
           expense={todayExpense.expense}
-          count={todayExpense.count}
+          recordCount={todayExpense.recordCount}
         />
         <PeriodExpenseCard
           label="本周支出"
           expense={weekExpense.expense}
-          count={weekExpense.count}
+          recordCount={weekExpense.recordCount}
         />
       </Stack>
     </Stack>

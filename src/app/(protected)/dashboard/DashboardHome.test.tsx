@@ -6,7 +6,6 @@ import { describe, expect, it } from "vitest";
 import { DashboardHome } from "./DashboardHome";
 
 const data = {
-  accountSummary: { accountCount: 2, currency: "JPY", totalBalance: "350000" },
   ledgerName: "家庭账本",
   monthLabel: "2026年6月",
   monthSummary: {
@@ -16,8 +15,8 @@ const data = {
     income: "260000",
   },
   recentTransactions: [],
-  todayExpense: { expense: "331", currency: "JPY", count: 2 },
-  weekExpense: { expense: "2840", currency: "JPY", count: 8 },
+  todayExpense: { expense: "331", currency: "JPY", recordCount: 2 },
+  weekExpense: { expense: "2840", currency: "JPY", recordCount: 8 },
 };
 
 describe("DashboardHome", () => {

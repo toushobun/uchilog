@@ -5,12 +5,6 @@ export type DashboardAmountSummary = {
   currency: string;
 };
 
-export type DashboardAccountSummary = {
-  accountCount: number;
-  totalBalance: string;
-  currency: string;
-};
-
 import type { CategorySummaryItem } from "transactions/TransactionRow";
 
 export type DashboardRecentTransaction = {
@@ -29,14 +23,13 @@ export type DashboardRecentTransaction = {
 export type DashboardPeriodExpense = {
   expense: string;
   currency: string;
-  count: number;
+  recordCount: number;
 };
 
 export type DashboardViewData = {
   ledgerName: string;
   monthLabel: string;
   monthSummary: DashboardAmountSummary;
-  accountSummary: DashboardAccountSummary;
   recentTransactions: DashboardRecentTransaction[];
   todayExpense: DashboardPeriodExpense;
   weekExpense: DashboardPeriodExpense;

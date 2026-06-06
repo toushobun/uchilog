@@ -11,6 +11,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { TransactionDateTime } from "transactions/TransactionDateTime";
+import { getCategoryLabel } from "transactions/TransactionRow";
 import type {
   TransactionListItem,
   TransactionListPage,
@@ -48,6 +49,8 @@ function TransactionListRow({
   item: TransactionListItem;
   voidAction?: (formData: FormData) => void;
 }) {
+  const categoryLabel = getCategoryLabel(item.categoryItems);
+
   return (
     <Stack spacing={1.2} sx={{ py: 2 }}>
       <Stack
@@ -65,20 +68,7 @@ function TransactionListRow({
               label={item.type === "expense" ? "支出" : "收入"}
               size="small"
             />
-            {item.categoryItems.length > 0 ? (
-              <Chip
-                label={(() => {
-                  const top = item.categoryItems.reduce((a, b) =>
-                    Number(a.amount) >= Number(b.amount) ? a : b,
-                  );
-                  const label = top.parentCategoryName
-                    ? `${top.parentCategoryName}·${top.categoryName}`
-                    : top.categoryName;
-                  return item.categoryItems.length >= 2 ? `${label}等` : label;
-                })()}
-                size="small"
-              />
-            ) : null}
+            {categoryLabel ? <Chip label={categoryLabel} size="small" /> : null}
             {item.merchant_name ? (
               <Chip
                 avatar={

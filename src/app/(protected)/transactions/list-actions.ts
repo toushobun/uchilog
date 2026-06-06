@@ -277,19 +277,22 @@ async function loadTransactionItems(
       0,
     );
 
-    const categoryItems = recordItems
-      .filter((i) => i.category_id !== null)
-      .map((i) => {
-        const cat = categoryById.get(i.category_id!);
-        const parent = cat?.parent_id
-          ? categoryById.get(cat.parent_id)
-          : undefined;
-        return {
+    const categoryItems = recordItems.flatMap((i) => {
+      if (i.category_id === null) return [];
+
+      const cat = categoryById.get(i.category_id);
+      const parent = cat?.parent_id
+        ? categoryById.get(cat.parent_id)
+        : undefined;
+
+      return [
+        {
           categoryName: cat?.name ?? "",
           parentCategoryName: parent?.name ?? null,
           amount: i.amount,
-        };
-      });
+        },
+      ];
+    });
 
     return {
       account_currency: account?.currency ?? "",
