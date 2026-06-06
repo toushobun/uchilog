@@ -2,8 +2,8 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { updateMerchant } from "./actions";
-import type { MerchantRow } from "./types";
+import { updateMerchant } from "server/actions/merchants";
+import type { MerchantRow } from "types/merchants";
 
 type MerchantEditFormProps = {
   merchant: MerchantRow;

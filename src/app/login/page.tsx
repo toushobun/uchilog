@@ -6,7 +6,9 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "lib/supabase/server";
 
-import { LoginForm } from "./login-form";
+import { LoginForm } from "auth/LoginForm";
+
+import { login } from "server/actions/auth";
 
 export default async function LoginPage() {
   const supabase = await createClient();
@@ -42,7 +44,7 @@ export default async function LoginPage() {
             登录后开始使用记账功能
           </Typography>
 
-          <LoginForm />
+          <LoginForm action={login} />
         </Paper>
       </Container>
     </Box>

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { getBalanceDelta, validateTransactionForm } from "./validation";
+import {
+  getBalanceDelta,
+  validateTransactionForm,
+} from "utils/transactionValidation";
 
 const accountId = "00000000-0000-4000-8000-000000000041";
 const categoryId = "00000000-0000-4000-8000-000000000101";

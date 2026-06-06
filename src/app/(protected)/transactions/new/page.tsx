@@ -5,7 +5,7 @@ import { GlassCard } from "ui/GlassCard";
 import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
 import { createClient } from "lib/supabase/server";
 
-import { createTransaction } from "../actions";
+import { createTransaction } from "server/actions/transactions";
 import type {
   TransactionAccountOption,
   TransactionMerchantOption,

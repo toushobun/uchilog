@@ -9,11 +9,8 @@ import { createClient } from "lib/supabase/server";
 
 import { MerchantForm } from "./merchant-form";
 import { MerchantList } from "./merchant-list";
-import {
-  normalizeSearchText,
-  type MerchantAliasRow,
-  type MerchantRow,
-} from "./types";
+import type { MerchantAliasRow, MerchantRow } from "types/merchants";
+import { attachAliases, filterMerchantsByKeyword } from "utils/merchants";
 
 type MerchantsPageProps = {
   searchParams: Promise<{
@@ -38,43 +35,6 @@ const errorMessages: Record<string, string> = {
   update_failed: "商家更新失败。请确认商家名称是否重复，或稍后重试。",
   website_url_invalid: "商家网址必须以 http:// 或 https:// 开头。",
 };
-
-function attachAliases(
-  merchants: MerchantRow[],
-  aliases: MerchantAliasRow[],
-): MerchantRow[] {
-  const aliasesByMerchantId = new Map<string, MerchantAliasRow[]>();
-
-  for (const alias of aliases) {
-    const currentAliases = aliasesByMerchantId.get(alias.merchant_id) ?? [];
-    currentAliases.push(alias);
-    aliasesByMerchantId.set(alias.merchant_id, currentAliases);
-  }
-
-  return merchants.map((merchant) => ({
-    ...merchant,
-    aliases: aliasesByMerchantId.get(merchant.id) ?? [],
-  }));
-}
-
-function filterMerchantsByKeyword(merchants: MerchantRow[], keyword: string) {
-  const normalizedKeyword = normalizeSearchText(keyword);
-
-  if (normalizedKeyword.length === 0) {
-    return merchants;
-  }
-
-  return merchants.filter((merchant) => {
-    const matchedByName = normalizeSearchText(merchant.name).includes(
-      normalizedKeyword,
-    );
-    const matchedByAlias = merchant.aliases.some((alias) =>
-      normalizeSearchText(alias.alias).includes(normalizedKeyword),
-    );
-
-    return matchedByName || matchedByAlias;
-  });
-}
 
 export default async function MerchantsPage({
   searchParams,

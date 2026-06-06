@@ -7,12 +7,16 @@ import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { EmptyState } from "ui/EmptyState";
+import { EmptyState } from "ui-molecules/EmptyState";
 import { GlassCard } from "ui/GlassCard";
-import { archiveMerchant, archiveMerchantAlias } from "./actions";
+import {
+  archiveMerchant,
+  archiveMerchantAlias,
+} from "server/actions/merchants";
 import { MerchantAliasForm } from "./merchant-alias-form";
 import { MerchantEditForm } from "./merchant-edit-form";
-import { getMerchantInitial, type MerchantRow } from "./types";
+import type { MerchantRow } from "types/merchants";
+import { getMerchantInitial } from "utils/merchants";
 
 type MerchantListProps = {
   errorMerchantId: string | null;

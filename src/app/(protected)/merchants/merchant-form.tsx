@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 
 import { GlassCard } from "ui/GlassCard";
 
-import { createMerchant } from "./actions";
+import { createMerchant } from "server/actions/merchants";
 
 export function MerchantForm() {
   return (

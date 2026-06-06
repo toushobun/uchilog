@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getMerchantInitial, normalizeSearchText } from "./types";
+import { getMerchantInitial, normalizeSearchText } from "utils/merchants";
 
 describe("getMerchantInitial", () => {
   it("英文商家名返回大写首字母", () => {

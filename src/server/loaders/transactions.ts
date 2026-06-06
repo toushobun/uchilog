@@ -1,0 +1,354 @@
+"use server";
+
+import {
+  getCurrentLedgerOrRedirect,
+  type CurrentLedger,
+} from "lib/ledger/current-ledger";
+import { createClient } from "lib/supabase/server";
+
+import type {
+  TransactionListItem,
+  TransactionListPage,
+  TransactionMonthPage,
+  TransactionMonthView,
+} from "types/transactions";
+import {
+  addTransactionAmount,
+  createTransactionAmountSummary,
+  formatMonthLabel,
+  getMonthBounds,
+  groupTransactionItemsByDate,
+  normalizeMonth,
+  shiftMonth,
+} from "utils/transactions";
+
+const transactionListPageSize = 20;
+const monthPageSize = 20;
+
+type TransactionRecordRow = {
+  id: string;
+  type: "expense" | "income";
+  transaction_at: string;
+  merchant_id: string | null;
+  note: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+type AppUserRow = {
+  id: string;
+  display_name: string;
+};
+
+type TransactionItemRow = {
+  transaction_record_id: string;
+  account_id: string;
+  category_id: string | null;
+  amount: string;
+  note: string | null;
+};
+
+type AccountRow = {
+  id: string;
+  name: string;
+  currency: string;
+};
+
+type CategoryRow = {
+  id: string;
+  name: string;
+  parent_id: string | null;
+};
+
+type MerchantRow = {
+  id: string;
+  name: string;
+  icon_url: string | null;
+};
+
+async function loadTransactionItems(
+  records: TransactionRecordRow[],
+  currentLedger: CurrentLedger,
+) {
+  const supabase = await createClient();
+  const recordIds = records.map((record) => record.id);
+
+  if (recordIds.length === 0) {
+    return [] as TransactionListItem[];
+  }
+
+  const { data: itemData, error: itemError } = await supabase
+    .from("transaction_item")
+    .select("transaction_record_id, account_id, category_id, amount, note")
+    .eq("ledger_id", currentLedger.id)
+    .in("transaction_record_id", recordIds);
+
+  if (itemError) {
+    throw new Error("Failed to load transaction items");
+  }
+
+  const items = (itemData ?? []) as TransactionItemRow[];
+  const accountIds = [...new Set(items.map((item) => item.account_id))];
+  const merchantIds = [
+    ...new Set(
+      records
+        .map((record) => record.merchant_id)
+        .filter((merchantId): merchantId is string => merchantId !== null),
+    ),
+  ];
+  const recorderIds = [
+    ...new Set(
+      records
+        .map((record) => record.created_by)
+        .filter((id): id is string => id !== null),
+    ),
+  ];
+
+  const [accountResult, categoryResult, merchantResult, recorderResult] =
+    await Promise.all([
+      accountIds.length > 0
+        ? supabase
+            .from("account")
+            .select("id, name, currency")
+            .eq("ledger_id", currentLedger.id)
+            .in("id", accountIds)
+        : Promise.resolve({ data: [], error: null }),
+      supabase
+        .from("category")
+        .select("id, name, parent_id")
+        .eq("ledger_id", currentLedger.id),
+      merchantIds.length > 0
+        ? supabase
+            .from("merchant")
+            .select("id, name, icon_url")
+            .eq("ledger_id", currentLedger.id)
+            .in("id", merchantIds)
+        : Promise.resolve({ data: [], error: null }),
+      recorderIds.length > 0
+        ? supabase
+            .from("app_user")
+            .select("id, display_name")
+            .in("id", recorderIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+  if (accountResult.error) {
+    throw new Error("Failed to load transaction accounts");
+  }
+
+  if (categoryResult.error) {
+    throw new Error("Failed to load transaction categories");
+  }
+
+  if (merchantResult.error) {
+    throw new Error("Failed to load transaction merchants");
+  }
+
+  if (recorderResult.error) {
+    throw new Error("Failed to load transaction recorders");
+  }
+
+  const accounts = (accountResult.data ?? []) as AccountRow[];
+  const categories = (categoryResult.data ?? []) as CategoryRow[];
+  const merchants = (merchantResult.data ?? []) as MerchantRow[];
+  const recorders = (recorderResult.data ?? []) as AppUserRow[];
+
+  const accountById = new Map(
+    accounts.map((account) => [account.id, account] as const),
+  );
+  const categoryById = new Map(
+    categories.map((category) => [category.id, category] as const),
+  );
+  const merchantById = new Map(
+    merchants.map((merchant) => [merchant.id, merchant] as const),
+  );
+  const recorderById = new Map(
+    recorders.map((user) => [user.id, user] as const),
+  );
+
+  const itemsByRecordId = new Map<string, TransactionItemRow[]>();
+  for (const item of items) {
+    const arr = itemsByRecordId.get(item.transaction_record_id) ?? [];
+    arr.push(item);
+    itemsByRecordId.set(item.transaction_record_id, arr);
+  }
+
+  return records.map((record) => {
+    const recordItems = itemsByRecordId.get(record.id) ?? [];
+    const firstItem = recordItems[0];
+    const account = firstItem
+      ? accountById.get(firstItem.account_id)
+      : undefined;
+    const merchant = record.merchant_id
+      ? merchantById.get(record.merchant_id)
+      : undefined;
+    const recorder = record.created_by
+      ? recorderById.get(record.created_by)
+      : undefined;
+
+    const totalAmount = recordItems.reduce(
+      (sum, i) => sum + Number(i.amount),
+      0,
+    );
+
+    const categoryItems = recordItems.flatMap((i) => {
+      if (i.category_id === null) return [];
+
+      const cat = categoryById.get(i.category_id);
+      const parent = cat?.parent_id
+        ? categoryById.get(cat.parent_id)
+        : undefined;
+
+      return [
+        {
+          categoryName: cat?.name ?? "",
+          parentCategoryName: parent?.name ?? null,
+          amount: i.amount,
+        },
+      ];
+    });
+
+    return {
+      account_currency: account?.currency ?? "",
+      account_name: account?.name ?? "未知账户",
+      amount: String(totalAmount),
+      categoryItems,
+      created_at: record.created_at,
+      id: record.id,
+      merchant_icon_url: merchant?.icon_url ?? null,
+      merchant_name: merchant?.name ?? null,
+      note: record.note ?? firstItem?.note ?? null,
+      recorder_name: recorder?.display_name ?? null,
+      transaction_at: record.transaction_at,
+      type: record.type,
+    };
+  });
+}
+
+export async function loadTransactionMonthView(
+  month?: string | null,
+): Promise<TransactionMonthView> {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+  const supabase = await createClient();
+  const normalizedMonth = normalizeMonth(month);
+  const { startIso, endIso } = getMonthBounds(normalizedMonth);
+
+  // Load all records for summary calculation
+  const { data: allRecordData, error: allRecordError } = await supabase
+    .from("transaction_record")
+    .select(
+      "id, type, transaction_at, merchant_id, note, created_by, created_at",
+    )
+    .eq("ledger_id", currentLedger.id)
+    .eq("status", "active")
+    .in("type", ["expense", "income"])
+    .gte("transaction_at", startIso)
+    .lt("transaction_at", endIso)
+    .order("transaction_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+
+  if (allRecordError) {
+    throw new Error("Failed to load transaction records");
+  }
+
+  const allRecords = (allRecordData ?? []) as TransactionRecordRow[];
+  const pageRecords = allRecords.slice(0, monthPageSize);
+  const hasMore = allRecords.length > monthPageSize;
+
+  const allItems = await loadTransactionItems(allRecords, currentLedger);
+
+  const currency = currentLedger.baseCurrency;
+  const monthSummary = createTransactionAmountSummary(currency);
+
+  for (const item of allItems) {
+    addTransactionAmount(monthSummary, item.type, item.amount);
+  }
+
+  const displayItems = allItems.slice(0, pageRecords.length);
+
+  return {
+    groups: groupTransactionItemsByDate(displayItems, currency),
+    month: normalizedMonth,
+    monthLabel: formatMonthLabel(normalizedMonth),
+    nextMonth: shiftMonth(normalizedMonth, 1),
+    previousMonth: shiftMonth(normalizedMonth, -1),
+    summary: monthSummary,
+    nextOffset: hasMore ? monthPageSize : null,
+  };
+}
+
+export async function loadTransactionMonthPage(
+  month: string,
+  offset: number,
+): Promise<TransactionMonthPage> {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+  const supabase = await createClient();
+  const normalizedMonth = normalizeMonth(month);
+  const { startIso, endIso } = getMonthBounds(normalizedMonth);
+  const safeOffset = Math.max(0, offset);
+
+  const { data: recordData, error: recordError } = await supabase
+    .from("transaction_record")
+    .select(
+      "id, type, transaction_at, merchant_id, note, created_by, created_at",
+    )
+    .eq("ledger_id", currentLedger.id)
+    .eq("status", "active")
+    .in("type", ["expense", "income"])
+    .gte("transaction_at", startIso)
+    .lt("transaction_at", endIso)
+    .order("transaction_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(safeOffset, safeOffset + monthPageSize);
+
+  if (recordError) {
+    throw new Error("Failed to load transaction records");
+  }
+
+  const fetched = (recordData ?? []) as TransactionRecordRow[];
+  const records = fetched.slice(0, monthPageSize);
+  const hasMore = fetched.length > monthPageSize;
+  const items = await loadTransactionItems(records, currentLedger);
+  const currency = currentLedger.baseCurrency;
+
+  return {
+    groups: groupTransactionItemsByDate(items, currency),
+    nextOffset: hasMore ? safeOffset + monthPageSize : null,
+  };
+}
+
+export async function loadTransactionListPage(
+  offset = 0,
+): Promise<TransactionListPage> {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+  const supabase = await createClient();
+  const safeOffset = Math.max(0, offset);
+
+  const { data: recordData, error: recordError } = await supabase
+    .from("transaction_record")
+    .select(
+      "id, type, transaction_at, merchant_id, note, created_by, created_at",
+    )
+    .eq("ledger_id", currentLedger.id)
+    .eq("status", "active")
+    .in("type", ["expense", "income"])
+    .order("transaction_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(safeOffset, safeOffset + transactionListPageSize);
+
+  if (recordError) {
+    throw new Error("Failed to load transaction records");
+  }
+
+  const fetchedRecords = (recordData ?? []) as TransactionRecordRow[];
+  const records = fetchedRecords.slice(0, transactionListPageSize);
+  const hasNextPage = fetchedRecords.length > transactionListPageSize;
+
+  return {
+    items: await loadTransactionItems(records, currentLedger),
+    nextOffset: hasNextPage ? safeOffset + transactionListPageSize : null,
+  };
+}

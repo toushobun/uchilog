@@ -4,11 +4,11 @@ import Typography from "@mui/material/Typography";
 
 import { TransactionMonthList } from "transactions/TransactionMonthList";
 
-import { voidTransaction } from "./actions";
+import { voidTransaction } from "server/actions/transactions";
 import {
   loadTransactionMonthPage,
   loadTransactionMonthView,
-} from "./list-actions";
+} from "server/loaders/transactions";
 
 type TransactionsPageProps = {
   searchParams: Promise<{

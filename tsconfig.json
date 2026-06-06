@@ -20,14 +20,20 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "accounts/*": ["./src/components/accounts/*"],
-      "accounts-route/*": ["./src/app/(protected)/accounts/*"],
-      "types/*": ["./src/types/*"],
+      "accounts/*": ["./src/components/organisms/accounts/*"],
+      "auth/*": ["./src/components/organisms/auth/*"],
+      "dashboard-page/*": ["./src/components/pages/dashboard/*"],
+      "protected-template/*": ["./src/components/templates/protected/*"],
+      "server/*": ["./src/server/*"],
+      "settings-components/*": ["./src/components/molecules/settings/*"],
       "theme/*": ["./src/theme/*"],
-      "ui/*": ["./src/components/ui/*"],
+      "theme-components/*": ["./src/components/molecules/theme/*"],
+      "types/*": ["./src/types/*"],
+      "utils/*": ["./src/utils/*"],
+      "ui/*": ["./src/components/atoms/ui/*"],
+      "ui-molecules/*": ["./src/components/molecules/ui/*"],
       "lib/*": ["./src/lib/*"],
-      "transactions/*": ["./src/components/transactions/*"],
-      "transactions-route/*": ["./src/app/(protected)/transactions/*"]
+      "transactions/*": ["./src/components/organisms/transactions/*"]
     }
   },
   "include": [

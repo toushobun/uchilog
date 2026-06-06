@@ -2,7 +2,10 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createTransaction, voidTransaction } from "./actions";
+import {
+  createTransaction,
+  voidTransaction,
+} from "server/actions/transactions";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),

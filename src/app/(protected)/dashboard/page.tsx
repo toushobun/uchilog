@@ -1,5 +1,5 @@
-import { DashboardHome } from "./DashboardHome";
-import { loadDashboardView } from "./load-data";
+import { DashboardHome } from "dashboard-page/DashboardHome";
+import { loadDashboardView } from "server/loaders/dashboard";
 
 export default async function DashboardPage() {
   const data = await loadDashboardView();

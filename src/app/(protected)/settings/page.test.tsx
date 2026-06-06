@@ -14,7 +14,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("ui/UserThemePicker", () => ({
+vi.mock("theme-components/UserThemePicker", () => ({
   UserThemePicker: (): ReactNode => <div data-testid="user-theme-picker" />,
 }));
 

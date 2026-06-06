@@ -6,11 +6,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { GlassCard } from "ui/GlassCard";
-import { UserThemePicker } from "ui/UserThemePicker";
+import { UserThemePicker } from "theme-components/UserThemePicker";
 import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
-import { logout } from "../actions";
+import { logout } from "server/actions/session";
 
-import { SettingsAccountsEntry } from "./SettingsAccountsEntry";
+import { SettingsAccountsEntry } from "settings-components/SettingsAccountsEntry";
 
 export default async function SettingsPage() {
   const { email, currentLedger } = await getCurrentLedgerContext();

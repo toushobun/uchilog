@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatAmount } from "./types";
+import { formatAmount } from "utils/accounts";
 
 describe("formatAmount", () => {
   it("可以按指定货币格式化 number 输入", () => {

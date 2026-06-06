@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { GlassCard } from "ui/GlassCard";
 import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
 
-import { createLedger } from "./actions";
+import { createLedger } from "server/actions/ledgerSetup";
 
 type LedgerSetupPageProps = {
   searchParams: Promise<{
