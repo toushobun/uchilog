@@ -10,12 +10,12 @@ import type {
   TransactionRecordRow,
 } from "server/db-types";
 import { buildTransactionListItem } from "server/loaders/buildTransactionListItem";
+import { getDashboardDateRange } from "server/loaders/dashboardDateRange";
 import { loadCategoriesByIdsWithParents } from "server/loaders/loadCategoriesByIdsWithParents";
 import type { DashboardViewData } from "types/dashboard";
 import {
   addTransactionAmount,
   createTransactionAmountSummary,
-  getCurrentMonthRange,
 } from "utils/transactions";
 
 function addExpenseTotal(
@@ -29,7 +29,8 @@ function addExpenseTotal(
 export async function loadDashboardView(): Promise<DashboardViewData> {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const supabase = await createClient();
-  const { startIso, endIso, monthLabel } = getCurrentMonthRange();
+  const { monthStartIso, monthEndIso, monthLabel, todayStart, weekStart } =
+    getDashboardDateRange();
 
   const { data: recordData, error: recordError } = await supabase
     .from("transaction_record")
@@ -37,8 +38,8 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
     .in("type", ["expense", "income"])
-    .gte("transaction_at", startIso)
-    .lt("transaction_at", endIso)
+    .gte("transaction_at", monthStartIso)
+    .lt("transaction_at", monthEndIso)
     .order("transaction_at", { ascending: false })
     .order("created_at", { ascending: false })
     .order("id", { ascending: false });
@@ -70,10 +71,6 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   const monthSummary = createTransactionAmountSummary(
     currentLedger.baseCurrency,
   );
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekStart = new Date(todayStart);
-  weekStart.setDate(todayStart.getDate() - ((todayStart.getDay() + 6) % 7));
 
   const todayExpense = {
     expense: "0",
