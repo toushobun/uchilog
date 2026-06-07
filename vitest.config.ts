@@ -152,7 +152,7 @@ export default defineConfig({
     deps: {
       optimizer: {
         web: {
-          // MUI はファイル数が多く変換コストが高いため事前バンドルする
+          // MUI 文件数量较多，转换成本较高，因此提前预打包。
           include: ["@mui/material", "@mui/icons-material", "@mui/system"],
         },
       },
