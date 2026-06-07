@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ArchiveAccountButton } from "./ArchiveAccountButton";
 
 const meta = {
-  title: "Organisms/Accounts/ArchiveAccountButton",
+  title: "Molecules/Accounts/ArchiveAccountButton",
   component: ArchiveAccountButton,
 } satisfies Meta<typeof ArchiveAccountButton>;
 

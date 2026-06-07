@@ -147,7 +147,7 @@ export async function archiveMerchantAliasService(
     return { ok: false, error: "alias_invalid" };
   }
 
-  // Verify the merchant belongs to the current ledger
+  // 确认商家属于当前账本
   const { data: merchantRow, error: merchantError } = await supabase
     .from("merchant")
     .select("id")

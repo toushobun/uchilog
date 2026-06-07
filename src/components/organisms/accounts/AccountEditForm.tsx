@@ -3,13 +3,12 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
+import { AccountHolderCheckboxGroup } from "accounts-molecules/AccountHolderCheckboxGroup";
 import {
   accountTypeOptions,
   type AccountHolderOption,
   type AccountRow,
 } from "types/accounts";
-
-import { AccountHolderCheckboxGroup } from "./AccountHolderCheckboxGroup";
 
 type AccountEditFormProps = {
   account: AccountRow;

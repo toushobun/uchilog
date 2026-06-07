@@ -16,7 +16,7 @@ const holderOptions = [
 ];
 
 const meta = {
-  title: "Organisms/Accounts/AccountHolderCheckboxGroup",
+  title: "Molecules/Accounts/AccountHolderCheckboxGroup",
   component: AccountHolderCheckboxGroup,
   args: { holderOptions },
 } satisfies Meta<typeof AccountHolderCheckboxGroup>;

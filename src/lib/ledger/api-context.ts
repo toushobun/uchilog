@@ -40,7 +40,7 @@ export async function getLedgerContextForApi(): Promise<ApiContextResult> {
   const ledger = ((memberRows ?? []) as MemberRow[])
     .map((row) => {
       const l = row.ledger;
-      return Array.isArray(l) ? l[0] ?? null : l;
+      return Array.isArray(l) ? (l[0] ?? null) : l;
     })
     .filter((l): l is LedgerRow => l !== null)
     .map((l) => ({ id: l.id, name: l.name, baseCurrency: l.base_currency }))[0];

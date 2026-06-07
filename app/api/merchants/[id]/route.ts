@@ -4,23 +4,15 @@ import {
   updateMerchantService,
 } from "server/services/merchants";
 import { isUuid } from "utils/formData";
+import { parseWebsiteUrl } from "utils/merchants";
+import { rejectInvalidOrigin } from "utils/requestSecurity";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-function parseWebsiteUrl(value: unknown): string | null | undefined {
-  if (value === null || value === undefined || value === "") return null;
-  if (typeof value !== "string") return undefined;
-  try {
-    const url = new URL(value);
-    if (!["http:", "https:"].includes(url.protocol) || !url.hostname)
-      return undefined;
-    return value;
-  } catch {
-    return undefined;
-  }
-}
-
 export async function PATCH(request: Request, { params }: RouteContext) {
+  const originError = rejectInvalidOrigin(request);
+  if (originError) return originError;
+
   const ctx = await getLedgerContextForApi();
   if (!ctx.ok) {
     return Response.json({ error: ctx.message }, { status: ctx.status });
@@ -50,8 +42,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return Response.json({ error: "website_url_invalid" }, { status: 400 });
   }
 
-  const noteStr =
-    note === undefined || note === null ? null : String(note);
+  const noteStr = note === undefined || note === null ? null : String(note);
   if (noteStr !== null && noteStr.length > 1000) {
     return Response.json({ error: "note_too_long" }, { status: 400 });
   }
@@ -72,7 +63,10 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   return Response.json({ success: true });
 }
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function DELETE(request: Request, { params }: RouteContext) {
+  const originError = rejectInvalidOrigin(request);
+  if (originError) return originError;
+
   const ctx = await getLedgerContextForApi();
   if (!ctx.ok) {
     return Response.json({ error: ctx.message }, { status: ctx.status });

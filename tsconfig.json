@@ -20,6 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "accounts-molecules/*": ["./src/components/molecules/accounts/*"],
       "accounts/*": ["./src/components/organisms/accounts/*"],
       "accounts-page/*": ["./src/components/pages/accounts/*"],
       "accounts-template/*": ["./src/components/templates/accounts/*"],
@@ -59,6 +60,7 @@
       "ui-molecules/*": ["./src/components/molecules/ui/*"],
       "lib/*": ["./src/lib/*"],
       "transactions/*": ["./src/components/organisms/transactions/*"],
+      "transactions-atoms/*": ["./src/components/atoms/transactions/*"],
       "transactions-molecules/*": ["./src/components/molecules/transactions/*"],
       "transactions-page/*": ["./src/components/pages/transactions/*"],
       "transactions-template/*": ["./src/components/templates/transactions/*"]

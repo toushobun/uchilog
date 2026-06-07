@@ -1,10 +1,14 @@
 import { getLedgerContextForApi } from "lib/ledger/api-context";
 import { voidTransactionService } from "server/services/transactions";
 import { isUuid } from "utils/formData";
+import { rejectInvalidOrigin } from "utils/requestSecurity";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function DELETE(request: Request, { params }: RouteContext) {
+  const originError = rejectInvalidOrigin(request);
+  if (originError) return originError;
+
   const ctx = await getLedgerContextForApi();
   if (!ctx.ok) {
     return Response.json({ error: ctx.message }, { status: ctx.status });

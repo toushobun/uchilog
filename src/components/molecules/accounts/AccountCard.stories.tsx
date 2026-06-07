@@ -4,7 +4,7 @@ import { AccountCard } from "./AccountCard";
 
 const meta: Meta<typeof AccountCard> = {
   component: AccountCard,
-  title: "Organisms/Accounts/AccountCard",
+  title: "Molecules/Accounts/AccountCard",
 };
 
 export default meta;

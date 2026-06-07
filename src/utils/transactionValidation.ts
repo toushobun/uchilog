@@ -185,7 +185,11 @@ export function validateTransactionBody(
   if (!type) return { ok: false, error: "type_invalid" };
 
   const transactionAt = String(body.transactionAt ?? "");
-  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(transactionAt)) {
+  if (
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/.test(
+      transactionAt,
+    )
+  ) {
     return { ok: false, error: "date_invalid" };
   }
 
@@ -202,7 +206,8 @@ export function validateTransactionBody(
 
   const merchantIdRaw = body.merchantId;
   const merchantId = merchantIdRaw ? String(merchantIdRaw) : null;
-  if (merchantId && !isUuid(merchantId)) return { ok: false, error: "merchant_invalid" };
+  if (merchantId && !isUuid(merchantId))
+    return { ok: false, error: "merchant_invalid" };
 
   const noteRaw = body.note;
   const note = noteRaw ? String(noteRaw) : null;

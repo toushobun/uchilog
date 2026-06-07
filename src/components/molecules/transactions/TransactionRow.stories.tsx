@@ -37,7 +37,7 @@ const incomeItem: TransactionRowItem = {
 };
 
 const meta = {
-  title: "Organisms/Transactions/TransactionRow",
+  title: "Molecules/Transactions/TransactionRow",
   component: TransactionRow,
   args: {
     item: expenseItem,

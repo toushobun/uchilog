@@ -14,28 +14,11 @@ import {
   updateMerchantService,
 } from "server/services/merchants";
 import { getFormText, isUuid, parseOptionalText } from "utils/formData";
+import { parseWebsiteUrl } from "utils/merchants";
 
 const merchantNameMaxLength = 100;
 const textMaxLength = 1000;
 const aliasMaxLength = 100;
-
-function parseWebsiteUrl(value: string) {
-  if (value.length === 0) {
-    return null;
-  }
-
-  try {
-    const url = new URL(value);
-
-    if (!["http:", "https:"].includes(url.protocol) || !url.hostname) {
-      return undefined;
-    }
-
-    return value;
-  } catch {
-    return undefined;
-  }
-}
 
 async function getCurrentUserAndLedger() {
   const context = await getCurrentLedgerContext();
@@ -57,8 +40,10 @@ export async function createMerchant(formData: FormData) {
   const note = parseOptionalText(getFormText(formData, "note"), textMaxLength);
 
   if (name.length === 0) redirect(merchantsErrorHref("name_required"));
-  if (name.length > merchantNameMaxLength) redirect(merchantsErrorHref("name_too_long"));
-  if (websiteUrl === undefined) redirect(merchantsErrorHref("website_url_invalid"));
+  if (name.length > merchantNameMaxLength)
+    redirect(merchantsErrorHref("name_too_long"));
+  if (websiteUrl === undefined)
+    redirect(merchantsErrorHref("website_url_invalid"));
   if (!note.ok) redirect(merchantsErrorHref("note_too_long"));
 
   const result = await createMerchantService({
@@ -83,9 +68,12 @@ export async function updateMerchant(formData: FormData) {
   const note = parseOptionalText(getFormText(formData, "note"), textMaxLength);
 
   if (!isUuid(merchantId)) redirect(merchantsErrorHref("merchant_invalid"));
-  if (name.length === 0) redirect(merchantsErrorHref("name_required", merchantId));
-  if (name.length > merchantNameMaxLength) redirect(merchantsErrorHref("name_too_long", merchantId));
-  if (websiteUrl === undefined) redirect(merchantsErrorHref("website_url_invalid", merchantId));
+  if (name.length === 0)
+    redirect(merchantsErrorHref("name_required", merchantId));
+  if (name.length > merchantNameMaxLength)
+    redirect(merchantsErrorHref("name_too_long", merchantId));
+  if (websiteUrl === undefined)
+    redirect(merchantsErrorHref("website_url_invalid", merchantId));
   if (!note.ok) redirect(merchantsErrorHref("note_too_long", merchantId));
 
   const result = await updateMerchantService({
@@ -127,10 +115,12 @@ export async function createMerchantAlias(formData: FormData) {
   const alias = getFormText(formData, "alias");
 
   if (!isUuid(merchantId)) redirect(merchantsErrorHref("merchant_invalid"));
-  if (alias.length === 0) redirect(merchantsErrorHref("alias_required", merchantId));
-  if (alias.length > aliasMaxLength) redirect(merchantsErrorHref("alias_too_long", merchantId));
+  if (alias.length === 0)
+    redirect(merchantsErrorHref("alias_required", merchantId));
+  if (alias.length > aliasMaxLength)
+    redirect(merchantsErrorHref("alias_too_long", merchantId));
 
-  // Verify the merchant belongs to current ledger before creating alias
+  // 确认商家属于当前账本后再创建别名
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("merchant")
@@ -167,9 +157,7 @@ export async function archiveMerchantAlias(formData: FormData) {
   });
 
   if (!result.ok) {
-    redirect(
-      merchantsErrorHref(result.error, result.merchantId ?? ""),
-    );
+    redirect(merchantsErrorHref(result.error, result.merchantId ?? ""));
   }
 
   revalidatePath(routePaths.merchants);

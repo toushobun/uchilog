@@ -83,7 +83,8 @@ export async function createAccount(formData: FormData) {
   if (name.length === 0) redirect(accountsErrorHref("name_required"));
   if (!type) redirect(accountsErrorHref("type_invalid"));
   if (!currency) redirect(accountsErrorHref("currency_invalid"));
-  if (initialBalance === null) redirect(accountsErrorHref("initial_balance_invalid"));
+  if (initialBalance === null)
+    redirect(accountsErrorHref("initial_balance_invalid"));
   if (!holderUserIds) redirect(accountsErrorHref("holder_invalid"));
 
   const result = await createAccountService({

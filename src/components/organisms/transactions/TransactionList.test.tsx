@@ -1,4 +1,3 @@
-
 import {
   act,
   cleanup,
@@ -32,7 +31,7 @@ class MockIntersectionObserver {
 const originalIntersectionObserver = globalThis.IntersectionObserver;
 const originalConfirm = window.confirm;
 
-vi.mock("transactions/TransactionDateTime", () => ({
+vi.mock("transactions-atoms/TransactionDateTime", () => ({
   TransactionDateTime: ({ value }: { value: string }) => <span>{value}</span>,
 }));
 

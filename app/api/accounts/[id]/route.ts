@@ -5,12 +5,16 @@ import {
 } from "server/services/accounts";
 import { accountTypeOptions, type AccountType } from "types/accounts";
 import { isUuid } from "utils/formData";
+import { rejectInvalidOrigin } from "utils/requestSecurity";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 const accountTypeValues = accountTypeOptions.map((o) => o.value);
 
 export async function PATCH(request: Request, { params }: RouteContext) {
+  const originError = rejectInvalidOrigin(request);
+  if (originError) return originError;
+
   const ctx = await getLedgerContextForApi();
   if (!ctx.ok) {
     return Response.json({ error: ctx.message }, { status: ctx.status });
@@ -44,9 +48,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   if (
     !Array.isArray(holderUserIds) ||
-    !holderUserIds.every(
-      (id: unknown) => typeof id === "string" && isUuid(id),
-    )
+    !holderUserIds.every((id: unknown) => typeof id === "string" && isUuid(id))
   ) {
     return Response.json({ error: "holder_invalid" }, { status: 400 });
   }
@@ -67,7 +69,10 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   return Response.json({ success: true });
 }
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function DELETE(request: Request, { params }: RouteContext) {
+  const originError = rejectInvalidOrigin(request);
+  if (originError) return originError;
+
   const ctx = await getLedgerContextForApi();
   if (!ctx.ok) {
     return Response.json({ error: ctx.message }, { status: ctx.status });

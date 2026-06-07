@@ -3,6 +3,7 @@ import { loadAccountsView } from "server/loaders/accounts";
 import { createAccountService } from "server/services/accounts";
 import { accountTypeOptions, type AccountType } from "types/accounts";
 import { isUuid } from "utils/formData";
+import { rejectInvalidOrigin } from "utils/requestSecurity";
 
 const accountTypeValues = accountTypeOptions.map((o) => o.value);
 
@@ -17,6 +18,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const originError = rejectInvalidOrigin(request);
+  if (originError) return originError;
+
   const ctx = await getLedgerContextForApi();
   if (!ctx.ok) {
     return Response.json({ error: ctx.message }, { status: ctx.status });
@@ -49,9 +53,7 @@ export async function POST(request: Request) {
 
   if (
     !Array.isArray(holderUserIds) ||
-    !holderUserIds.every(
-      (id: unknown) => typeof id === "string" && isUuid(id),
-    )
+    !holderUserIds.every((id: unknown) => typeof id === "string" && isUuid(id))
   ) {
     return Response.json({ error: "holder_invalid" }, { status: 400 });
   }

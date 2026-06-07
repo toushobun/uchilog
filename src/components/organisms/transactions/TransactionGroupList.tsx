@@ -3,7 +3,7 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { TransactionRow } from "transactions/TransactionRow";
+import { TransactionRow } from "transactions-molecules/TransactionRow";
 import {
   transactionExpenseColor,
   transactionIncomeColor,

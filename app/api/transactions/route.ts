@@ -1,6 +1,7 @@
 import { getLedgerContextForApi } from "lib/ledger/api-context";
 import { loadTransactionListPage } from "server/loaders/transactions";
 import { createTransactionService } from "server/services/transactions";
+import { rejectInvalidOrigin } from "utils/requestSecurity";
 import { validateTransactionBody } from "utils/transactionValidation";
 
 export async function GET(request: Request) {
@@ -16,6 +17,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const originError = rejectInvalidOrigin(request);
+  if (originError) return originError;
+
   const ctx = await getLedgerContextForApi();
   if (!ctx.ok) {
     return Response.json({ error: ctx.message }, { status: ctx.status });

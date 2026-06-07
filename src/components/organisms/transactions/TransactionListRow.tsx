@@ -6,7 +6,7 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { TransactionDateTime } from "transactions/TransactionDateTime";
+import { TransactionDateTime } from "transactions-atoms/TransactionDateTime";
 import type { TransactionListItem } from "types/transactions";
 import { getMerchantInitial } from "utils/merchants";
 import {

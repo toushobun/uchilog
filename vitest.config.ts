@@ -4,6 +4,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": new URL("./src", import.meta.url).pathname,
+      "accounts-molecules": new URL(
+        "./src/components/molecules/accounts",
+        import.meta.url,
+      ).pathname,
       accounts: new URL("./src/components/organisms/accounts", import.meta.url)
         .pathname,
       "accounts-page": new URL(
@@ -120,6 +124,10 @@ export default defineConfig({
       ).pathname,
       transactions: new URL(
         "./src/components/organisms/transactions",
+        import.meta.url,
+      ).pathname,
+      "transactions-atoms": new URL(
+        "./src/components/atoms/transactions",
         import.meta.url,
       ).pathname,
       "transactions-molecules": new URL(

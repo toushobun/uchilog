@@ -14,6 +14,33 @@ export function normalizeSearchText(value: string) {
   return value.trim().toLowerCase();
 }
 
+export function parseWebsiteUrl(value: unknown): string | null | undefined {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+  if (trimmedValue.length === 0) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmedValue);
+
+    if (!["http:", "https:"].includes(url.protocol) || !url.hostname) {
+      return undefined;
+    }
+
+    return trimmedValue;
+  } catch {
+    return undefined;
+  }
+}
+
 export function attachAliases(
   merchants: MerchantRow[],
   aliases: MerchantAliasRow[],

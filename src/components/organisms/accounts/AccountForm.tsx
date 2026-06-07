@@ -4,11 +4,10 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
+import { AccountHolderCheckboxGroup } from "accounts-molecules/AccountHolderCheckboxGroup";
 import { GlassCard } from "ui/GlassCard";
 
 import { accountTypeOptions, type AccountHolderOption } from "types/accounts";
-
-import { AccountHolderCheckboxGroup } from "./AccountHolderCheckboxGroup";
 
 type AccountFormProps = {
   createAccountAction: (formData: FormData) => void | Promise<void>;

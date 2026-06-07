@@ -11,7 +11,7 @@ import {
   transactionIncomeColor,
 } from "theme/transactionColors";
 import { routePaths } from "config/paths";
-import { TransactionRow } from "transactions/TransactionRow";
+import { TransactionRow } from "transactions-molecules/TransactionRow";
 import type { DashboardViewData } from "types/dashboard";
 import { formatNumber } from "utils/transactions";
 
