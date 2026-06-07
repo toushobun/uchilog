@@ -12,11 +12,29 @@ export default defineConfig({
       ).pathname,
       auth: new URL("./src/components/organisms/auth", import.meta.url)
         .pathname,
+      "categories-page": new URL(
+        "./src/components/pages/categories",
+        import.meta.url,
+      ).pathname,
+      "dashboard-molecules": new URL(
+        "./src/components/molecules/dashboard",
+        import.meta.url,
+      ).pathname,
       "dashboard-page": new URL(
         "./src/components/pages/dashboard",
         import.meta.url,
       ).pathname,
+      "home-page": new URL("./src/components/pages/home", import.meta.url)
+        .pathname,
+      "ledger-setup-page": new URL(
+        "./src/components/pages/ledger-setup",
+        import.meta.url,
+      ).pathname,
+      "ledgers-page": new URL("./src/components/pages/ledgers", import.meta.url)
+        .pathname,
       lib: new URL("./src/lib", import.meta.url).pathname,
+      "login-page": new URL("./src/components/pages/login", import.meta.url)
+        .pathname,
       merchants: new URL(
         "./src/components/organisms/merchants",
         import.meta.url,
@@ -25,8 +43,18 @@ export default defineConfig({
         "./src/components/pages/merchants",
         import.meta.url,
       ).pathname,
+      "navigation-molecules": new URL(
+        "./src/components/molecules/navigation",
+        import.meta.url,
+      ).pathname,
+      providers: new URL("./src/components/providers", import.meta.url)
+        .pathname,
       "protected-template": new URL(
         "./src/components/templates/protected",
+        import.meta.url,
+      ).pathname,
+      "root-template": new URL(
+        "./src/components/templates/root",
         import.meta.url,
       ).pathname,
       "settings-page": new URL(
@@ -38,6 +66,10 @@ export default defineConfig({
         "./src/components/molecules/settings",
         import.meta.url,
       ).pathname,
+      "statistics-page": new URL(
+        "./src/components/pages/statistics",
+        import.meta.url,
+      ).pathname,
       theme: new URL("./src/theme", import.meta.url).pathname,
       types: new URL("./src/types", import.meta.url).pathname,
       utils: new URL("./src/utils", import.meta.url).pathname,
@@ -47,6 +79,10 @@ export default defineConfig({
       ).pathname,
       transactions: new URL(
         "./src/components/organisms/transactions",
+        import.meta.url,
+      ).pathname,
+      "transactions-molecules": new URL(
+        "./src/components/molecules/transactions",
         import.meta.url,
       ).pathname,
       "transactions-page": new URL(

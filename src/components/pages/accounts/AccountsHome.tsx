@@ -8,7 +8,7 @@ import {
   updateAccount,
 } from "server/actions/accounts";
 import type { AccountHolderOption, AccountRow } from "types/accounts";
-import { GlassCard } from "ui/GlassCard";
+import { PageCard } from "ui-molecules/PageCard";
 
 type AccountsHomeProps = {
   accounts: AccountRow[];
@@ -26,11 +26,7 @@ export function AccountsHome({
   ledgerName,
 }: AccountsHomeProps) {
   return (
-    <GlassCard
-      sx={{
-        p: { xs: 4, sm: 5 },
-      }}
-    >
+    <PageCard>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         账户
       </Typography>
@@ -58,6 +54,6 @@ export function AccountsHome({
         holderOptions={holderOptions}
         updateAccountAction={updateAccount}
       />
-    </GlassCard>
+    </PageCard>
   );
 }

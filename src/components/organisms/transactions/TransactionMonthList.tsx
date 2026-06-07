@@ -4,13 +4,12 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { TransactionRow } from "transactions/TransactionRow";
+import { TransactionGroupList } from "transactions/TransactionGroupList";
+import { TransactionSummaryBar } from "transactions-molecules/TransactionSummaryBar";
 import type {
-  TransactionAmountSummary,
   TransactionDateGroup,
   TransactionMonthPage,
   TransactionMonthView,
@@ -18,80 +17,13 @@ import type {
 import {
   addTransactionAmount,
   createTransactionAmountSummary,
-  formatNumber,
-  formatSignedNumber,
 } from "utils/transactions";
 
 type TransactionMonthListProps = {
+  loadMoreAction?: (offset: number) => Promise<TransactionMonthPage>;
   monthView: TransactionMonthView;
   voidAction?: (formData: FormData) => void;
-  loadMoreAction?: (offset: number) => Promise<TransactionMonthPage>;
 };
-
-const incomeColor = "#d64b4b";
-const expenseColor = "#3f7f46";
-const borderPurple = "#e5dcf6";
-
-function SummaryItem({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color?: string;
-}) {
-  return (
-    <Stack spacing={0.4} sx={{ alignItems: "center", flex: 1, minWidth: 0 }}>
-      <Typography color="text.secondary" variant="caption">
-        {label}
-      </Typography>
-      <Typography
-        sx={{
-          color: color ?? "text.primary",
-          fontSize: 16,
-          fontWeight: 800,
-          lineHeight: 1.2,
-        }}
-      >
-        {value}
-      </Typography>
-    </Stack>
-  );
-}
-
-function MonthSummary({ summary }: { summary: TransactionAmountSummary }) {
-  return (
-    <Box
-      sx={{
-        bgcolor: "background.paper",
-        border: `1px solid ${borderPurple}`,
-        borderRadius: 1,
-        boxShadow: "0 10px 24px rgba(77, 55, 120, 0.06)",
-        mt: 1.5,
-        overflow: "hidden",
-      }}
-    >
-      <Stack
-        direction="row"
-        divider={<Divider flexItem orientation="vertical" />}
-        sx={{ px: 2, py: 1.5 }}
-      >
-        <SummaryItem
-          color={incomeColor}
-          label="收入"
-          value={formatNumber(summary.income)}
-        />
-        <SummaryItem
-          color={expenseColor}
-          label="支出"
-          value={formatNumber(summary.expense)}
-        />
-        <SummaryItem label="结余" value={formatNumber(summary.balance)} />
-      </Stack>
-    </Box>
-  );
-}
 
 function mergeGroups(
   existing: TransactionDateGroup[],
@@ -119,15 +51,15 @@ function mergeGroups(
         ...prev,
         items: [...prev.items, ...newItems],
         summary: {
-          currency: prev.summary.currency,
-          income: String(
-            Number(prev.summary.income) + Number(addedSummary.income),
+          balance: String(
+            Number(prev.summary.balance) + Number(addedSummary.balance),
           ),
+          currency: prev.summary.currency,
           expense: String(
             Number(prev.summary.expense) + Number(addedSummary.expense),
           ),
-          balance: String(
-            Number(prev.summary.balance) + Number(addedSummary.balance),
+          income: String(
+            Number(prev.summary.income) + Number(addedSummary.income),
           ),
         },
       });
@@ -139,87 +71,10 @@ function mergeGroups(
   return [...map.values()];
 }
 
-function GroupList({
-  groups,
-  voidAction,
-}: {
-  groups: TransactionDateGroup[];
-  voidAction?: (formData: FormData) => void;
-}) {
-  return (
-    <Stack
-      sx={{
-        left: { xs: "50%", sm: "auto" },
-        overflow: "hidden",
-        position: { xs: "relative", sm: "static" },
-        transform: { xs: "translateX(-50%)", sm: "none" },
-        width: { xs: "100vw", sm: "auto" },
-      }}
-    >
-      {groups.map((group) => (
-        <Box key={group.date}>
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{
-              alignItems: "center",
-              justifyContent: "space-between",
-              px: 1.6,
-              py: 0.8,
-            }}
-          >
-            <Typography
-              color="text.secondary"
-              sx={{ fontSize: 13, fontWeight: 800 }}
-            >
-              {group.label}
-            </Typography>
-            <Typography
-              sx={{
-                color:
-                  Number(group.summary.balance) >= 0
-                    ? incomeColor
-                    : expenseColor,
-                fontSize: 13,
-                fontWeight: 800,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {formatSignedNumber(group.summary.balance)}
-            </Typography>
-          </Stack>
-
-          <Stack
-            divider={<Divider flexItem sx={{ ml: 7.2 }} />}
-            sx={{
-              bgcolor: "background.paper",
-              boxShadow: "0 10px 24px rgba(77, 55, 120, 0.05)",
-              overflow: "hidden",
-              px: 1.6,
-            }}
-          >
-            {group.items.map((item) => (
-              <TransactionRow
-                item={item}
-                key={item.id}
-                showAccount
-                showTime
-                showNote
-                showRecorder
-                voidAction={voidAction}
-              />
-            ))}
-          </Stack>
-        </Box>
-      ))}
-    </Stack>
-  );
-}
-
 export function TransactionMonthList({
+  loadMoreAction,
   monthView,
   voidAction,
-  loadMoreAction,
 }: TransactionMonthListProps) {
   const [prevMonthView, setPrevMonthView] = useState(monthView);
   const [groups, setGroups] = useState(monthView.groups);
@@ -245,8 +100,9 @@ export function TransactionMonthList({
       isPending ||
       isLoadingRef.current ||
       !loadMoreAction
-    )
+    ) {
       return;
+    }
 
     isLoadingRef.current = true;
     startTransition(async () => {
@@ -284,7 +140,7 @@ export function TransactionMonthList({
   if (groups.length === 0) {
     return (
       <Stack spacing={2.5} sx={{ mt: 1.5 }}>
-        <MonthSummary summary={monthView.summary} />
+        <TransactionSummaryBar summary={monthView.summary} />
         <Box
           sx={{
             bgcolor: "background.paper",
@@ -302,9 +158,9 @@ export function TransactionMonthList({
 
   return (
     <Stack spacing={2} sx={{ mt: 1.5 }}>
-      <MonthSummary summary={monthView.summary} />
+      <TransactionSummaryBar summary={monthView.summary} />
 
-      <GroupList groups={groups} voidAction={voidAction} />
+      <TransactionGroupList groups={groups} voidAction={voidAction} />
 
       {nextOffset !== null ? (
         <Stack ref={sentinelRef} sx={{ alignItems: "center", py: 2 }}>

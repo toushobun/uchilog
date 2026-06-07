@@ -7,27 +7,33 @@ import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { EmptyState } from "ui-molecules/EmptyState";
-import { GlassCard } from "ui/GlassCard";
-import {
-  archiveMerchant,
-  archiveMerchantAlias,
-} from "server/actions/merchants";
 import { MerchantAliasForm } from "merchants/MerchantAliasForm";
 import { MerchantEditForm } from "merchants/MerchantEditForm";
 import type { MerchantRow } from "types/merchants";
+import { GlassCard } from "ui/GlassCard";
+import { EmptyState } from "ui-molecules/EmptyState";
 import { getMerchantInitial } from "utils/merchants";
 
+type MerchantAction = (formData: FormData) => void | Promise<void>;
+
 type MerchantListProps = {
+  archiveAliasAction: MerchantAction;
+  archiveMerchantAction: MerchantAction;
+  createAliasAction: MerchantAction;
   errorMerchantId: string | null;
   errorMessage: string | null;
   merchants: MerchantRow[];
+  updateMerchantAction: MerchantAction;
 };
 
 export function MerchantList({
+  archiveAliasAction,
+  archiveMerchantAction,
+  createAliasAction,
   errorMerchantId,
   errorMessage,
   merchants,
+  updateMerchantAction,
 }: MerchantListProps) {
   if (merchants.length === 0) {
     return (
@@ -45,10 +51,10 @@ export function MerchantList({
           <GlassCard
             key={merchant.id}
             sx={{
-              p: 3,
               borderColor: merchantErrorMessage
                 ? "error.main"
                 : "var(--user-theme-card-border)",
+              p: 3,
             }}
           >
             {merchantErrorMessage ? (
@@ -104,7 +110,7 @@ export function MerchantList({
 
               <Stack
                 component="form"
-                action={archiveMerchant}
+                action={archiveMerchantAction}
                 sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
               >
                 <input name="merchantId" type="hidden" value={merchant.id} />
@@ -130,7 +136,7 @@ export function MerchantList({
                   <Stack
                     key={alias.id}
                     component="form"
-                    action={archiveMerchantAlias}
+                    action={archiveAliasAction}
                     direction="row"
                     spacing={1}
                     sx={{ alignItems: "center" }}
@@ -154,10 +160,16 @@ export function MerchantList({
               </Typography>
             )}
 
-            <MerchantAliasForm merchantId={merchant.id} />
+            <MerchantAliasForm
+              action={createAliasAction}
+              merchantId={merchant.id}
+            />
 
             <Divider sx={{ my: 3 }} />
-            <MerchantEditForm merchant={merchant} />
+            <MerchantEditForm
+              action={updateMerchantAction}
+              merchant={merchant}
+            />
           </GlassCard>
         );
       })}

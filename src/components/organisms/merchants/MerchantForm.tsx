@@ -5,26 +5,18 @@ import Typography from "@mui/material/Typography";
 
 import { GlassCard } from "ui/GlassCard";
 
-import { createMerchant } from "server/actions/merchants";
+type MerchantFormProps = {
+  action: (formData: FormData) => void | Promise<void>;
+};
 
-export function MerchantForm() {
+export function MerchantForm({ action }: MerchantFormProps) {
   return (
-    <GlassCard
-      sx={{
-        mt: 4,
-        p: 3,
-      }}
-    >
+    <GlassCard sx={{ mt: 4, p: 3 }}>
       <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
         新增商家
       </Typography>
 
-      <Stack
-        component="form"
-        action={createMerchant}
-        spacing={2.5}
-        sx={{ mt: 3 }}
-      >
+      <Stack component="form" action={action} spacing={2.5} sx={{ mt: 3 }}>
         <TextField
           autoComplete="off"
           fullWidth

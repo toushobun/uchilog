@@ -5,8 +5,15 @@ import Typography from "@mui/material/Typography";
 
 import { MerchantForm } from "merchants/MerchantForm";
 import { MerchantList } from "merchants/MerchantList";
+import {
+  archiveMerchant,
+  archiveMerchantAlias,
+  createMerchant,
+  createMerchantAlias,
+  updateMerchant,
+} from "server/actions/merchants";
 import type { MerchantRow } from "types/merchants";
-import { GlassCard } from "ui/GlassCard";
+import { PageCard } from "ui-molecules/PageCard";
 
 type MerchantsHomeProps = {
   errorMerchantId: string | null;
@@ -24,11 +31,7 @@ export function MerchantsHome({
   merchants,
 }: MerchantsHomeProps) {
   return (
-    <GlassCard
-      sx={{
-        p: { xs: 4, sm: 5 },
-      }}
-    >
+    <PageCard>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         商家
       </Typography>
@@ -46,7 +49,7 @@ export function MerchantsHome({
         </Typography>
       ) : null}
 
-      <GlassCard component="form" sx={{ mt: 4, p: 3 }}>
+      <PageCard component="form" sx={{ mt: 4, p: 3 }}>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <TextField
             defaultValue={keyword}
@@ -64,14 +67,18 @@ export function MerchantsHome({
             搜索
           </Button>
         </Stack>
-      </GlassCard>
+      </PageCard>
 
-      <MerchantForm />
+      <MerchantForm action={createMerchant} />
       <MerchantList
+        archiveAliasAction={archiveMerchantAlias}
+        archiveMerchantAction={archiveMerchant}
+        createAliasAction={createMerchantAlias}
         errorMerchantId={errorMerchantId}
         errorMessage={errorMessage}
         merchants={merchants}
+        updateMerchantAction={updateMerchant}
       />
-    </GlassCard>
+    </PageCard>
   );
 }

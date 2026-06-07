@@ -2,20 +2,17 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { createMerchantAlias } from "server/actions/merchants";
-
 type MerchantAliasFormProps = {
+  action: (formData: FormData) => void | Promise<void>;
   merchantId: string;
 };
 
-export function MerchantAliasForm({ merchantId }: MerchantAliasFormProps) {
+export function MerchantAliasForm({
+  action,
+  merchantId,
+}: MerchantAliasFormProps) {
   return (
-    <Stack
-      component="form"
-      action={createMerchantAlias}
-      spacing={1.5}
-      sx={{ mt: 2 }}
-    >
+    <Stack component="form" action={action} spacing={1.5} sx={{ mt: 2 }}>
       <input name="merchantId" type="hidden" value={merchantId} />
 
       <TextField

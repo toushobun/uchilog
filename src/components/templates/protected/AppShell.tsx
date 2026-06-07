@@ -9,6 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { BottomNavButton } from "navigation-molecules/BottomNavButton";
 import { UserThemeProvider } from "theme/UserThemeProvider";
 
 const navItems = [
@@ -19,11 +20,11 @@ const navItems = [
 ];
 
 type AppShellProps = {
-  email: string;
   children: ReactNode;
+  email: string;
 };
 
-export function AppShell({ email, children }: AppShellProps) {
+export function AppShell({ children, email }: AppShellProps) {
   const pathname = usePathname();
   const isCreateTransactionPage =
     pathname === "/transactions/new" ||
@@ -81,8 +82,8 @@ export function AppShell({ email, children }: AppShellProps) {
           sx={{
             backdropFilter: "blur(20px)",
             bgcolor: "var(--user-theme-nav-bg)",
-            borderTop: "1px solid var(--user-theme-nav-border)",
             borderRadius: 0,
+            borderTop: "1px solid var(--user-theme-nav-border)",
             bottom: 0,
             boxShadow: "0 -8px 24px rgba(0, 0, 0, 0.08)",
             left: 0,
@@ -120,8 +121,8 @@ export function AppShell({ email, children }: AppShellProps) {
                 variant="text"
                 sx={{
                   alignItems: "center",
-                  bgcolor: "transparent",
                   background: "var(--user-theme-fab-bg)",
+                  bgcolor: "transparent",
                   borderRadius: "50%",
                   boxShadow: "0 4px 16px var(--user-theme-fab-shadow)",
                   color: "#fff",
@@ -132,8 +133,8 @@ export function AppShell({ email, children }: AppShellProps) {
                   p: 0,
                   width: 48,
                   "&:hover": {
-                    bgcolor: "transparent",
                     background: "var(--user-theme-fab-bg)",
+                    bgcolor: "transparent",
                     filter: "brightness(1.06)",
                   },
                 }}
@@ -180,36 +181,5 @@ export function AppShell({ email, children }: AppShellProps) {
         </Paper>
       </Box>
     </UserThemeProvider>
-  );
-}
-
-type BottomNavButtonProps = {
-  href: string;
-  label: string;
-  selected: boolean;
-};
-
-function BottomNavButton({ href, label, selected }: BottomNavButtonProps) {
-  return (
-    <Button
-      aria-current={selected ? "page" : undefined}
-      component={Link}
-      href={href}
-      size="small"
-      variant="text"
-      sx={{
-        bgcolor: selected
-          ? "var(--user-theme-bottom-nav-active-bg)"
-          : "transparent",
-        borderRadius: 2,
-        color: selected
-          ? "var(--user-theme-bottom-nav-active)"
-          : "var(--user-theme-bottom-nav-inactive)",
-        fontWeight: selected ? 700 : 500,
-        minWidth: 52,
-      }}
-    >
-      {label}
-    </Button>
   );
 }

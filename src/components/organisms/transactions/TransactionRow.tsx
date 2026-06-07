@@ -6,6 +6,10 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import {
+  transactionExpenseColor,
+  transactionIncomeColor,
+} from "theme/transactionColors";
 import type { TransactionRowItem } from "types/transactions";
 import { getMerchantInitial } from "utils/merchants";
 import {
@@ -13,8 +17,6 @@ import {
   getCategoryLabel,
 } from "utils/transactions";
 
-const incomeColor = "#d64b4b";
-const expenseColor = "#3f7f46";
 const primaryPurple = "#6d4bb3";
 const avatarBackground = "#f4efff";
 
@@ -44,7 +46,8 @@ export function TransactionRow({
   voidAction,
 }: TransactionRowProps) {
   const merchantName = item.merchant_name ?? "未指定商家";
-  const amountColor = item.type === "income" ? incomeColor : expenseColor;
+  const amountColor =
+    item.type === "income" ? transactionIncomeColor : transactionExpenseColor;
   const time = new Date(item.transaction_at).toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",

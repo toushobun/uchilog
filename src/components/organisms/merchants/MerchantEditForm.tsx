@@ -2,16 +2,16 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-import { updateMerchant } from "server/actions/merchants";
 import type { MerchantRow } from "types/merchants";
 
 type MerchantEditFormProps = {
+  action: (formData: FormData) => void | Promise<void>;
   merchant: MerchantRow;
 };
 
-export function MerchantEditForm({ merchant }: MerchantEditFormProps) {
+export function MerchantEditForm({ action, merchant }: MerchantEditFormProps) {
   return (
-    <Stack component="form" action={updateMerchant} spacing={2} sx={{ mt: 3 }}>
+    <Stack component="form" action={action} spacing={2} sx={{ mt: 3 }}>
       <input name="merchantId" type="hidden" value={merchant.id} />
 
       <TextField

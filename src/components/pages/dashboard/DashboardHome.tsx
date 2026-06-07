@@ -5,55 +5,17 @@ import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { PeriodExpenseCard } from "dashboard-molecules/PeriodExpenseCard";
+import {
+  transactionExpenseColor,
+  transactionIncomeColor,
+} from "theme/transactionColors";
 import { TransactionRow } from "transactions/TransactionRow";
 import type { DashboardViewData } from "types/dashboard";
 import { formatNumber } from "utils/transactions";
 
-const incomeColor = "#d64b4b";
-const expenseColor = "#3f7f46";
 const primaryPurple = "#6d4bb3";
 const summaryCardBg = "#e8e0f8";
-
-function PeriodExpenseCard({
-  label,
-  expense,
-  recordCount,
-}: {
-  label: string;
-  expense: string;
-  recordCount: number;
-}) {
-  return (
-    <Box
-      sx={{
-        bgcolor: "background.paper",
-        borderRadius: 1,
-        boxShadow: "0 10px 24px rgba(77, 55, 120, 0.06)",
-        flex: 1,
-        p: 1.8,
-      }}
-    >
-      <Typography sx={{ color: "text.secondary", fontSize: 12, mb: 0.6 }}>
-        {label}
-      </Typography>
-      <Typography
-        sx={{
-          color: expenseColor,
-          fontSize: 20,
-          fontWeight: 900,
-          lineHeight: 1.2,
-        }}
-      >
-        -{formatNumber(expense)}
-      </Typography>
-      {recordCount > 0 ? (
-        <Typography sx={{ color: "text.secondary", fontSize: 11, mt: 0.4 }}>
-          共 {recordCount} 笔记录
-        </Typography>
-      ) : null}
-    </Box>
-  );
-}
 
 export function DashboardHome({ data }: { data: DashboardViewData }) {
   const {
@@ -66,7 +28,6 @@ export function DashboardHome({ data }: { data: DashboardViewData }) {
 
   return (
     <Stack spacing={2.5}>
-      {/* Month summary card */}
       <Box
         sx={{
           bgcolor: summaryCardBg,
@@ -96,24 +57,40 @@ export function DashboardHome({ data }: { data: DashboardViewData }) {
           <Stack spacing={1}>
             <Stack direction="row" spacing={0.6} sx={{ alignItems: "center" }}>
               <Typography
-                sx={{ color: incomeColor, fontSize: 11, fontWeight: 700 }}
+                sx={{
+                  color: transactionIncomeColor,
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
               >
-                ▲ 收入
+                ■ 收入
               </Typography>
               <Typography
-                sx={{ color: incomeColor, fontSize: 17, fontWeight: 900 }}
+                sx={{
+                  color: transactionIncomeColor,
+                  fontSize: 17,
+                  fontWeight: 900,
+                }}
               >
                 {formatNumber(monthSummary.income)}
               </Typography>
             </Stack>
             <Stack direction="row" spacing={0.6} sx={{ alignItems: "center" }}>
               <Typography
-                sx={{ color: expenseColor, fontSize: 11, fontWeight: 700 }}
+                sx={{
+                  color: transactionExpenseColor,
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
               >
-                ▼ 支出
+                ■ 支出
               </Typography>
               <Typography
-                sx={{ color: expenseColor, fontSize: 17, fontWeight: 900 }}
+                sx={{
+                  color: transactionExpenseColor,
+                  fontSize: 17,
+                  fontWeight: 900,
+                }}
               >
                 {formatNumber(monthSummary.expense)}
               </Typography>
@@ -122,7 +99,6 @@ export function DashboardHome({ data }: { data: DashboardViewData }) {
         </Stack>
       </Box>
 
-      {/* Recent transactions */}
       <Stack spacing={0}>
         <Stack
           direction="row"
@@ -144,7 +120,7 @@ export function DashboardHome({ data }: { data: DashboardViewData }) {
               textDecoration: "none",
             }}
           >
-            全部 ›
+            全部 →
           </a>
         </Stack>
 
@@ -184,7 +160,6 @@ export function DashboardHome({ data }: { data: DashboardViewData }) {
         </Box>
       </Stack>
 
-      {/* Today / week expense */}
       <Stack direction="row" spacing={1.5}>
         <PeriodExpenseCard
           label="今日支出"
