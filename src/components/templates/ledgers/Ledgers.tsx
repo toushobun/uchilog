@@ -12,7 +12,10 @@ type LedgersTemplateProps = {
   ledgers: CurrentLedger[];
 };
 
-export function LedgersTemplate({ currentLedgerId, ledgers }: LedgersTemplateProps) {
+export function LedgersTemplate({
+  currentLedgerId,
+  ledgers,
+}: LedgersTemplateProps) {
   return (
     <PageCard>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>

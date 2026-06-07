@@ -10,7 +10,7 @@ import { PageCard } from "ui-molecules/PageCard";
 
 type NewTransactionTemplateProps = {
   accountOptions: TransactionAccountOption[];
-  action: (formData: FormData) => void | Promise<void>;
+  action: (formData: FormData) => Promise<void>;
   categoryOptions: TransactionCategoryOption[];
   errorMessage: string | null;
   ledgerName: string;

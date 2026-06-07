@@ -6,6 +6,7 @@ const meta = {
   title: "Organisms/Merchants/MerchantEditForm",
   component: MerchantEditForm,
   args: {
+    action: async () => {},
     merchant: {
       id: "00000000-0000-4000-8000-000000001001",
       name: "LIFE超市",

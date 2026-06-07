@@ -60,7 +60,9 @@ describe("TransactionsTemplate", () => {
   it("显示当前月份标签", () => {
     const { container } = renderPage();
 
-    expect(within(container).getByText("2026年6月")).toBeTruthy();
+    expect(within(container).getAllByText("2026年6月").length).toBeGreaterThan(
+      0,
+    );
   });
 
   it("上一个月导航链接指向正确月份", () => {

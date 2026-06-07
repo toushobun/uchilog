@@ -39,11 +39,16 @@ const meta = {
   title: "Templates/Merchants/MerchantsTemplate",
   component: MerchantsTemplate,
   args: {
+    archiveMerchantAction: async () => {},
+    archiveMerchantAliasAction: async () => {},
+    createMerchantAction: async () => {},
+    createMerchantAliasAction: async () => {},
     merchants,
     keyword: "",
     ledgerName: "家庭账本",
     errorMerchantId: null,
     errorMessage: null,
+    updateMerchantAction: async () => {},
   },
 } satisfies Meta<typeof MerchantsTemplate>;
 

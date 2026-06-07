@@ -13,8 +13,8 @@ describe("LoginForm", () => {
   it("显示邮箱和密码输入框", () => {
     render(<LoginForm action={vi.fn(async () => ({}))} />);
 
-    expect(screen.getByLabelText("邮箱")).toBeTruthy();
-    expect(screen.getByLabelText("密码")).toBeTruthy();
+    expect(screen.getByLabelText(/邮箱/)).toBeTruthy();
+    expect(screen.getByLabelText(/密码/)).toBeTruthy();
   });
 
   it("显示登录按钮", () => {
@@ -26,12 +26,12 @@ describe("LoginForm", () => {
   it("邮箱输入框类型为 email", () => {
     render(<LoginForm action={vi.fn(async () => ({}))} />);
 
-    expect(screen.getByLabelText("邮箱").getAttribute("type")).toBe("email");
+    expect(screen.getByLabelText(/邮箱/).getAttribute("type")).toBe("email");
   });
 
   it("密码输入框类型为 password", () => {
     render(<LoginForm action={vi.fn(async () => ({}))} />);
 
-    expect(screen.getByLabelText("密码").getAttribute("type")).toBe("password");
+    expect(screen.getByLabelText(/密码/).getAttribute("type")).toBe("password");
   });
 });

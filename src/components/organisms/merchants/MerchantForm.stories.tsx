@@ -5,6 +5,9 @@ import { MerchantForm } from "./MerchantForm";
 const meta = {
   title: "Organisms/Merchants/MerchantForm",
   component: MerchantForm,
+  args: {
+    action: async () => {},
+  },
 } satisfies Meta<typeof MerchantForm>;
 
 export default meta;

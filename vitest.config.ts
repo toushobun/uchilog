@@ -38,8 +38,10 @@ export default defineConfig({
       ).pathname,
       "home-page": new URL("./src/components/pages/home", import.meta.url)
         .pathname,
-      "home-template": new URL("./src/components/templates/home", import.meta.url)
-        .pathname,
+      "home-template": new URL(
+        "./src/components/templates/home",
+        import.meta.url,
+      ).pathname,
       "ledger-setup-page": new URL(
         "./src/components/pages/ledger-setup",
         import.meta.url,
@@ -50,13 +52,17 @@ export default defineConfig({
       ).pathname,
       "ledgers-page": new URL("./src/components/pages/ledgers", import.meta.url)
         .pathname,
-      "ledgers-template": new URL("./src/components/templates/ledgers", import.meta.url)
-        .pathname,
+      "ledgers-template": new URL(
+        "./src/components/templates/ledgers",
+        import.meta.url,
+      ).pathname,
       lib: new URL("./src/lib", import.meta.url).pathname,
       "login-page": new URL("./src/components/pages/login", import.meta.url)
         .pathname,
-      "login-template": new URL("./src/components/templates/login", import.meta.url)
-        .pathname,
+      "login-template": new URL(
+        "./src/components/templates/login",
+        import.meta.url,
+      ).pathname,
       merchants: new URL(
         "./src/components/organisms/merchants",
         import.meta.url,

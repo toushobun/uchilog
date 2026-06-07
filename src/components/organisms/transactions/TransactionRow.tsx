@@ -22,27 +22,21 @@ const avatarBackground = "#f4efff";
 
 export type TransactionRowProps = {
   item: TransactionRowItem;
-  /** 显示收入/支出标签 chip */
-  showType?: boolean;
-  /** 显示备注 */
-  showNote?: boolean;
-  /** 显示账户名称 */
   showAccount?: boolean;
-  /** 显示交易时间 */
-  showTime?: boolean;
-  /** 显示记账人名字 */
+  showNote?: boolean;
   showRecorder?: boolean;
-  /** 传入后显示撤销按钮 */
+  showTime?: boolean;
+  showType?: boolean;
   voidAction?: (formData: FormData) => void;
 };
 
 export function TransactionRow({
   item,
-  showType = false,
-  showNote = false,
   showAccount = false,
-  showTime = false,
+  showNote = false,
   showRecorder = false,
+  showTime = false,
+  showType = false,
   voidAction,
 }: TransactionRowProps) {
   const merchantName = item.merchant_name ?? "未指定商家";

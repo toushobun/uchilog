@@ -50,7 +50,9 @@ describe("TransactionRow", () => {
 
   it("收入记录显示正号金额", () => {
     render(
-      <TransactionRow item={createItem({ type: "income", amount: "260000" })} />,
+      <TransactionRow
+        item={createItem({ type: "income", amount: "260000" })}
+      />,
     );
 
     expect(screen.getByText("+260,000")).toBeTruthy();
@@ -63,9 +65,7 @@ describe("TransactionRow", () => {
   });
 
   it("showType 为 true 时显示收入标签", () => {
-    render(
-      <TransactionRow item={createItem({ type: "income" })} showType />,
-    );
+    render(<TransactionRow item={createItem({ type: "income" })} showType />);
 
     expect(screen.getByText("收入")).toBeTruthy();
   });
@@ -73,13 +73,13 @@ describe("TransactionRow", () => {
   it("showNote 为 true 时显示备注", () => {
     render(<TransactionRow item={createItem()} showNote />);
 
-    expect(screen.getByText("测试备注")).toBeTruthy();
+    expect(screen.getByText(/测试备注/)).toBeTruthy();
   });
 
   it("showNote 为 false 时不显示备注", () => {
     render(<TransactionRow item={createItem()} />);
 
-    expect(screen.queryByText("测试备注")).toBeNull();
+    expect(screen.queryByText(/测试备注/)).toBeNull();
   });
 
   it("showAccount 为 true 时账户名称出现在行内", () => {
@@ -88,10 +88,8 @@ describe("TransactionRow", () => {
     expect(screen.getByText(/日元现金/)).toBeTruthy();
   });
 
-  it("merchant_name 为 null 时显示「未指定商家」", () => {
-    render(
-      <TransactionRow item={createItem({ merchant_name: null })} />,
-    );
+  it("merchant_name 为 null 时显示未指定商家", () => {
+    render(<TransactionRow item={createItem({ merchant_name: null })} />);
 
     expect(screen.getByText("未指定商家")).toBeTruthy();
   });

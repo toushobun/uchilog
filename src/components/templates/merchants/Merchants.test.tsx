@@ -18,11 +18,16 @@ afterEach(() => {
 });
 
 const baseProps = {
+  archiveMerchantAction: vi.fn(async () => {}),
+  archiveMerchantAliasAction: vi.fn(async () => {}),
+  createMerchantAction: vi.fn(async () => {}),
+  createMerchantAliasAction: vi.fn(async () => {}),
   merchants: [],
   keyword: "",
   ledgerName: "家庭账本",
   errorMerchantId: null,
   errorMessage: null,
+  updateMerchantAction: vi.fn(async () => {}),
 };
 
 describe("MerchantsTemplate", () => {

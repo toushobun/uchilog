@@ -29,7 +29,9 @@ function createItem(index: number): TransactionListItem {
     merchant_name: isExpense ? "便利店" : "共達",
     note: null,
     recorder_name: null,
-    transaction_at: new Date(Date.UTC(2026, 5, 5, 3 + index, 0, 0)).toISOString(),
+    transaction_at: new Date(
+      Date.UTC(2026, 5, 5, 3 + index, 0, 0),
+    ).toISOString(),
     type: isExpense ? "expense" : "income",
   };
 }

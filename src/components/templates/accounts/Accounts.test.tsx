@@ -17,10 +17,13 @@ afterEach(() => {
 
 const baseProps = {
   accounts: [],
+  archiveAccountAction: vi.fn(async () => {}),
   baseCurrency: "JPY",
+  createAccountAction: vi.fn(async () => {}),
   errorMessage: null,
   holderOptions: [],
   ledgerName: "家庭账本",
+  updateAccountAction: vi.fn(async () => {}),
 };
 
 describe("AccountsTemplate", () => {

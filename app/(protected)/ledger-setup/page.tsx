@@ -22,8 +22,6 @@ export default async function LedgerSetupRoute({
   const params = await searchParams;
 
   return (
-    <LedgerSetupPage
-      errorMessage={getLedgerSetupErrorMessage(params.error)}
-    />
+    <LedgerSetupPage errorMessage={getLedgerSetupErrorMessage(params.error)} />
   );
 }

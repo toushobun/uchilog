@@ -52,10 +52,13 @@ const meta = {
   component: AccountsTemplate,
   args: {
     accounts,
+    archiveAccountAction: async () => {},
     baseCurrency: "JPY",
+    createAccountAction: async () => {},
     errorMessage: null,
     holderOptions,
     ledgerName: "家庭账本",
+    updateAccountAction: async () => {},
   },
 } satisfies Meta<typeof AccountsTemplate>;
 

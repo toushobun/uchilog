@@ -46,9 +46,13 @@ const meta = {
   title: "Organisms/Merchants/MerchantList",
   component: MerchantList,
   args: {
+    archiveAliasAction: async () => {},
+    archiveMerchantAction: async () => {},
+    createAliasAction: async () => {},
     merchants,
     errorMerchantId: null,
     errorMessage: null,
+    updateMerchantAction: async () => {},
   },
 } satisfies Meta<typeof MerchantList>;
 

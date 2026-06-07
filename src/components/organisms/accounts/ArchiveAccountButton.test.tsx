@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import type { FormEvent } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ArchiveAccountButton } from "./ArchiveAccountButton";
@@ -39,7 +40,9 @@ describe("ArchiveAccountButton", () => {
 
   it("用户确认后不阻止事件默认行为", () => {
     window.confirm = vi.fn(() => true);
-    const handleSubmit = vi.fn((e: Event) => e.preventDefault());
+    const handleSubmit = vi.fn((e: FormEvent<HTMLFormElement>) =>
+      e.preventDefault(),
+    );
 
     render(
       <form onSubmit={handleSubmit}>
@@ -55,7 +58,9 @@ describe("ArchiveAccountButton", () => {
 
   it("用户取消时阻止表单提交", () => {
     window.confirm = vi.fn(() => false);
-    const handleSubmit = vi.fn((e: Event) => e.preventDefault());
+    const handleSubmit = vi.fn((e: FormEvent<HTMLFormElement>) =>
+      e.preventDefault(),
+    );
 
     render(
       <form onSubmit={handleSubmit}>

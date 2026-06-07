@@ -14,19 +14,21 @@ afterEach(() => {
   cleanup();
 });
 
+const baseProps = {
+  currentLedgerName: "家庭账本",
+  email: "test@example.com",
+  logoutAction: vi.fn(async () => {}),
+};
+
 describe("SettingsTemplate", () => {
   it("显示当前账本名称", () => {
-    const { container } = render(
-      <SettingsTemplate currentLedgerName="家庭账本" email="test@example.com" />,
-    );
+    const { container } = render(<SettingsTemplate {...baseProps} />);
 
     expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
   });
 
   it("账户管理区域显示标题和说明文字", () => {
-    const { container } = render(
-      <SettingsTemplate currentLedgerName="家庭账本" email="test@example.com" />,
-    );
+    const { container } = render(<SettingsTemplate {...baseProps} />);
 
     expect(
       within(container).getByRole("heading", { name: "账户管理" }),
@@ -39,9 +41,7 @@ describe("SettingsTemplate", () => {
   });
 
   it("打开账户管理按钮链接到账户管理页面", () => {
-    const { container } = render(
-      <SettingsTemplate currentLedgerName="家庭账本" email="test@example.com" />,
-    );
+    const { container } = render(<SettingsTemplate {...baseProps} />);
 
     expect(
       within(container)
