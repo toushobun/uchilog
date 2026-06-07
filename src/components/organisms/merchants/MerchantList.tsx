@@ -13,8 +13,8 @@ import {
   archiveMerchant,
   archiveMerchantAlias,
 } from "server/actions/merchants";
-import { MerchantAliasForm } from "./merchant-alias-form";
-import { MerchantEditForm } from "./merchant-edit-form";
+import { MerchantAliasForm } from "merchants/MerchantAliasForm";
+import { MerchantEditForm } from "merchants/MerchantEditForm";
 import type { MerchantRow } from "types/merchants";
 import { getMerchantInitial } from "utils/merchants";
 

@@ -19,7 +19,7 @@ export function formatNumber(amount: string) {
   }).format(value);
 }
 
-export function formatAmount(amount: string, currency = "") {
+export function formatPlainAmount(amount: string, currency = "") {
   const formattedAmount = formatNumber(amount);
 
   return currency ? `${formattedAmount} ${currency}` : formattedAmount;
@@ -43,7 +43,10 @@ export function formatTransactionRowAmount(
   amount: string,
   currency = "",
 ) {
-  return `${type === "expense" ? "-" : "+"}${formatAmount(amount, currency)}`;
+  return `${type === "expense" ? "-" : "+"}${formatPlainAmount(
+    amount,
+    currency,
+  )}`;
 }
 
 export function getCategoryLabel(items: CategorySummaryItem[]): string | null {

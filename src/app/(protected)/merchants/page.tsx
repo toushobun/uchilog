@@ -1,16 +1,5 @@
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-
-import { GlassCard } from "ui/GlassCard";
-import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
-import { createClient } from "lib/supabase/server";
-
-import { MerchantForm } from "./merchant-form";
-import { MerchantList } from "./merchant-list";
-import type { MerchantAliasRow, MerchantRow } from "types/merchants";
-import { attachAliases, filterMerchantsByKeyword } from "utils/merchants";
+import { MerchantsHome } from "merchants-page/MerchantsHome";
+import { loadMerchantsView } from "server/loaders/merchants";
 
 type MerchantsPageProps = {
   searchParams: Promise<{
@@ -39,104 +28,21 @@ const errorMessages: Record<string, string> = {
 export default async function MerchantsPage({
   searchParams,
 }: MerchantsPageProps) {
-  const currentLedger = await getCurrentLedgerOrRedirect();
   const params = await searchParams;
   const keyword = params.q ?? "";
   const errorMessage = params.error
     ? (errorMessages[params.error] ?? null)
     : null;
   const errorMerchantId = params.merchantId ?? null;
-  const supabase = await createClient();
-
-  const { data: merchantData, error: merchantError } = await supabase
-    .from("merchant")
-    .select("id, name, website_url, icon_url, note, sort_order, created_at")
-    .eq("ledger_id", currentLedger.id)
-    .eq("is_archived", false)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false });
-
-  if (merchantError) {
-    throw new Error("Failed to load merchants");
-  }
-
-  const merchantsWithoutAliases = (merchantData ?? []).map((merchant) => ({
-    ...merchant,
-    aliases: [],
-  })) as MerchantRow[];
-  const merchantIds = merchantsWithoutAliases.map((merchant) => merchant.id);
-
-  const { data: aliasData, error: aliasError } = merchantIds.length
-    ? await supabase
-        .from("merchant_alias")
-        .select("id, merchant_id, alias, sort_order, created_at")
-        .in("merchant_id", merchantIds)
-        .eq("is_archived", false)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false })
-    : { data: [], error: null };
-
-  if (aliasError) {
-    throw new Error("Failed to load merchant aliases");
-  }
-
-  const merchants = filterMerchantsByKeyword(
-    attachAliases(
-      merchantsWithoutAliases,
-      (aliasData ?? []) as MerchantAliasRow[],
-    ),
-    keyword,
-  );
+  const view = await loadMerchantsView(keyword);
 
   return (
-    <GlassCard
-      sx={{
-        p: { xs: 4, sm: 5 },
-      }}
-    >
-      <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
-        商家
-      </Typography>
-      <Typography color="text.secondary" sx={{ mt: 2 }}>
-        当前账本：{currentLedger.name}
-      </Typography>
-      <Typography color="text.secondary" sx={{ mt: 2 }}>
-        管理常用商家、商家网址、备注和别名。UchiLog
-        会以商家为主轴，再结合分类进行统计。
-      </Typography>
-
-      {errorMessage && !errorMerchantId ? (
-        <Typography color="error" role="alert" sx={{ mt: 3 }}>
-          {errorMessage}
-        </Typography>
-      ) : null}
-
-      <GlassCard component="form" sx={{ mt: 4, p: 3 }}>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-          <TextField
-            defaultValue={keyword}
-            fullWidth
-            helperText="同时匹配商家主名称和别名。"
-            label="搜索商家"
-            name="q"
-            placeholder="例如：LIFE、来福、スギ"
-          />
-          <Button
-            sx={{ alignSelf: "flex-start" }}
-            type="submit"
-            variant="outlined"
-          >
-            搜索
-          </Button>
-        </Stack>
-      </GlassCard>
-
-      <MerchantForm />
-      <MerchantList
-        errorMerchantId={errorMerchantId}
-        errorMessage={errorMessage}
-        merchants={merchants}
-      />
-    </GlassCard>
+    <MerchantsHome
+      errorMerchantId={errorMerchantId}
+      errorMessage={errorMessage}
+      keyword={keyword}
+      ledgerName={view.ledgerName}
+      merchants={view.merchants}
+    />
   );
 }

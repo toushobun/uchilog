@@ -7,6 +7,15 @@ import {
 import { createClient } from "lib/supabase/server";
 
 import type {
+  AccountRow,
+  AppUserRow,
+  MerchantRow,
+  TransactionItemRow,
+  TransactionRecordRow,
+} from "server/db-types";
+import { buildTransactionListItem } from "server/loaders/buildTransactionListItem";
+import { loadCategoriesByIdsWithParents } from "server/loaders/loadCategoriesByIdsWithParents";
+import type {
   TransactionListItem,
   TransactionListPage,
   TransactionMonthPage,
@@ -24,47 +33,6 @@ import {
 
 const transactionListPageSize = 20;
 const monthPageSize = 20;
-
-type TransactionRecordRow = {
-  id: string;
-  type: "expense" | "income";
-  transaction_at: string;
-  merchant_id: string | null;
-  note: string | null;
-  created_by: string | null;
-  created_at: string;
-};
-
-type AppUserRow = {
-  id: string;
-  display_name: string;
-};
-
-type TransactionItemRow = {
-  transaction_record_id: string;
-  account_id: string;
-  category_id: string | null;
-  amount: string;
-  note: string | null;
-};
-
-type AccountRow = {
-  id: string;
-  name: string;
-  currency: string;
-};
-
-type CategoryRow = {
-  id: string;
-  name: string;
-  parent_id: string | null;
-};
-
-type MerchantRow = {
-  id: string;
-  name: string;
-  icon_url: string | null;
-};
 
 async function loadTransactionItems(
   records: TransactionRecordRow[],
@@ -89,6 +57,9 @@ async function loadTransactionItems(
 
   const items = (itemData ?? []) as TransactionItemRow[];
   const accountIds = [...new Set(items.map((item) => item.account_id))];
+  const categoryIds = items
+    .map((item) => item.category_id)
+    .filter((categoryId): categoryId is string => categoryId !== null);
   const merchantIds = [
     ...new Set(
       records
@@ -104,7 +75,7 @@ async function loadTransactionItems(
     ),
   ];
 
-  const [accountResult, categoryResult, merchantResult, recorderResult] =
+  const [accountResult, categories, merchantResult, recorderResult] =
     await Promise.all([
       accountIds.length > 0
         ? supabase
@@ -113,10 +84,7 @@ async function loadTransactionItems(
             .eq("ledger_id", currentLedger.id)
             .in("id", accountIds)
         : Promise.resolve({ data: [], error: null }),
-      supabase
-        .from("category")
-        .select("id, name, parent_id")
-        .eq("ledger_id", currentLedger.id),
+      loadCategoriesByIdsWithParents(categoryIds, currentLedger.id),
       merchantIds.length > 0
         ? supabase
             .from("merchant")
@@ -136,10 +104,6 @@ async function loadTransactionItems(
     throw new Error("Failed to load transaction accounts");
   }
 
-  if (categoryResult.error) {
-    throw new Error("Failed to load transaction categories");
-  }
-
   if (merchantResult.error) {
     throw new Error("Failed to load transaction merchants");
   }
@@ -149,10 +113,8 @@ async function loadTransactionItems(
   }
 
   const accounts = (accountResult.data ?? []) as AccountRow[];
-  const categories = (categoryResult.data ?? []) as CategoryRow[];
   const merchants = (merchantResult.data ?? []) as MerchantRow[];
   const recorders = (recorderResult.data ?? []) as AppUserRow[];
-
   const accountById = new Map(
     accounts.map((account) => [account.id, account] as const),
   );
@@ -165,64 +127,25 @@ async function loadTransactionItems(
   const recorderById = new Map(
     recorders.map((user) => [user.id, user] as const),
   );
-
   const itemsByRecordId = new Map<string, TransactionItemRow[]>();
+
   for (const item of items) {
-    const arr = itemsByRecordId.get(item.transaction_record_id) ?? [];
-    arr.push(item);
-    itemsByRecordId.set(item.transaction_record_id, arr);
+    const recordItems = itemsByRecordId.get(item.transaction_record_id) ?? [];
+    recordItems.push(item);
+    itemsByRecordId.set(item.transaction_record_id, recordItems);
   }
 
-  return records.map((record) => {
-    const recordItems = itemsByRecordId.get(record.id) ?? [];
-    const firstItem = recordItems[0];
-    const account = firstItem
-      ? accountById.get(firstItem.account_id)
-      : undefined;
-    const merchant = record.merchant_id
-      ? merchantById.get(record.merchant_id)
-      : undefined;
-    const recorder = record.created_by
-      ? recorderById.get(record.created_by)
-      : undefined;
-
-    const totalAmount = recordItems.reduce(
-      (sum, i) => sum + Number(i.amount),
-      0,
-    );
-
-    const categoryItems = recordItems.flatMap((i) => {
-      if (i.category_id === null) return [];
-
-      const cat = categoryById.get(i.category_id);
-      const parent = cat?.parent_id
-        ? categoryById.get(cat.parent_id)
-        : undefined;
-
-      return [
-        {
-          categoryName: cat?.name ?? "",
-          parentCategoryName: parent?.name ?? null,
-          amount: i.amount,
-        },
-      ];
-    });
-
-    return {
-      account_currency: account?.currency ?? "",
-      account_name: account?.name ?? "未知账户",
-      amount: String(totalAmount),
-      categoryItems,
-      created_at: record.created_at,
-      id: record.id,
-      merchant_icon_url: merchant?.icon_url ?? null,
-      merchant_name: merchant?.name ?? null,
-      note: record.note ?? firstItem?.note ?? null,
-      recorder_name: recorder?.display_name ?? null,
-      transaction_at: record.transaction_at,
-      type: record.type,
-    };
-  });
+  return records.map((record) =>
+    buildTransactionListItem({
+      accountById,
+      categoryById,
+      fallbackCurrency: "",
+      merchantById,
+      record,
+      recorderById,
+      recordItems: itemsByRecordId.get(record.id) ?? [],
+    }),
+  );
 }
 
 export async function loadTransactionMonthView(
@@ -233,7 +156,6 @@ export async function loadTransactionMonthView(
   const normalizedMonth = normalizeMonth(month);
   const { startIso, endIso } = getMonthBounds(normalizedMonth);
 
-  // Load all records for summary calculation
   const { data: allRecordData, error: allRecordError } = await supabase
     .from("transaction_record")
     .select(
@@ -255,9 +177,7 @@ export async function loadTransactionMonthView(
   const allRecords = (allRecordData ?? []) as TransactionRecordRow[];
   const pageRecords = allRecords.slice(0, monthPageSize);
   const hasMore = allRecords.length > monthPageSize;
-
   const allItems = await loadTransactionItems(allRecords, currentLedger);
-
   const currency = currentLedger.baseCurrency;
   const monthSummary = createTransactionAmountSummary(currency);
 

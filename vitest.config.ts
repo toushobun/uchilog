@@ -6,6 +6,10 @@ export default defineConfig({
       "@": new URL("./src", import.meta.url).pathname,
       accounts: new URL("./src/components/organisms/accounts", import.meta.url)
         .pathname,
+      "accounts-page": new URL(
+        "./src/components/pages/accounts",
+        import.meta.url,
+      ).pathname,
       auth: new URL("./src/components/organisms/auth", import.meta.url)
         .pathname,
       "dashboard-page": new URL(
@@ -13,8 +17,20 @@ export default defineConfig({
         import.meta.url,
       ).pathname,
       lib: new URL("./src/lib", import.meta.url).pathname,
+      merchants: new URL(
+        "./src/components/organisms/merchants",
+        import.meta.url,
+      ).pathname,
+      "merchants-page": new URL(
+        "./src/components/pages/merchants",
+        import.meta.url,
+      ).pathname,
       "protected-template": new URL(
         "./src/components/templates/protected",
+        import.meta.url,
+      ).pathname,
+      "settings-page": new URL(
+        "./src/components/pages/settings",
         import.meta.url,
       ).pathname,
       server: new URL("./src/server", import.meta.url).pathname,
@@ -31,6 +47,10 @@ export default defineConfig({
       ).pathname,
       transactions: new URL(
         "./src/components/organisms/transactions",
+        import.meta.url,
+      ).pathname,
+      "transactions-page": new URL(
+        "./src/components/pages/transactions",
         import.meta.url,
       ).pathname,
       ui: new URL("./src/components/atoms/ui", import.meta.url).pathname,

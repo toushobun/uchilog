@@ -1,14 +1,9 @@
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-
-import { TransactionMonthList } from "transactions/TransactionMonthList";
-
 import { voidTransaction } from "server/actions/transactions";
 import {
   loadTransactionMonthPage,
   loadTransactionMonthView,
 } from "server/loaders/transactions";
+import { TransactionsHome } from "transactions-page/TransactionsHome";
 
 type TransactionsPageProps = {
   searchParams: Promise<{
@@ -22,8 +17,6 @@ const errorMessages: Record<string, string> = {
   void_invalid: "删除对象不正确。",
 };
 
-const monthNavigationBackground = "#f4efff";
-
 export default async function TransactionsPage({
   searchParams,
 }: TransactionsPageProps) {
@@ -34,53 +27,11 @@ export default async function TransactionsPage({
   const monthView = await loadTransactionMonthView(params.month);
 
   return (
-    <Stack spacing={2.2}>
-      <Stack direction="row" sx={{ alignItems: "center" }}>
-        <Typography component="h1" sx={{ fontSize: 24, fontWeight: 900 }}>
-          明细
-        </Typography>
-      </Stack>
-
-      <Stack
-        direction="row"
-        sx={{
-          alignItems: "center",
-          bgcolor: monthNavigationBackground,
-          borderRadius: 999,
-          color: "text.secondary",
-          height: 44,
-          justifyContent: "space-between",
-          px: 1.3,
-        }}
-      >
-        <Button
-          href={`/transactions?month=${monthView.previousMonth}`}
-          size="small"
-          sx={{ color: "text.secondary", minWidth: 40 }}
-        >
-          ‹
-        </Button>
-        <Typography sx={{ fontWeight: 800 }}>{monthView.monthLabel}</Typography>
-        <Button
-          href={`/transactions?month=${monthView.nextMonth}`}
-          size="small"
-          sx={{ color: "text.secondary", minWidth: 40 }}
-        >
-          ›
-        </Button>
-      </Stack>
-
-      {errorMessage ? (
-        <Typography color="error" sx={{ fontWeight: 700 }} variant="body2">
-          {errorMessage}
-        </Typography>
-      ) : null}
-
-      <TransactionMonthList
-        monthView={monthView}
-        voidAction={voidTransaction}
-        loadMoreAction={loadTransactionMonthPage.bind(null, monthView.month)}
-      />
-    </Stack>
+    <TransactionsHome
+      errorMessage={errorMessage}
+      loadMoreAction={loadTransactionMonthPage.bind(null, monthView.month)}
+      monthView={monthView}
+      voidAction={voidTransaction}
+    />
   );
 }

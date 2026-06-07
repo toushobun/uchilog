@@ -21,9 +21,13 @@
     "paths": {
       "@/*": ["./src/*"],
       "accounts/*": ["./src/components/organisms/accounts/*"],
+      "accounts-page/*": ["./src/components/pages/accounts/*"],
       "auth/*": ["./src/components/organisms/auth/*"],
       "dashboard-page/*": ["./src/components/pages/dashboard/*"],
+      "merchants/*": ["./src/components/organisms/merchants/*"],
+      "merchants-page/*": ["./src/components/pages/merchants/*"],
       "protected-template/*": ["./src/components/templates/protected/*"],
+      "settings-page/*": ["./src/components/pages/settings/*"],
       "server/*": ["./src/server/*"],
       "settings-components/*": ["./src/components/molecules/settings/*"],
       "theme/*": ["./src/theme/*"],
@@ -33,7 +37,8 @@
       "ui/*": ["./src/components/atoms/ui/*"],
       "ui-molecules/*": ["./src/components/molecules/ui/*"],
       "lib/*": ["./src/lib/*"],
-      "transactions/*": ["./src/components/organisms/transactions/*"]
+      "transactions/*": ["./src/components/organisms/transactions/*"],
+      "transactions-page/*": ["./src/components/pages/transactions/*"]
     }
   },
   "include": [

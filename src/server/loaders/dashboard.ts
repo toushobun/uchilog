@@ -3,35 +3,34 @@
 import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
 import { createClient } from "lib/supabase/server";
 
+import type {
+  AccountRow,
+  MerchantRow,
+  TransactionItemRow,
+  TransactionRecordRow,
+} from "server/db-types";
+import { buildTransactionListItem } from "server/loaders/buildTransactionListItem";
+import { loadCategoriesByIdsWithParents } from "server/loaders/loadCategoriesByIdsWithParents";
 import type { DashboardViewData } from "types/dashboard";
-import { getCurrentMonthRange } from "utils/transactions";
+import {
+  addTransactionAmount,
+  createTransactionAmountSummary,
+  getCurrentMonthRange,
+} from "utils/transactions";
 
-type RecordRow = {
-  id: string;
-  type: "expense" | "income";
-  transaction_at: string;
-  merchant_id: string | null;
-  note: string | null;
-  created_at: string;
-};
-
-type ItemRow = {
-  transaction_record_id: string;
-  account_id: string;
-  category_id: string | null;
-  amount: string;
-};
-
-type AccountRow = { id: string; name: string; currency: string };
-type CategoryRow = { id: string; name: string; parent_id: string | null };
-type MerchantRow = { id: string; name: string; icon_url: string | null };
+function addExpenseTotal(
+  summary: { expense: string; recordCount: number },
+  amount: number,
+) {
+  summary.expense = String(Number(summary.expense) + amount);
+  summary.recordCount += 1;
+}
 
 export async function loadDashboardView(): Promise<DashboardViewData> {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const supabase = await createClient();
   const { startIso, endIso, monthLabel } = getCurrentMonthRange();
 
-  // All month records (for summary + today/week stats)
   const { data: recordData, error: recordError } = await supabase
     .from("transaction_record")
     .select("id, type, transaction_at, merchant_id, note, created_at")
@@ -46,10 +45,8 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
 
   if (recordError) throw new Error("Failed to load dashboard records");
 
-  const records = (recordData ?? []) as RecordRow[];
-  const recordIds = records.map((r) => r.id);
-
-  // Items for all records
+  const records = (recordData ?? []) as TransactionRecordRow[];
+  const recordIds = records.map((record) => record.id);
   const { data: itemData, error: itemError } =
     recordIds.length > 0
       ? await supabase
@@ -61,22 +58,18 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
 
   if (itemError) throw new Error("Failed to load dashboard items");
 
-  const items = (itemData ?? []) as ItemRow[];
+  const items = (itemData ?? []) as TransactionItemRow[];
+  const itemsByRecordId = new Map<string, TransactionItemRow[]>();
 
-  const itemsByRecordId = new Map<string, ItemRow[]>();
   for (const item of items) {
-    const arr = itemsByRecordId.get(item.transaction_record_id) ?? [];
-    arr.push(item);
-    itemsByRecordId.set(item.transaction_record_id, arr);
+    const recordItems = itemsByRecordId.get(item.transaction_record_id) ?? [];
+    recordItems.push(item);
+    itemsByRecordId.set(item.transaction_record_id, recordItems);
   }
 
-  // Month summary + today/week stats
-  const monthSummary = {
-    balance: "0",
-    currency: currentLedger.baseCurrency,
-    expense: "0",
-    income: "0",
-  };
+  const monthSummary = createTransactionAmountSummary(
+    currentLedger.baseCurrency,
+  );
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(todayStart);
@@ -95,45 +88,51 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
 
   for (const record of records) {
     const recordItems = itemsByRecordId.get(record.id) ?? [];
-    const total = recordItems.reduce((sum, i) => sum + Number(i.amount), 0);
+    const total = recordItems.reduce(
+      (sum, item) => sum + Number(item.amount),
+      0,
+    );
+
     if (!Number.isFinite(total) || total === 0) continue;
 
-    if (record.type === "income") {
-      monthSummary.income = String(Number(monthSummary.income) + total);
-      monthSummary.balance = String(Number(monthSummary.balance) + total);
-    } else {
-      monthSummary.expense = String(Number(monthSummary.expense) + total);
-      monthSummary.balance = String(Number(monthSummary.balance) - total);
+    addTransactionAmount(monthSummary, record.type, String(total));
+
+    if (record.type === "expense") {
       const recordAt = new Date(record.transaction_at);
+
       if (recordAt >= weekStart) {
-        weekExpense.expense = String(Number(weekExpense.expense) + total);
-        weekExpense.recordCount += 1;
+        addExpenseTotal(weekExpense, total);
       }
+
       if (recordAt >= todayStart) {
-        todayExpense.expense = String(Number(todayExpense.expense) + total);
-        todayExpense.recordCount += 1;
+        addExpenseTotal(todayExpense, total);
       }
     }
   }
 
-  // Fetch related data for the 5 most recent records
   const recentRecords = records.slice(0, 5);
+  const recentRecordItems = recentRecords.flatMap(
+    (record) => itemsByRecordId.get(record.id) ?? [],
+  );
   const recentAccountIds = [
+    ...new Set(recentRecordItems.map((item) => item.account_id)),
+  ];
+  const categoryIds = [
     ...new Set(
-      recentRecords.flatMap((r) =>
-        (itemsByRecordId.get(r.id) ?? []).map((i) => i.account_id),
-      ),
+      recentRecordItems
+        .map((item) => item.category_id)
+        .filter((categoryId): categoryId is string => categoryId !== null),
     ),
   ];
   const merchantIds = [
     ...new Set(
       recentRecords
-        .map((r) => r.merchant_id)
+        .map((record) => record.merchant_id)
         .filter((id): id is string => id !== null),
     ),
   ];
 
-  const [accountResult, categoryResult, merchantResult] = await Promise.all([
+  const [accountResult, categories, merchantResult] = await Promise.all([
     recentAccountIds.length > 0
       ? supabase
           .from("account")
@@ -141,10 +140,7 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
           .eq("ledger_id", currentLedger.id)
           .in("id", recentAccountIds)
       : Promise.resolve({ data: [], error: null }),
-    supabase
-      .from("category")
-      .select("id, name, parent_id")
-      .eq("ledger_id", currentLedger.id),
+    loadCategoriesByIdsWithParents(categoryIds, currentLedger.id),
     merchantIds.length > 0
       ? supabase
           .from("merchant")
@@ -155,64 +151,29 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   ]);
 
   if (accountResult.error) throw new Error("Failed to load recent accounts");
-  if (categoryResult.error) throw new Error("Failed to load recent categories");
   if (merchantResult.error) throw new Error("Failed to load recent merchants");
 
+  const accounts = (accountResult.data ?? []) as AccountRow[];
+  const merchants = (merchantResult.data ?? []) as MerchantRow[];
   const accountById = new Map(
-    ((accountResult.data ?? []) as AccountRow[]).map((a) => [a.id, a]),
+    accounts.map((account) => [account.id, account] as const),
   );
   const categoryById = new Map(
-    ((categoryResult.data ?? []) as CategoryRow[]).map((c) => [c.id, c]),
+    categories.map((category) => [category.id, category] as const),
   );
   const merchantById = new Map(
-    ((merchantResult.data ?? []) as MerchantRow[]).map((m) => [m.id, m]),
+    merchants.map((merchant) => [merchant.id, merchant] as const),
   );
-
-  const recentTransactions = recentRecords.map((record) => {
-    const recordItems = itemsByRecordId.get(record.id) ?? [];
-    const firstItem = recordItems[0];
-    const account = firstItem
-      ? accountById.get(firstItem.account_id)
-      : undefined;
-    const merchant = record.merchant_id
-      ? merchantById.get(record.merchant_id)
-      : undefined;
-
-    const totalAmount = recordItems.reduce(
-      (sum, i) => sum + Number(i.amount),
-      0,
-    );
-
-    const categoryItems = recordItems.flatMap((i) => {
-      if (i.category_id === null) return [];
-
-      const cat = categoryById.get(i.category_id);
-      const parent = cat?.parent_id
-        ? categoryById.get(cat.parent_id)
-        : undefined;
-
-      return [
-        {
-          categoryName: cat?.name ?? "",
-          parentCategoryName: parent?.name ?? null,
-          amount: i.amount,
-        },
-      ];
-    });
-
-    return {
-      account_currency: account?.currency ?? currentLedger.baseCurrency,
-      account_name: account?.name ?? "未知账户",
-      amount: String(totalAmount),
-      categoryItems,
-      id: record.id,
-      merchant_icon_url: merchant?.icon_url ?? null,
-      merchant_name: merchant?.name ?? null,
-      note: record.note ?? null,
-      transaction_at: record.transaction_at,
-      type: record.type,
-    };
-  });
+  const recentTransactions = recentRecords.map((record) =>
+    buildTransactionListItem({
+      accountById,
+      categoryById,
+      fallbackCurrency: currentLedger.baseCurrency,
+      merchantById,
+      record,
+      recordItems: itemsByRecordId.get(record.id) ?? [],
+    }),
+  );
 
   return {
     ledgerName: currentLedger.name,
