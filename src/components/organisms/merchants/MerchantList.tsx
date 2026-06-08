@@ -1,19 +1,19 @@
 import Stack from "@mui/material/Stack";
 
+import type { ServerAction } from "types/actions";
 import type { MerchantRow } from "types/merchants";
 import { EmptyState } from "molecules/ui/EmptyState";
 
 import { MerchantCard } from "./MerchantCard";
-import type { MerchantAction } from "./types";
 
 type MerchantListProps = {
-  archiveAliasAction: MerchantAction;
-  archiveMerchantAction: MerchantAction;
-  createAliasAction: MerchantAction;
+  archiveAliasAction: ServerAction;
+  archiveMerchantAction: ServerAction;
+  createAliasAction: ServerAction;
   errorMerchantId: string | null;
   errorMessage: string | null;
   merchants: MerchantRow[];
-  updateMerchantAction: MerchantAction;
+  updateMerchantAction: ServerAction;
 };
 
 export function MerchantList({

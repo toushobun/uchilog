@@ -3,7 +3,6 @@ import type {
   TransactionDateGroup,
   TransactionListItem,
   TransactionMonthView,
-  TransactionType,
 } from "types/transactions";
 
 export function createTransactionListItem(
@@ -83,22 +82,4 @@ export function createTransactionMonthView(
     nextOffset: null,
     ...overrides,
   };
-}
-
-export function createMinimalTransactionListItem(
-  id: string,
-  amount: string,
-  type: TransactionType = "expense",
-): TransactionListItem {
-  return createTransactionListItem({
-    amount,
-    categoryItems: [],
-    created_at: "2026-06-01T00:00:00.000Z",
-    id,
-    merchant_name: "测试商家",
-    note: null,
-    recorder_name: null,
-    transaction_at: "2026-06-01T00:00:00.000Z",
-    type,
-  });
 }

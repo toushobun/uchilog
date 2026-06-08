@@ -3,9 +3,8 @@ import Typography from "@mui/material/Typography";
 import { AccountForm } from "organisms/accounts/AccountForm";
 import { AccountList } from "organisms/accounts/AccountList";
 import type { AccountHolderOption, AccountRow } from "types/accounts";
+import type { ServerAction } from "types/actions";
 import { PageCard } from "molecules/ui/PageCard";
-
-type ServerAction = (formData: FormData) => void | Promise<void>;
 
 type AccountsTemplateProps = {
   accounts: AccountRow[];

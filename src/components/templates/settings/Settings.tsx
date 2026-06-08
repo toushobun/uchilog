@@ -1,13 +1,15 @@
 import Stack from "@mui/material/Stack";
 
-import { SettingsManagementEntries } from "organisms/settings/SettingsManagementEntries";
 import { SettingsOverviewCard } from "organisms/settings/SettingsOverviewCard";
 import { SettingsThemeSection } from "organisms/settings/SettingsThemeSection";
+import { SettingsAccountsEntry } from "molecules/settings/SettingsAccountsEntry";
+import { SettingsCategoriesEntry } from "molecules/settings/SettingsCategoriesEntry";
+import type { ServerAction } from "types/actions";
 
 type SettingsTemplateProps = {
   currentLedgerName: string;
   email: string;
-  logoutAction: (formData: FormData) => void | Promise<void>;
+  logoutAction: ServerAction;
 };
 
 export function SettingsTemplate({
@@ -22,7 +24,10 @@ export function SettingsTemplate({
         email={email}
         logoutAction={logoutAction}
       />
-      <SettingsManagementEntries />
+      <Stack spacing={3}>
+        <SettingsAccountsEntry />
+        <SettingsCategoriesEntry />
+      </Stack>
       <SettingsThemeSection />
     </Stack>
   );

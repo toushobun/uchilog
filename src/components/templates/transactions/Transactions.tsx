@@ -9,12 +9,13 @@ import type {
   TransactionMonthPage,
   TransactionMonthView,
 } from "types/transactions";
+import type { ServerAction } from "types/actions";
 
 type TransactionsTemplateProps = {
   errorMessage: string | null;
   loadMoreAction: (offset: number) => Promise<TransactionMonthPage>;
   monthView: TransactionMonthView;
-  voidAction: (formData: FormData) => void | Promise<void>;
+  voidAction: ServerAction;
 };
 
 export function TransactionsTemplate({

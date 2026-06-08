@@ -4,10 +4,10 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
 import { GlassCard } from "atoms/ui/GlassCard";
-import type { MerchantAction } from "./types";
+import type { ServerAction } from "types/actions";
 
 type MerchantFormProps = {
-  action: MerchantAction;
+  action: ServerAction;
 };
 
 export function MerchantForm({ action }: MerchantFormProps) {

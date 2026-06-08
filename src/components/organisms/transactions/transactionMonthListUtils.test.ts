@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createTransactionDateGroup,
-  createMinimalTransactionListItem,
+  createTransactionListItem,
 } from "@/test/mocks/transactions";
 
 import { mergeTransactionDateGroups } from "./transactionMonthListUtils";
@@ -13,7 +13,13 @@ describe("mergeTransactionDateGroups", () => {
       [
         createTransactionDateGroup({
           date: "2026-06-01",
-          items: [createMinimalTransactionListItem("item-1", "1000")],
+          items: [
+            createTransactionListItem({
+              amount: "1000",
+              categoryItems: [],
+              id: "item-1",
+            }),
+          ],
           label: "2026-06-01",
         }),
       ],
@@ -21,9 +27,22 @@ describe("mergeTransactionDateGroups", () => {
         createTransactionDateGroup({
           date: "2026-06-01",
           items: [
-            createMinimalTransactionListItem("item-1", "1000"),
-            createMinimalTransactionListItem("item-2", "2000"),
-            createMinimalTransactionListItem("item-3", "5000", "income"),
+            createTransactionListItem({
+              amount: "1000",
+              categoryItems: [],
+              id: "item-1",
+            }),
+            createTransactionListItem({
+              amount: "2000",
+              categoryItems: [],
+              id: "item-2",
+            }),
+            createTransactionListItem({
+              amount: "5000",
+              categoryItems: [],
+              id: "item-3",
+              type: "income",
+            }),
           ],
           label: "2026-06-01",
         }),
@@ -49,14 +68,26 @@ describe("mergeTransactionDateGroups", () => {
       [
         createTransactionDateGroup({
           date: "2026-06-01",
-          items: [createMinimalTransactionListItem("item-1", "1000")],
+          items: [
+            createTransactionListItem({
+              amount: "1000",
+              categoryItems: [],
+              id: "item-1",
+            }),
+          ],
           label: "2026-06-01",
         }),
       ],
       [
         createTransactionDateGroup({
           date: "2026-06-02",
-          items: [createMinimalTransactionListItem("item-2", "2000")],
+          items: [
+            createTransactionListItem({
+              amount: "2000",
+              categoryItems: [],
+              id: "item-2",
+            }),
+          ],
           label: "2026-06-02",
         }),
       ],

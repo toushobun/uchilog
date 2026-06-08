@@ -5,21 +5,21 @@ import Typography from "@mui/material/Typography";
 
 import { MerchantForm } from "organisms/merchants/MerchantForm";
 import { MerchantList } from "organisms/merchants/MerchantList";
+import type { ServerAction } from "types/actions";
 import type { MerchantRow } from "types/merchants";
-import type { MerchantAction } from "organisms/merchants/types";
 import { PageCard } from "molecules/ui/PageCard";
 
 type MerchantsTemplateProps = {
-  archiveMerchantAction: MerchantAction;
-  archiveMerchantAliasAction: MerchantAction;
-  createMerchantAction: MerchantAction;
-  createMerchantAliasAction: MerchantAction;
+  archiveMerchantAction: ServerAction;
+  archiveMerchantAliasAction: ServerAction;
+  createMerchantAction: ServerAction;
+  createMerchantAliasAction: ServerAction;
   errorMerchantId: string | null;
   errorMessage: string | null;
   keyword: string;
   ledgerName: string;
   merchants: MerchantRow[];
-  updateMerchantAction: MerchantAction;
+  updateMerchantAction: ServerAction;
 };
 
 export function MerchantsTemplate({

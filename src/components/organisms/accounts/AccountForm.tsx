@@ -7,10 +7,11 @@ import Typography from "@mui/material/Typography";
 import { AccountHolderCheckboxGroup } from "molecules/accounts/AccountHolderCheckboxGroup";
 import { GlassCard } from "atoms/ui/GlassCard";
 
+import type { ServerAction } from "types/actions";
 import { accountTypeOptions, type AccountHolderOption } from "types/accounts";
 
 type AccountFormProps = {
-  createAccountAction: (formData: FormData) => void | Promise<void>;
+  createAccountAction: ServerAction;
   defaultCurrency: string;
   holderOptions: AccountHolderOption[];
 };

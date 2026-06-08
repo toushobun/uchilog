@@ -2,8 +2,10 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
+import type { ServerAction } from "types/actions";
+
 type MerchantAliasFormProps = {
-  action: (formData: FormData) => void | Promise<void>;
+  action: ServerAction;
   merchantId: string;
 };
 

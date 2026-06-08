@@ -9,19 +9,18 @@ import Typography from "@mui/material/Typography";
 
 import { MerchantAliasForm } from "organisms/merchants/MerchantAliasForm";
 import { MerchantEditForm } from "organisms/merchants/MerchantEditForm";
+import type { ServerAction } from "types/actions";
 import type { MerchantRow } from "types/merchants";
 import { GlassCard } from "atoms/ui/GlassCard";
 import { getMerchantInitial } from "utils/merchants";
 
-import type { MerchantAction } from "./types";
-
 type MerchantCardProps = {
-  archiveAliasAction: MerchantAction;
-  archiveMerchantAction: MerchantAction;
-  createAliasAction: MerchantAction;
+  archiveAliasAction: ServerAction;
+  archiveMerchantAction: ServerAction;
+  createAliasAction: ServerAction;
   errorMessage: string | null;
   merchant: MerchantRow;
-  updateMerchantAction: MerchantAction;
+  updateMerchantAction: ServerAction;
 };
 
 export function MerchantCard({

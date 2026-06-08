@@ -4,6 +4,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
 import { AccountHolderCheckboxGroup } from "molecules/accounts/AccountHolderCheckboxGroup";
+import type { ServerAction } from "types/actions";
 import {
   accountTypeOptions,
   type AccountHolderOption,
@@ -13,7 +14,7 @@ import {
 type AccountEditFormProps = {
   account: AccountRow;
   holderOptions: AccountHolderOption[];
-  updateAccountAction: (formData: FormData) => void | Promise<void>;
+  updateAccountAction: ServerAction;
 };
 
 export function AccountEditForm({

@@ -6,11 +6,12 @@ import Link from "next/link";
 
 import { routePaths } from "config/paths";
 import { PageCard } from "molecules/ui/PageCard";
+import type { ServerAction } from "types/actions";
 
 type SettingsOverviewCardProps = {
   currentLedgerName: string;
   email: string;
-  logoutAction: (formData: FormData) => void | Promise<void>;
+  logoutAction: ServerAction;
 };
 
 export function SettingsOverviewCard({

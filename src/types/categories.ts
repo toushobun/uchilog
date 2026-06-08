@@ -1,4 +1,5 @@
 import type { TransactionType } from "types/transactions";
+import type { ServerAction } from "types/actions";
 
 export const categoryTypeOptions = [
   { label: "支出", value: "expense" },
@@ -8,7 +9,7 @@ export const categoryTypeOptions = [
   value: TransactionType;
 }>;
 
-export type CategoryAction = (formData: FormData) => void | Promise<void>;
+export type CategoryAction = ServerAction;
 
 export type CategoryRow = {
   id: string;

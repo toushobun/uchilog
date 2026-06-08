@@ -4,14 +4,15 @@ import { AccountCard } from "molecules/accounts/AccountCard";
 import { ArchiveAccountButton } from "molecules/accounts/ArchiveAccountButton";
 import { EmptyState } from "molecules/ui/EmptyState";
 import type { AccountHolderOption, AccountRow } from "types/accounts";
+import type { ServerAction } from "types/actions";
 
 import { AccountEditForm } from "./AccountEditForm";
 
 type AccountListProps = {
   accounts: AccountRow[];
-  archiveAccountAction: (formData: FormData) => void | Promise<void>;
+  archiveAccountAction: ServerAction;
   holderOptions: AccountHolderOption[];
-  updateAccountAction: (formData: FormData) => void | Promise<void>;
+  updateAccountAction: ServerAction;
 };
 
 export function AccountList({

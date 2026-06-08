@@ -2,10 +2,11 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
+import type { ServerAction } from "types/actions";
 import type { MerchantRow } from "types/merchants";
 
 type MerchantEditFormProps = {
-  action: (formData: FormData) => void | Promise<void>;
+  action: ServerAction;
   merchant: MerchantRow;
 };
 
