@@ -2,7 +2,7 @@ import { cleanup, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { TransactionMonthView } from "types/transactions";
+import { createTransactionMonthView } from "@/test/mocks/transactions";
 
 import { TransactionsTemplate } from "./Transactions";
 
@@ -20,20 +20,14 @@ afterEach(() => {
   cleanup();
 });
 
-const monthView: TransactionMonthView = {
+const monthView = createTransactionMonthView({
   month: "2026-06",
   monthLabel: "2026年6月",
-  previousMonth: "2026-05",
   nextMonth: "2026-07",
-  summary: {
-    balance: "0",
-    currency: "JPY",
-    expense: "0",
-    income: "0",
-  },
+  previousMonth: "2026-05",
   groups: [],
-  nextOffset: null,
-};
+  summary: { balance: "0", currency: "JPY", expense: "0", income: "0" },
+});
 
 function renderPage(errorMessage: string | null = null) {
   return render(
