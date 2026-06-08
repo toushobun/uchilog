@@ -47,7 +47,7 @@ export const Default: Story = {
 export const WithMerchantError: Story = {
   name: "指定商家含错误提示",
   args: {
-    errorMerchantId: "00000000-0000-4000-8000-000000001001",
+    errorMerchantId: merchants[0].id,
     errorMessage: "商家归档失败。",
   },
 };

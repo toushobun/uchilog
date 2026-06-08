@@ -100,12 +100,6 @@ describe("TransactionMonthList", () => {
               note: null,
             }),
           ],
-          summary: {
-            balance: "-3234",
-            currency: "JPY",
-            expense: "3234",
-            income: "0",
-          },
         }),
       ],
       nextOffset: null,

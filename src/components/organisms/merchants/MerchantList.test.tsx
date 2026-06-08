@@ -74,7 +74,7 @@ describe("MerchantList", () => {
       <MerchantList
         {...baseProps}
         merchants={[baseMerchant]}
-        errorMerchantId="00000000-0000-4000-8000-000000001001"
+        errorMerchantId={baseMerchant.id}
         errorMessage="商家归档失败。"
       />,
     );
