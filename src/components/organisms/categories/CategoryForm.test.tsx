@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { CategoryForm } from "./CategoryForm";
@@ -9,7 +9,7 @@ afterEach(() => {
 
 const parentOptions = [
   { id: "expense-root", name: "餐饮", type: "expense" as const },
-  { id: "income-root", name: "收入", type: "income" as const },
+  { id: "income-root", name: "工资", type: "income" as const },
 ];
 
 describe("CategoryForm", () => {
@@ -53,7 +53,7 @@ describe("CategoryForm", () => {
     ).toBeTruthy();
   });
 
-  it("按分类类型过滤上级分类", () => {
+  it("支出类型下只显示支出分类选项", () => {
     const { container } = render(
       <CategoryForm
         createCategoryAction={vi.fn(async () => {})}
@@ -61,18 +61,33 @@ describe("CategoryForm", () => {
       />,
     );
 
-    expect(within(container).queryByText("餐饮")).toBeTruthy();
-    expect(within(container).queryByText("收入")).toBeNull();
+    fireEvent.mouseDown(
+      within(container).getByRole("combobox", { name: "上级分类" }),
+    );
+
+    expect(screen.getByText("餐饮")).toBeTruthy();
+    expect(screen.queryByText("工资")).toBeNull();
+  });
+
+  it("切换为收入类型后只显示收入分类选项", () => {
+    const { container } = render(
+      <CategoryForm
+        createCategoryAction={vi.fn(async () => {})}
+        parentOptions={parentOptions}
+      />,
+    );
 
     fireEvent.mouseDown(
       within(container).getByRole("combobox", { name: "分类类型" }),
     );
-    fireEvent.click(
-      within(document.body).getByRole("option", { name: "收入" }),
+    fireEvent.click(screen.getByRole("option", { name: "收入" }));
+
+    fireEvent.mouseDown(
+      within(container).getByRole("combobox", { name: "上级分类" }),
     );
 
-    expect(within(container).queryByText("餐饮")).toBeNull();
-    expect(within(container).queryByText("收入")).toBeTruthy();
+    expect(screen.getByText("工资")).toBeTruthy();
+    expect(screen.queryByText("餐饮")).toBeNull();
   });
 
   it("没有上级分类候选时也能显示表单", () => {
@@ -86,6 +101,10 @@ describe("CategoryForm", () => {
     expect(
       within(container).getByRole("button", { name: "新增分类" }),
     ).toBeTruthy();
-    expect(within(container).getByText("无上级分类")).toBeTruthy();
+    // 打开上级分类下拉，确认只有"无上级分类"选项
+    fireEvent.mouseDown(
+      within(container).getByRole("combobox", { name: "上级分类" }),
+    );
+    expect(screen.getByText("无上级分类")).toBeTruthy();
   });
 });
