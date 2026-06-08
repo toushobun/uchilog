@@ -3,10 +3,12 @@ import Typography from "@mui/material/Typography";
 
 import { CategoryForm } from "categories/CategoryForm";
 import { CategoryList } from "categories/CategoryList";
-import type { CategoryParentOption, CategoryTreeItem } from "types/categories";
+import type {
+  CategoryAction,
+  CategoryParentOption,
+  CategoryTreeItem,
+} from "types/categories";
 import { PageCard } from "ui-molecules/PageCard";
-
-type CategoryAction = (formData: FormData) => void | Promise<void>;
 
 type CategoriesTemplateProps = {
   archiveCategoryAction: CategoryAction;
