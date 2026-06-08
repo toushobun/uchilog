@@ -1,5 +1,5 @@
-import { HomePage } from "pages/home/Home";
+import { HomeTemplate } from "templates/home/Home";
 
 export default function RootPage() {
-  return <HomePage />;
+  return <HomeTemplate />;
 }

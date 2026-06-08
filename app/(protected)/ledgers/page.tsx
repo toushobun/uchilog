@@ -1,5 +1,8 @@
-import { LedgersPage } from "pages/ledgers/Ledgers";
+import { loadLedgersView } from "server/loaders/ledgers";
+import { LedgersTemplate } from "templates/ledgers/Ledgers";
 
-export default function LedgersRoute() {
-  return <LedgersPage />;
+export default async function LedgersRoute() {
+  const view = await loadLedgersView();
+
+  return <LedgersTemplate {...view} />;
 }

@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
-import { LedgerSetupPage } from "pages/ledger-setup/LedgerSetup";
 import { routePaths } from "config/paths";
+import { createLedger } from "server/actions/ledgerSetup";
+import { LedgerSetupTemplate } from "templates/ledger-setup/LedgerSetup";
 import { getLedgerSetupErrorMessage } from "utils/pageErrors";
 
 export default async function LedgerSetupRoute({
@@ -19,6 +20,9 @@ export default async function LedgerSetupRoute({
   const params = await searchParams;
 
   return (
-    <LedgerSetupPage errorMessage={getLedgerSetupErrorMessage(params.error)} />
+    <LedgerSetupTemplate
+      createLedgerAction={createLedger}
+      errorMessage={getLedgerSetupErrorMessage(params.error)}
+    />
   );
 }

@@ -23,7 +23,6 @@
       "atoms/*": ["./src/components/atoms/*"],
       "molecules/*": ["./src/components/molecules/*"],
       "organisms/*": ["./src/components/organisms/*"],
-      "pages/*": ["./src/components/pages/*"],
       "templates/*": ["./src/components/templates/*"],
       "providers/*": ["./src/components/providers/*"],
       "config/*": ["./src/config/*"],

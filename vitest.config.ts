@@ -11,7 +11,6 @@ export default defineConfig({
         .pathname,
       organisms: new URL("./src/components/organisms", import.meta.url)
         .pathname,
-      pages: new URL("./src/components/pages", import.meta.url).pathname,
       providers: new URL("./src/components/providers", import.meta.url)
         .pathname,
       server: new URL("./src/server", import.meta.url).pathname,
