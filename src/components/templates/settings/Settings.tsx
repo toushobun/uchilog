@@ -24,10 +24,8 @@ export function SettingsTemplate({
         email={email}
         logoutAction={logoutAction}
       />
-      <Stack spacing={3}>
-        <SettingsAccountsEntry />
-        <SettingsCategoriesEntry />
-      </Stack>
+      <SettingsAccountsEntry />
+      <SettingsCategoriesEntry />
       <SettingsThemeSection />
     </Stack>
   );

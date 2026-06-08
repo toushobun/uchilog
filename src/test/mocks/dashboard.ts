@@ -1,5 +1,6 @@
 import type {
   DashboardAmountSummary,
+  DashboardPeriodExpense,
   DashboardRecentTransaction,
   DashboardViewData,
 } from "types/dashboard";
@@ -12,6 +13,17 @@ export function createDashboardAmountSummary(
     currency: "JPY",
     expense: "80000",
     income: "260000",
+    ...overrides,
+  };
+}
+
+export function createDashboardPeriodExpense(
+  overrides: Partial<DashboardPeriodExpense> = {},
+): DashboardPeriodExpense {
+  return {
+    currency: "JPY",
+    expense: "331",
+    recordCount: 2,
     ...overrides,
   };
 }
