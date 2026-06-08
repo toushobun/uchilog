@@ -2,7 +2,6 @@
 
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { BottomNavigationBar } from "organisms/navigation/BottomNavigationBar";
@@ -14,8 +13,6 @@ type AppShellProps = {
 };
 
 export function AppShell({ children, email }: AppShellProps) {
-  const pathname = usePathname();
-
   return (
     <UserThemeProvider storageScope={email}>
       <Box
@@ -60,7 +57,7 @@ export function AppShell({ children, email }: AppShellProps) {
           {children}
         </Container>
 
-        <BottomNavigationBar pathname={pathname} />
+        <BottomNavigationBar />
       </Box>
     </UserThemeProvider>
   );

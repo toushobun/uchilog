@@ -6,15 +6,13 @@ import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { bottomNavigationRoutes, routePaths } from "config/paths";
 import { BottomNavButton } from "molecules/navigation/BottomNavButton";
 
-type BottomNavigationBarProps = {
-  pathname: string;
-};
-
-export function BottomNavigationBar({ pathname }: BottomNavigationBarProps) {
+export function BottomNavigationBar() {
+  const pathname = usePathname();
   const primaryRoutes = bottomNavigationRoutes.slice(0, 2);
   const secondaryRoutes = bottomNavigationRoutes.slice(2);
   const isCreateTransactionPage =

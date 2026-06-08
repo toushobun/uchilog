@@ -1,16 +1,11 @@
 import Stack from "@mui/material/Stack";
 
 import { PeriodExpenseCard } from "molecules/dashboard/PeriodExpenseCard";
+import type { DashboardPeriodExpense } from "types/dashboard";
 
 type DashboardPeriodExpensesProps = {
-  todayExpense: {
-    expense: string;
-    recordCount: number;
-  };
-  weekExpense: {
-    expense: string;
-    recordCount: number;
-  };
+  todayExpense: DashboardPeriodExpense;
+  weekExpense: DashboardPeriodExpense;
 };
 
 export function DashboardPeriodExpenses({
