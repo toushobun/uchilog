@@ -3,6 +3,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { transactionsMonthHref } from "config/paths";
+import { transactionSoftBackgroundColor } from "theme/transactionColors";
 import { TransactionMonthList } from "transactions/TransactionMonthList";
 import type {
   TransactionMonthPage,
@@ -15,8 +16,6 @@ type TransactionsTemplateProps = {
   monthView: TransactionMonthView;
   voidAction: (formData: FormData) => void | Promise<void>;
 };
-
-const monthNavigationBackground = "#f4efff";
 
 export function TransactionsTemplate({
   errorMessage,
@@ -36,7 +35,7 @@ export function TransactionsTemplate({
         direction="row"
         sx={{
           alignItems: "center",
-          bgcolor: monthNavigationBackground,
+          bgcolor: transactionSoftBackgroundColor,
           borderRadius: 999,
           color: "text.secondary",
           height: 44,

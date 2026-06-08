@@ -9,14 +9,13 @@ import { PeriodExpenseCard } from "dashboard-molecules/PeriodExpenseCard";
 import {
   transactionExpenseColor,
   transactionIncomeColor,
+  transactionPrimaryColor,
+  transactionSummaryBackgroundColor,
 } from "theme/transactionColors";
 import { routePaths } from "config/paths";
 import { TransactionRow } from "transactions-molecules/TransactionRow";
 import type { DashboardViewData } from "types/dashboard";
 import { formatNumber } from "utils/transactions";
-
-const primaryPurple = "#6d4bb3";
-const summaryCardBg = "#e8e0f8";
 
 export function DashboardTemplate({ data }: { data: DashboardViewData }) {
   const {
@@ -31,13 +30,18 @@ export function DashboardTemplate({ data }: { data: DashboardViewData }) {
     <Stack spacing={2.5}>
       <Box
         sx={{
-          bgcolor: summaryCardBg,
+          bgcolor: transactionSummaryBackgroundColor,
           borderRadius: 2,
           p: 2.5,
         }}
       >
         <Typography
-          sx={{ color: primaryPurple, fontSize: 13, fontWeight: 700, mb: 0.8 }}
+          sx={{
+            color: transactionPrimaryColor,
+            fontSize: 13,
+            fontWeight: 700,
+            mb: 0.8,
+          }}
         >
           {monthLabel}
         </Typography>
@@ -115,7 +119,7 @@ export function DashboardTemplate({ data }: { data: DashboardViewData }) {
           <a
             href={routePaths.transactions}
             style={{
-              color: primaryPurple,
+              color: transactionPrimaryColor,
               fontSize: 13,
               fontWeight: 700,
               textDecoration: "none",

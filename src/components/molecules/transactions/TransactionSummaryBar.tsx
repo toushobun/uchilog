@@ -4,13 +4,12 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import {
+  transactionBorderColor,
   transactionExpenseColor,
   transactionIncomeColor,
 } from "theme/transactionColors";
 import type { TransactionAmountSummary } from "types/transactions";
 import { formatNumber } from "utils/transactions";
-
-const borderPurple = "#e5dcf6";
 
 type SummaryItemProps = {
   color?: string;
@@ -47,7 +46,7 @@ export function TransactionSummaryBar({
     <Box
       sx={{
         bgcolor: "background.paper",
-        border: `1px solid ${borderPurple}`,
+        border: `1px solid ${transactionBorderColor}`,
         borderRadius: 1,
         boxShadow: "0 10px 24px rgba(77, 55, 120, 0.06)",
         mt: 1.5,
