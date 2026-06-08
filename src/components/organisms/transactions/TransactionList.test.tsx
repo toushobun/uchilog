@@ -8,10 +8,9 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type {
-  TransactionListItem,
-  TransactionListPage,
-} from "types/transactions";
+import type { TransactionListItem, TransactionListPage } from "types/transactions";
+
+import { createTransactionListItem } from "@/test/mocks/transactions";
 
 import { TransactionList } from "./TransactionList";
 
@@ -48,28 +47,6 @@ afterEach(() => {
   window.confirm = originalConfirm;
 });
 
-function createItem(
-  overrides: Partial<TransactionListItem> = {},
-): TransactionListItem {
-  return {
-    account_currency: "JPY",
-    account_name: "日元现金",
-    amount: "1234",
-    categoryItems: [
-      { categoryName: "餐饮", parentCategoryName: "饮食", amount: "1234" },
-    ],
-    created_at: "2026-06-05T03:20:10.000Z",
-    id: "00000000-0000-4000-8000-000000009001",
-    merchant_icon_url: null,
-    merchant_name: "便利店",
-    note: "测试备注",
-    transaction_at: "2026-06-05T03:20:10.000Z",
-    type: "expense",
-    recorder_name: null,
-    ...overrides,
-  };
-}
-
 function createPage(
   items: TransactionListItem[],
   nextOffset: number | null,
@@ -95,7 +72,7 @@ describe("TransactionList", () => {
   it("显示初始记录内容", () => {
     render(
       <TransactionList
-        initialPage={createPage([createItem()], null)}
+        initialPage={createPage([createTransactionListItem()], null)}
         loadMoreAction={vi.fn()}
       />,
     );
@@ -112,7 +89,7 @@ describe("TransactionList", () => {
   it("未传入撤销 action 时不显示撤销按钮", () => {
     render(
       <TransactionList
-        initialPage={createPage([createItem()], null)}
+        initialPage={createPage([createTransactionListItem()], null)}
         loadMoreAction={vi.fn()}
       />,
     );
@@ -125,7 +102,7 @@ describe("TransactionList", () => {
 
     render(
       <TransactionList
-        initialPage={createPage([createItem()], null)}
+        initialPage={createPage([createTransactionListItem()], null)}
         loadMoreAction={vi.fn()}
         voidAction={voidAction}
       />,
@@ -146,7 +123,7 @@ describe("TransactionList", () => {
 
     render(
       <TransactionList
-        initialPage={createPage([createItem()], null)}
+        initialPage={createPage([createTransactionListItem()], null)}
         loadMoreAction={vi.fn()}
         voidAction={voidAction}
       />,
@@ -162,7 +139,7 @@ describe("TransactionList", () => {
     const loadMoreAction = vi.fn(async () =>
       createPage(
         [
-          createItem({
+          createTransactionListItem({
             amount: "5678",
             id: "00000000-0000-4000-8000-000000009002",
             note: "第二页记录",
@@ -175,7 +152,7 @@ describe("TransactionList", () => {
 
     render(
       <TransactionList
-        initialPage={createPage([createItem()], 20)}
+        initialPage={createPage([createTransactionListItem()], 20)}
         loadMoreAction={loadMoreAction}
       />,
     );
@@ -202,7 +179,7 @@ describe("TransactionList", () => {
 
     render(
       <TransactionList
-        initialPage={createPage([createItem()], 20)}
+        initialPage={createPage([createTransactionListItem()], 20)}
         loadMoreAction={loadMoreAction}
       />,
     );
