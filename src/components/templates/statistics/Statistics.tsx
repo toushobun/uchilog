@@ -1,6 +1,6 @@
 import Typography from "@mui/material/Typography";
 
-import { PageCard } from "ui-molecules/PageCard";
+import { PagePanel } from "ui-organisms/PagePanel";
 
 type StatisticsTemplateProps = {
   ledgerName: string;
@@ -8,7 +8,7 @@ type StatisticsTemplateProps = {
 
 export function StatisticsTemplate({ ledgerName }: StatisticsTemplateProps) {
   return (
-    <PageCard>
+    <PagePanel>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         统计
       </Typography>
@@ -18,6 +18,6 @@ export function StatisticsTemplate({ ledgerName }: StatisticsTemplateProps) {
       <Typography color="text.secondary" sx={{ mt: 2 }}>
         收支统计将在后续 Issue 中实现。
       </Typography>
-    </PageCard>
+    </PagePanel>
   );
 }

@@ -5,10 +5,10 @@ import { createDashboardAmountSummary } from "@/test/mocks/dashboard";
 import { DashboardMonthSummaryCard } from "./DashboardMonthSummaryCard";
 
 const meta = {
-  title: "Templates/Dashboard/MonthSummaryCard",
+  title: "Organisms/Dashboard/MonthSummaryCard",
   component: DashboardMonthSummaryCard,
   args: {
-    monthLabel: "2026年6月",
+    monthLabel: "2026年5月",
     monthSummary: createDashboardAmountSummary(),
   },
 } satisfies Meta<typeof DashboardMonthSummaryCard>;

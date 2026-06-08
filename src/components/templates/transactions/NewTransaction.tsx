@@ -6,7 +6,7 @@ import type {
   TransactionCategoryOption,
   TransactionMerchantOption,
 } from "types/transactions";
-import { PageCard } from "ui-molecules/PageCard";
+import { PagePanel } from "ui-organisms/PagePanel";
 
 type NewTransactionTemplateProps = {
   accountOptions: TransactionAccountOption[];
@@ -26,7 +26,7 @@ export function NewTransactionTemplate({
   merchantOptions,
 }: NewTransactionTemplateProps) {
   return (
-    <PageCard>
+    <PagePanel>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         新增记录
       </Typography>
@@ -44,6 +44,6 @@ export function NewTransactionTemplate({
         errorMessage={errorMessage}
         merchantOptions={merchantOptions}
       />
-    </PageCard>
+    </PagePanel>
   );
 }

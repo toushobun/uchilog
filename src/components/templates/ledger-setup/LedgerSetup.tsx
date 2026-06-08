@@ -3,7 +3,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { PageCard } from "ui-molecules/PageCard";
+import { PagePanel } from "ui-organisms/PagePanel";
 
 type LedgerSetupTemplateProps = {
   createLedgerAction: (formData: FormData) => void | Promise<void>;
@@ -15,7 +15,7 @@ export function LedgerSetupTemplate({
   errorMessage,
 }: LedgerSetupTemplateProps) {
   return (
-    <PageCard>
+    <PagePanel>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         初始化账本
       </Typography>
@@ -59,6 +59,6 @@ export function LedgerSetupTemplate({
           创建账本
         </Button>
       </Stack>
-    </PageCard>
+    </PagePanel>
   );
 }

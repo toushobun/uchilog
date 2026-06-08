@@ -5,7 +5,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 
 import type { CurrentLedger } from "lib/ledger/current-ledger";
-import { PageCard } from "ui-molecules/PageCard";
+import { PagePanel } from "ui-organisms/PagePanel";
 
 type LedgersTemplateProps = {
   currentLedgerId: string;
@@ -17,7 +17,7 @@ export function LedgersTemplate({
   ledgers,
 }: LedgersTemplateProps) {
   return (
-    <PageCard>
+    <PagePanel>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         账本
       </Typography>
@@ -49,6 +49,6 @@ export function LedgersTemplate({
       <Typography color="text.secondary" sx={{ mt: 2 }} variant="body2">
         多账本切换和成员管理将在后续版本中完善。
       </Typography>
-    </PageCard>
+    </PagePanel>
   );
 }

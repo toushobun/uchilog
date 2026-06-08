@@ -9,12 +9,12 @@ describe("DashboardMonthSummaryCard", () => {
   it("显示月度收支汇总", () => {
     render(
       <DashboardMonthSummaryCard
-        monthLabel="2026年6月"
+        monthLabel="2026年5月"
         monthSummary={createDashboardAmountSummary()}
       />,
     );
 
-    expect(screen.getByText("2026年6月")).toBeTruthy();
+    expect(screen.getByText("2026年5月")).toBeTruthy();
     expect(screen.getByText("结余")).toBeTruthy();
     expect(screen.getByText("180,000")).toBeTruthy();
     expect(screen.getByText("260,000")).toBeTruthy();

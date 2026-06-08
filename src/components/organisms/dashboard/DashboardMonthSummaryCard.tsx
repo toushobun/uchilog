@@ -59,7 +59,7 @@ export function DashboardMonthSummaryCard({
                 fontWeight: 700,
               }}
             >
-              ■ 收入
+              ▲ 收入
             </Typography>
             <Typography
               sx={{
@@ -79,7 +79,7 @@ export function DashboardMonthSummaryCard({
                 fontWeight: 700,
               }}
             >
-              ■ 支出
+              ▼ 支出
             </Typography>
             <Typography
               sx={{

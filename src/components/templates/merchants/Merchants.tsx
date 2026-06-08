@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import { MerchantForm } from "merchants/MerchantForm";
 import { MerchantList } from "merchants/MerchantList";
 import type { MerchantRow } from "types/merchants";
-import { PageCard } from "ui-molecules/PageCard";
+import { PagePanel } from "ui-organisms/PagePanel";
 
 type MerchantAction = (formData: FormData) => void | Promise<void>;
 
@@ -36,7 +36,7 @@ export function MerchantsTemplate({
   updateMerchantAction,
 }: MerchantsTemplateProps) {
   return (
-    <PageCard>
+    <PagePanel>
       <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
         商家
       </Typography>
@@ -54,7 +54,7 @@ export function MerchantsTemplate({
         </Typography>
       ) : null}
 
-      <PageCard component="form" sx={{ mt: 4, p: 3 }}>
+      <PagePanel component="form" sx={{ mt: 4, p: 3 }}>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           <TextField
             defaultValue={keyword}
@@ -72,7 +72,7 @@ export function MerchantsTemplate({
             搜索
           </Button>
         </Stack>
-      </PageCard>
+      </PagePanel>
 
       <MerchantForm action={createMerchantAction} />
       <MerchantList
@@ -84,6 +84,6 @@ export function MerchantsTemplate({
         merchants={merchants}
         updateMerchantAction={updateMerchantAction}
       />
-    </PageCard>
+    </PagePanel>
   );
 }

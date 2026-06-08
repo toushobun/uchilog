@@ -2,11 +2,10 @@
 
 import Stack from "@mui/material/Stack";
 
-import { PeriodExpenseCard } from "dashboard-molecules/PeriodExpenseCard";
+import { DashboardMonthSummaryCard } from "dashboard/DashboardMonthSummaryCard";
+import { DashboardPeriodExpenses } from "dashboard/DashboardPeriodExpenses";
+import { DashboardRecentTransactions } from "dashboard/DashboardRecentTransactions";
 import type { DashboardViewData } from "types/dashboard";
-
-import { DashboardMonthSummaryCard } from "./DashboardMonthSummaryCard";
-import { DashboardRecentTransactions } from "./DashboardRecentTransactions";
 
 export function DashboardTemplate({ data }: { data: DashboardViewData }) {
   const {
@@ -26,18 +25,10 @@ export function DashboardTemplate({ data }: { data: DashboardViewData }) {
 
       <DashboardRecentTransactions transactions={recentTransactions} />
 
-      <Stack direction="row" spacing={1.5}>
-        <PeriodExpenseCard
-          label="今日支出"
-          expense={todayExpense.expense}
-          recordCount={todayExpense.recordCount}
-        />
-        <PeriodExpenseCard
-          label="本周支出"
-          expense={weekExpense.expense}
-          recordCount={weekExpense.recordCount}
-        />
-      </Stack>
+      <DashboardPeriodExpenses
+        todayExpense={todayExpense}
+        weekExpense={weekExpense}
+      />
     </Stack>
   );
 }

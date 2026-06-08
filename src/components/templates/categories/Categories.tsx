@@ -8,7 +8,7 @@ import type {
   CategoryParentOption,
   CategoryTreeItem,
 } from "types/categories";
-import { PageCard } from "ui-molecules/PageCard";
+import { PagePanel } from "ui-organisms/PagePanel";
 
 type CategoriesTemplateProps = {
   archiveCategoryAction: CategoryAction;
@@ -33,7 +33,7 @@ export function CategoriesTemplate({
 }: CategoriesTemplateProps) {
   return (
     <Stack spacing={3}>
-      <PageCard>
+      <PagePanel>
         <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
           分类
         </Typography>
@@ -61,7 +61,7 @@ export function CategoriesTemplate({
           errorMessage={errorMessage}
           updateCategoryAction={updateCategoryAction}
         />
-      </PageCard>
+      </PagePanel>
     </Stack>
   );
 }

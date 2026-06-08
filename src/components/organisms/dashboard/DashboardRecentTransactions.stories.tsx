@@ -5,7 +5,7 @@ import { createDashboardRecentTransaction } from "@/test/mocks/dashboard";
 import { DashboardRecentTransactions } from "./DashboardRecentTransactions";
 
 const meta = {
-  title: "Templates/Dashboard/RecentTransactions",
+  title: "Organisms/Dashboard/RecentTransactions",
   component: DashboardRecentTransactions,
   args: {
     transactions: [createDashboardRecentTransaction()],

@@ -36,6 +36,10 @@ export default defineConfig({
         "./src/components/molecules/dashboard",
         import.meta.url,
       ).pathname,
+      dashboard: new URL(
+        "./src/components/organisms/dashboard",
+        import.meta.url,
+      ).pathname,
       "dashboard-page": new URL(
         "./src/components/pages/dashboard",
         import.meta.url,
@@ -87,6 +91,10 @@ export default defineConfig({
         "./src/components/molecules/navigation",
         import.meta.url,
       ).pathname,
+      navigation: new URL(
+        "./src/components/organisms/navigation",
+        import.meta.url,
+      ).pathname,
       providers: new URL("./src/components/providers", import.meta.url)
         .pathname,
       "protected-template": new URL(
@@ -111,6 +119,8 @@ export default defineConfig({
         "./src/components/molecules/settings",
         import.meta.url,
       ).pathname,
+      settings: new URL("./src/components/organisms/settings", import.meta.url)
+        .pathname,
       "statistics-page": new URL(
         "./src/components/pages/statistics",
         import.meta.url,
@@ -148,6 +158,8 @@ export default defineConfig({
       ).pathname,
       ui: new URL("./src/components/atoms/ui", import.meta.url).pathname,
       "ui-molecules": new URL("./src/components/molecules/ui", import.meta.url)
+        .pathname,
+      "ui-organisms": new URL("./src/components/organisms/ui", import.meta.url)
         .pathname,
     },
   },
