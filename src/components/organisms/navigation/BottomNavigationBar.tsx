@@ -8,13 +8,11 @@ import Stack from "@mui/material/Stack";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { bottomNavigationRoutes, routePaths } from "config/paths";
+import { bottomNavigationRouteGroups, routePaths } from "config/paths";
 import { BottomNavButton } from "molecules/navigation/BottomNavButton";
 
 export function BottomNavigationBar() {
   const pathname = usePathname();
-  const primaryRoutes = bottomNavigationRoutes.slice(0, 2);
-  const secondaryRoutes = bottomNavigationRoutes.slice(2);
   const isCreateTransactionPage =
     pathname === routePaths.transactionsNew ||
     pathname.startsWith(`${routePaths.transactionsNew}/`);
@@ -50,7 +48,7 @@ export function BottomNavigationBar() {
             py: 0.75,
           }}
         >
-          {primaryRoutes.map((route) => (
+          {bottomNavigationRouteGroups.left.map((route) => (
             <BottomNavButton
               href={route.href}
               key={route.href}
@@ -110,7 +108,7 @@ export function BottomNavigationBar() {
               }}
             />
           </Button>
-          {secondaryRoutes.map((route) => (
+          {bottomNavigationRouteGroups.right.map((route) => (
             <BottomNavButton
               href={route.href}
               key={route.href}

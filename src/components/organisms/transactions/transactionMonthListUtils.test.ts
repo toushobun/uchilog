@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createTransactionDateGroup,
-  createTransactionMergeItem,
+  createMinimalTransactionListItem,
 } from "@/test/mocks/transactions";
 
 import { mergeTransactionDateGroups } from "./transactionMonthListUtils";
@@ -13,7 +13,7 @@ describe("mergeTransactionDateGroups", () => {
       [
         createTransactionDateGroup({
           date: "2026-06-01",
-          items: [createTransactionMergeItem("item-1", "1000")],
+          items: [createMinimalTransactionListItem("item-1", "1000")],
           label: "2026-06-01",
         }),
       ],
@@ -21,9 +21,9 @@ describe("mergeTransactionDateGroups", () => {
         createTransactionDateGroup({
           date: "2026-06-01",
           items: [
-            createTransactionMergeItem("item-1", "1000"),
-            createTransactionMergeItem("item-2", "2000"),
-            createTransactionMergeItem("item-3", "5000", "income"),
+            createMinimalTransactionListItem("item-1", "1000"),
+            createMinimalTransactionListItem("item-2", "2000"),
+            createMinimalTransactionListItem("item-3", "5000", "income"),
           ],
           label: "2026-06-01",
         }),
@@ -49,14 +49,14 @@ describe("mergeTransactionDateGroups", () => {
       [
         createTransactionDateGroup({
           date: "2026-06-01",
-          items: [createTransactionMergeItem("item-1", "1000")],
+          items: [createMinimalTransactionListItem("item-1", "1000")],
           label: "2026-06-01",
         }),
       ],
       [
         createTransactionDateGroup({
           date: "2026-06-02",
-          items: [createTransactionMergeItem("item-2", "2000")],
+          items: [createMinimalTransactionListItem("item-2", "2000")],
           label: "2026-06-02",
         }),
       ],

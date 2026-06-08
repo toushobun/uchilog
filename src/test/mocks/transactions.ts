@@ -33,10 +33,10 @@ function summarizeItems(
 ): TransactionAmountSummary {
   const income = items
     .filter((item) => item.type === "income")
-    .reduce((sum, item) => sum + Number(item.amount), 0);
+    .reduce((sum, item) => sum + BigInt(item.amount), BigInt(0));
   const expense = items
     .filter((item) => item.type === "expense")
-    .reduce((sum, item) => sum + Number(item.amount), 0);
+    .reduce((sum, item) => sum + BigInt(item.amount), BigInt(0));
 
   return {
     balance: String(income - expense),
@@ -85,7 +85,7 @@ export function createTransactionMonthView(
   };
 }
 
-export function createTransactionMergeItem(
+export function createMinimalTransactionListItem(
   id: string,
   amount: string,
   type: TransactionType = "expense",
