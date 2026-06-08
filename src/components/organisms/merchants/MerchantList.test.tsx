@@ -2,7 +2,10 @@ import { cleanup, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { MerchantRow } from "types/merchants";
+import {
+  createMerchantAliasRow,
+  createMerchantRow,
+} from "@/test/mocks/merchants";
 
 import { MerchantList } from "./MerchantList";
 
@@ -18,16 +21,7 @@ afterEach(() => {
   cleanup();
 });
 
-const baseMerchant: MerchantRow = {
-  id: "00000000-0000-4000-8000-000000001001",
-  name: "LIFE超市",
-  website_url: "https://www.lifecorp.jp",
-  icon_url: null,
-  note: null,
-  sort_order: 1,
-  created_at: "2026-01-01T00:00:00.000Z",
-  aliases: [],
-};
+const baseMerchant = createMerchantRow();
 
 const baseProps = {
   archiveAliasAction: vi.fn(async () => {}),
@@ -68,7 +62,7 @@ describe("MerchantList", () => {
     const { container } = render(
       <MerchantList
         {...baseProps}
-        merchants={[{ ...baseMerchant, website_url: null }]}
+        merchants={[createMerchantRow({ website_url: null })]}
       />,
     );
 
@@ -103,18 +97,9 @@ describe("MerchantList", () => {
   });
 
   it("有别名时显示别名列表", () => {
-    const merchantWithAlias: MerchantRow = {
-      ...baseMerchant,
-      aliases: [
-        {
-          id: "alias-1",
-          merchant_id: baseMerchant.id,
-          alias: "来福",
-          sort_order: 1,
-          created_at: "2026-01-01T00:00:00.000Z",
-        },
-      ],
-    };
+    const merchantWithAlias = createMerchantRow({
+      aliases: [createMerchantAliasRow()],
+    });
     const { container } = render(
       <MerchantList {...baseProps} merchants={[merchantWithAlias]} />,
     );

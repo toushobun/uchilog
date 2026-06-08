@@ -1,45 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import type { MerchantRow } from "types/merchants";
+import {
+  createMerchantAliasRow,
+  createMerchantRow,
+} from "@/test/mocks/merchants";
 
 import { MerchantList } from "./MerchantList";
 
-const merchants: MerchantRow[] = [
-  {
-    id: "00000000-0000-4000-8000-000000001001",
-    name: "LIFE超市",
-    website_url: "https://www.lifecorp.jp",
-    icon_url: null,
-    note: "常去的超市",
-    sort_order: 1,
-    created_at: "2026-01-01T00:00:00.000Z",
+const merchants = [
+  createMerchantRow({
     aliases: [
-      {
-        id: "alias-1",
-        merchant_id: "00000000-0000-4000-8000-000000001001",
-        alias: "来福",
-        sort_order: 1,
-        created_at: "2026-01-01T00:00:00.000Z",
-      },
-      {
-        id: "alias-2",
-        merchant_id: "00000000-0000-4000-8000-000000001001",
-        alias: "LIFE",
-        sort_order: 2,
-        created_at: "2026-01-01T00:00:00.000Z",
-      },
+      createMerchantAliasRow(),
+      createMerchantAliasRow({ alias: "LIFE", id: "alias-2", sort_order: 2 }),
     ],
-  },
-  {
+    note: "常去的超市",
+  }),
+  createMerchantRow({
     id: "00000000-0000-4000-8000-000000001002",
     name: "Amazon",
-    website_url: "https://www.amazon.co.jp",
-    icon_url: null,
-    note: null,
     sort_order: 2,
-    created_at: "2026-01-02T00:00:00.000Z",
-    aliases: [],
-  },
+    website_url: "https://www.amazon.co.jp",
+  }),
 ];
 
 const meta = {
