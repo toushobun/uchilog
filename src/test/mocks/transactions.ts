@@ -28,7 +28,9 @@ export function createTransactionListItem(
   };
 }
 
-function summarizeItems(items: TransactionListItem[]): TransactionAmountSummary {
+function summarizeItems(
+  items: TransactionListItem[],
+): TransactionAmountSummary {
   const income = items
     .filter((item) => item.type === "income")
     .reduce((sum, item) => sum + Number(item.amount), 0);

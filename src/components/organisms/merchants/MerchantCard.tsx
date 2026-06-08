@@ -63,7 +63,11 @@ export function MerchantCard({
             </Typography>
 
             {merchant.website_url ? (
-              <Link href={merchant.website_url} target="_blank" rel="noreferrer">
+              <Link
+                href={merchant.website_url}
+                target="_blank"
+                rel="noreferrer"
+              >
                 {merchant.website_url}
               </Link>
             ) : (
