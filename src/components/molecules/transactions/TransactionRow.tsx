@@ -7,6 +7,8 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import {
+  transactionAccentColor,
+  transactionAvatarBackgroundColor,
   transactionExpenseColor,
   transactionIncomeColor,
 } from "theme/transactionColors";
@@ -16,9 +18,6 @@ import {
   formatTransactionRowAmount,
   getCategoryLabel,
 } from "utils/transactions";
-
-const primaryPurple = "#6d4bb3";
-const avatarBackground = "#f4efff";
 
 export type TransactionRowProps = {
   item: TransactionRowItem;
@@ -63,8 +62,8 @@ export function TransactionRow({
         alt={merchantName}
         src={item.merchant_icon_url ?? undefined}
         sx={{
-          bgcolor: avatarBackground,
-          color: primaryPurple,
+          bgcolor: transactionAvatarBackgroundColor,
+          color: transactionAccentColor,
           flexShrink: 0,
           fontSize: 18,
           fontWeight: 800,

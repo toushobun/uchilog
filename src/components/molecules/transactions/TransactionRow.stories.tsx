@@ -7,7 +7,7 @@ import { TransactionRow } from "./TransactionRow";
 const expenseItem: TransactionRowItem = {
   id: "00000000-0000-4000-8000-000000009001",
   type: "expense",
-  transaction_at: "2026-06-05T12:30:00.000Z",
+  transaction_at: "2026-06-05T03:20:10.000Z",
   amount: "1234",
   account_name: "日元现金",
   account_currency: "JPY",
@@ -16,7 +16,7 @@ const expenseItem: TransactionRowItem = {
   ],
   merchant_name: "便利店",
   merchant_icon_url: null,
-  note: "今天的午餐",
+  note: "测试备注",
   recorder_name: "淞文",
 };
 
@@ -28,9 +28,9 @@ const incomeItem: TransactionRowItem = {
   account_name: "📘 Debit",
   account_currency: "JPY",
   categoryItems: [
-    { categoryName: "工资", parentCategoryName: null, amount: "260000" },
+    { categoryName: "固定工资", parentCategoryName: "收入", amount: "260000" },
   ],
-  merchant_name: "共達",
+  merchant_name: "工资",
   merchant_icon_url: null,
   note: null,
   recorder_name: null,
@@ -75,9 +75,7 @@ export const WithVoidAction: Story = {
   name: "带撤销按钮",
   args: {
     showType: true,
-    voidAction: (formData: FormData) => {
-      console.info("void transaction", formData.get("transactionRecordId"));
-    },
+    voidAction: async () => {},
   },
 };
 
