@@ -55,6 +55,8 @@ UchiLog 是家庭共享的生活记账工具，不是企业后台，也不是强
 - `designTokens.shadow.*`：阴影
 - `designTokens.spacing.*`：页面和卡片间距语义
 
+`designTokens.spacing.*` 的值为 MUI spacing 单位，使用时需要配合 `theme.spacing()`，或在 `sx` 中直接传入数字，让 MUI 自动换算。
+
 ## 组件默认样式
 
 Theme 中已经定义以下组件的默认方向：
