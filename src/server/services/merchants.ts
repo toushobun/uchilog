@@ -1,8 +1,5 @@
 import { createClient } from "lib/supabase/server";
-
-type ServiceOk = { ok: true };
-type ServiceError = { ok: false; error: string };
-type ServiceResult = ServiceOk | ServiceError;
+import type { ServiceResult } from "server/services/serviceResult";
 
 export type CreateMerchantParams = {
   ledgerId: string;
@@ -29,6 +26,7 @@ export type ArchiveMerchantParams = {
 
 export type CreateMerchantAliasParams = {
   alias: string;
+  ledgerId: string;
   merchantId: string;
   userId: string;
 };
@@ -116,6 +114,19 @@ export async function createMerchantAliasService(
   params: CreateMerchantAliasParams,
 ): Promise<ServiceResult> {
   const supabase = await createClient();
+
+  const { data: merchant, error: merchantError } = await supabase
+    .from("merchant")
+    .select("id")
+    .eq("id", params.merchantId)
+    .eq("ledger_id", params.ledgerId)
+    .eq("is_archived", false)
+    .maybeSingle();
+
+  if (merchantError || !merchant) {
+    return { ok: false, error: "merchant_invalid" };
+  }
+
   const { error } = await supabase.from("merchant_alias").insert({
     merchant_id: params.merchantId,
     alias: params.alias,

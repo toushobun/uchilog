@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
 import { accountsErrorHref, routePaths } from "config/paths";
+import { requireCurrentUserAndLedger } from "server/context/currentLedger";
 import {
   archiveAccountService,
   createAccountService,
@@ -59,21 +59,8 @@ function parseHolderUserIds(formData: FormData) {
   return uniqueHolderUserIds.every(isUuid) ? uniqueHolderUserIds : null;
 }
 
-async function getCurrentUserAndLedger() {
-  const context = await getCurrentLedgerContext();
-
-  if (!context.currentLedger) {
-    redirect(routePaths.ledgerSetup);
-  }
-
-  return {
-    currentLedger: context.currentLedger,
-    userId: context.userId,
-  };
-}
-
 export async function createAccount(formData: FormData) {
-  const { currentLedger } = await getCurrentUserAndLedger();
+  const { currentLedger } = await requireCurrentUserAndLedger();
   const name = getFormText(formData, "name");
   const type = parseAccountType(getFormText(formData, "type"));
   const currency = parseCurrency(getFormText(formData, "currency"));
@@ -103,7 +90,7 @@ export async function createAccount(formData: FormData) {
 }
 
 export async function updateAccount(formData: FormData) {
-  const { currentLedger } = await getCurrentUserAndLedger();
+  const { currentLedger } = await requireCurrentUserAndLedger();
   const accountId = getFormText(formData, "accountId");
   const name = getFormText(formData, "name");
   const type = parseAccountType(getFormText(formData, "type"));
@@ -132,7 +119,7 @@ export async function updateAccount(formData: FormData) {
 }
 
 export async function archiveAccount(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const accountId = getFormText(formData, "accountId");
 
   if (!isUuid(accountId)) redirect(accountsErrorHref("account_invalid"));

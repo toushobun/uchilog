@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
-import { createClient } from "lib/supabase/server";
 import { merchantsErrorHref, routePaths } from "config/paths";
+import { requireCurrentUserAndLedger } from "server/context/currentLedger";
 import {
   archiveMerchantAliasService,
   archiveMerchantService,
@@ -20,21 +19,8 @@ const merchantNameMaxLength = 100;
 const textMaxLength = 1000;
 const aliasMaxLength = 100;
 
-async function getCurrentUserAndLedger() {
-  const context = await getCurrentLedgerContext();
-
-  if (!context.currentLedger) {
-    redirect(routePaths.ledgerSetup);
-  }
-
-  return {
-    currentLedger: context.currentLedger,
-    userId: context.userId,
-  };
-}
-
 export async function createMerchant(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const name = getFormText(formData, "name");
   const websiteUrl = parseWebsiteUrl(getFormText(formData, "websiteUrl"));
   const note = parseOptionalText(getFormText(formData, "note"), textMaxLength);
@@ -61,7 +47,7 @@ export async function createMerchant(formData: FormData) {
 }
 
 export async function updateMerchant(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const merchantId = getFormText(formData, "merchantId");
   const name = getFormText(formData, "name");
   const websiteUrl = parseWebsiteUrl(getFormText(formData, "websiteUrl"));
@@ -92,7 +78,7 @@ export async function updateMerchant(formData: FormData) {
 }
 
 export async function archiveMerchant(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const merchantId = getFormText(formData, "merchantId");
 
   if (!isUuid(merchantId)) redirect(merchantsErrorHref("merchant_invalid"));
@@ -110,7 +96,7 @@ export async function archiveMerchant(formData: FormData) {
 }
 
 export async function createMerchantAlias(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const merchantId = getFormText(formData, "merchantId");
   const alias = getFormText(formData, "alias");
 
@@ -120,20 +106,9 @@ export async function createMerchantAlias(formData: FormData) {
   if (alias.length > aliasMaxLength)
     redirect(merchantsErrorHref("alias_too_long", merchantId));
 
-  // 确认商家属于当前账本后再创建别名
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("merchant")
-    .select("id")
-    .eq("id", merchantId)
-    .eq("ledger_id", currentLedger.id)
-    .eq("is_archived", false)
-    .maybeSingle();
-
-  if (error || !data) redirect(merchantsErrorHref("merchant_invalid"));
-
   const result = await createMerchantAliasService({
     alias,
+    ledgerId: currentLedger.id,
     merchantId,
     userId,
   });
@@ -145,7 +120,7 @@ export async function createMerchantAlias(formData: FormData) {
 }
 
 export async function archiveMerchantAlias(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const aliasId = getFormText(formData, "aliasId");
 
   if (!isUuid(aliasId)) redirect(merchantsErrorHref("alias_invalid"));

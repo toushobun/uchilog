@@ -1,9 +1,6 @@
 import { createClient } from "lib/supabase/server";
+import type { ServiceResult } from "server/services/serviceResult";
 import type { TransactionType } from "types/transactions";
-
-type ServiceOk = { ok: true };
-type ServiceError = { ok: false; error: string };
-type ServiceResult = ServiceOk | ServiceError;
 
 export type CreateTransactionParams = {
   accountId: string;

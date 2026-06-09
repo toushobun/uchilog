@@ -4,8 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { categoriesErrorHref, routePaths } from "config/paths";
-import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
-import { createClient } from "lib/supabase/server";
+import { requireCurrentUserAndLedger } from "server/context/currentLedger";
 import {
   archiveCategoryService,
   createCategoryService,
@@ -24,40 +23,8 @@ function parseCategoryType(value: string): TransactionType | null {
     : null;
 }
 
-async function getCurrentUserAndLedger() {
-  const context = await getCurrentLedgerContext();
-
-  if (!context.currentLedger) {
-    redirect(routePaths.ledgerSetup);
-  }
-
-  return {
-    currentLedger: context.currentLedger,
-    userId: context.userId,
-  };
-}
-
-async function validateParentCategory(params: {
-  ledgerId: string;
-  parentId: string;
-  type: TransactionType;
-}) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("category")
-    .select("id")
-    .eq("id", params.parentId)
-    .eq("ledger_id", params.ledgerId)
-    .eq("type", params.type)
-    .eq("is_archived", false)
-    .is("parent_id", null)
-    .maybeSingle();
-
-  return !error && data !== null;
-}
-
 export async function createCategory(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const name = getFormText(formData, "name");
   const type = parseCategoryType(getFormText(formData, "type"));
   const parentIdText = getFormText(formData, "parentId");
@@ -68,16 +35,6 @@ export async function createCategory(formData: FormData) {
     redirect(categoriesErrorHref("name_too_long"));
   if (!type) redirect(categoriesErrorHref("type_invalid"));
   if (parentId !== null && !isUuid(parentId)) {
-    redirect(categoriesErrorHref("parent_invalid"));
-  }
-  if (
-    parentId !== null &&
-    !(await validateParentCategory({
-      ledgerId: currentLedger.id,
-      parentId,
-      type,
-    }))
-  ) {
     redirect(categoriesErrorHref("parent_invalid"));
   }
 
@@ -96,7 +53,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const categoryId = getFormText(formData, "categoryId");
   const name = getFormText(formData, "name");
 
@@ -120,7 +77,7 @@ export async function updateCategory(formData: FormData) {
 }
 
 export async function archiveCategory(formData: FormData) {
-  const { currentLedger, userId } = await getCurrentUserAndLedger();
+  const { currentLedger, userId } = await requireCurrentUserAndLedger();
   const categoryId = getFormText(formData, "categoryId");
 
   if (!isUuid(categoryId)) redirect(categoriesErrorHref("category_invalid"));

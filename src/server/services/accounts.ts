@@ -1,4 +1,5 @@
 import { createClient } from "lib/supabase/server";
+import type { ServiceResult } from "server/services/serviceResult";
 import type { AccountType } from "types/accounts";
 
 export type CreateAccountParams = {
@@ -24,10 +25,6 @@ export type ArchiveAccountParams = {
   ledgerId: string;
   userId: string;
 };
-
-type ServiceOk = { ok: true };
-type ServiceError = { ok: false; error: string };
-type ServiceResult = ServiceOk | ServiceError;
 
 export async function createAccountService(
   params: CreateAccountParams,

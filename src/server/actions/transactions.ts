@@ -3,33 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getCurrentLedgerContext } from "lib/ledger/current-ledger";
 import {
   newTransactionErrorHref,
   routePaths,
   transactionsErrorHref,
 } from "config/paths";
+import { requireCurrentUserAndLedger } from "server/context/currentLedger";
 import {
   createTransactionService,
   voidTransactionService,
 } from "server/services/transactions";
+import { getFormText, isUuid } from "utils/formData";
 import { validateTransactionForm } from "utils/transactionValidation";
-
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-async function getCurrentUserAndLedger() {
-  const context = await getCurrentLedgerContext();
-
-  if (!context.currentLedger) {
-    redirect(routePaths.ledgerSetup);
-  }
-
-  return {
-    currentLedger: context.currentLedger,
-    userId: context.userId,
-  };
-}
 
 export async function createTransaction(formData: FormData) {
   const validation = validateTransactionForm(formData);
@@ -38,7 +23,7 @@ export async function createTransaction(formData: FormData) {
     redirect(newTransactionErrorHref(validation.error));
   }
 
-  const { currentLedger } = await getCurrentUserAndLedger();
+  const { currentLedger } = await requireCurrentUserAndLedger();
   const values = validation.value;
 
   const result = await createTransactionService({
@@ -61,15 +46,13 @@ export async function createTransaction(formData: FormData) {
 }
 
 export async function voidTransaction(formData: FormData) {
-  const transactionRecordId = String(
-    formData.get("transactionRecordId") ?? "",
-  ).trim();
+  const transactionRecordId = getFormText(formData, "transactionRecordId");
 
-  if (!uuidPattern.test(transactionRecordId)) {
+  if (!isUuid(transactionRecordId)) {
     redirect(transactionsErrorHref("void_invalid"));
   }
 
-  const { currentLedger } = await getCurrentUserAndLedger();
+  const { currentLedger } = await requireCurrentUserAndLedger();
 
   const result = await voidTransactionService({
     ledgerId: currentLedger.id,

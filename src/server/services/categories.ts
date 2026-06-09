@@ -1,9 +1,6 @@
 import { createClient } from "lib/supabase/server";
+import type { ServiceResult } from "server/services/serviceResult";
 import type { TransactionType } from "types/transactions";
-
-type ServiceOk = { ok: true };
-type ServiceError = { ok: false; error: string };
-type ServiceResult = ServiceOk | ServiceError;
 
 export type CreateCategoryParams = {
   ledgerId: string;
@@ -26,12 +23,16 @@ export type ArchiveCategoryParams = {
   userId: string;
 };
 
-async function loadNextSortOrder(params: {
-  ledgerId: string;
-  parentId: string | null;
-  type: TransactionType;
-}) {
-  const supabase = await createClient();
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+async function loadNextSortOrder(
+  supabase: SupabaseClient,
+  params: {
+    ledgerId: string;
+    parentId: string | null;
+    type: TransactionType;
+  },
+) {
   let query = supabase
     .from("category")
     .select("sort_order")
@@ -60,13 +61,30 @@ async function loadNextSortOrder(params: {
 export async function createCategoryService(
   params: CreateCategoryParams,
 ): Promise<ServiceResult> {
-  const sortOrder = await loadNextSortOrder(params);
+  const supabase = await createClient();
+
+  if (params.parentId !== null) {
+    const { data, error } = await supabase
+      .from("category")
+      .select("id")
+      .eq("id", params.parentId)
+      .eq("ledger_id", params.ledgerId)
+      .eq("type", params.type)
+      .eq("is_archived", false)
+      .is("parent_id", null)
+      .maybeSingle();
+
+    if (error || !data) {
+      return { ok: false, error: "parent_invalid" };
+    }
+  }
+
+  const sortOrder = await loadNextSortOrder(supabase, params);
 
   if (sortOrder === null) {
     return { ok: false, error: "create_failed" };
   }
 
-  const supabase = await createClient();
   const { error } = await supabase.from("category").insert({
     created_by: params.userId,
     ledger_id: params.ledgerId,
