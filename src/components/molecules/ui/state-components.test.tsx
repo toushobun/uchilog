@@ -39,7 +39,9 @@ describe("EmptyState", () => {
       />,
     );
 
-    expect(within(container).getByRole("button", { name: "新增账户" })).toBeTruthy();
+    expect(
+      within(container).getByRole("button", { name: "新增账户" }),
+    ).toBeTruthy();
   });
 });
 
@@ -66,7 +68,9 @@ describe("ErrorState", () => {
   it("显示重试按钮", () => {
     const { container } = render(<ErrorRetryButton />);
 
-    expect(within(container).getByRole("button", { name: "重试" })).toBeTruthy();
+    expect(
+      within(container).getByRole("button", { name: "重试" }),
+    ).toBeTruthy();
   });
 });
 
@@ -78,6 +82,8 @@ describe("FormActions", () => {
       </FormActions>,
     );
 
-    expect(within(container).getByRole("button", { name: "保存" })).toBeTruthy();
+    expect(
+      within(container).getByRole("button", { name: "保存" }),
+    ).toBeTruthy();
   });
 });

@@ -42,7 +42,9 @@ export function AccountsTemplate({
         }
       />
 
-      {errorMessage ? <ErrorState title="账户操作失败" description={errorMessage} /> : null}
+      {errorMessage ? (
+        <ErrorState title="账户操作失败" description={errorMessage} />
+      ) : null}
 
       <SectionCard>
         <AccountForm

@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import type { ReactNode } from "react";
 
@@ -18,7 +19,7 @@ export function EmptyState({ action, description, title }: EmptyStateProps) {
       <Typography color="text.secondary" sx={{ mt: 1 }}>
         {description}
       </Typography>
-      {action ? <div>{action}</div> : null}
+      {action ? <Box sx={{ mt: 2 }}>{action}</Box> : null}
     </SectionCard>
   );
 }

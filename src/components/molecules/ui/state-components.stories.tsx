@@ -10,8 +10,7 @@ import { SectionCard } from "./SectionCard";
 
 const meta = {
   title: "Molecules/UI/StateComponents",
-  component: EmptyState,
-} satisfies Meta<typeof EmptyState>;
+} satisfies Meta;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -29,7 +28,9 @@ export const Empty: Story = {
 
 export const Loading: Story = {
   name: "LoadingState",
-  render: () => <LoadingState title="读取账户中" description="正在读取账户列表。" />,
+  render: () => (
+    <LoadingState title="读取账户中" description="正在读取账户列表。" />
+  ),
 };
 
 export const Error: Story = {

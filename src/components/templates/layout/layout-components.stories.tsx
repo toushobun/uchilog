@@ -8,8 +8,7 @@ import { PageShell } from "./PageShell";
 
 const meta = {
   title: "Templates/Layout/CommonLayout",
-  component: PageShell,
-} satisfies Meta<typeof PageShell>;
+} satisfies Meta;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

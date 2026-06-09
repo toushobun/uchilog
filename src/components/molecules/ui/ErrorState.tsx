@@ -1,3 +1,4 @@
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -25,7 +26,7 @@ export function ErrorState({
         {description ? (
           <Typography color="text.secondary">{description}</Typography>
         ) : null}
-        {action ? <div>{action}</div> : null}
+        {action ? <Box>{action}</Box> : null}
       </Stack>
     </SectionCard>
   );

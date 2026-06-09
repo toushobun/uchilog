@@ -15,7 +15,10 @@ export function PageShell({ children, maxWidth = "lg" }: PageShellProps) {
       component="main"
       maxWidth={maxWidth}
       sx={{
-        px: { xs: 2, sm: 3 },
+        px: {
+          xs: designTokens.spacing.page.mobile,
+          sm: designTokens.spacing.page.desktop,
+        },
         py: {
           xs: designTokens.spacing.page.mobile,
           sm: designTokens.spacing.page.desktop,
