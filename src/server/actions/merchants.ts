@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { merchantsErrorHref, routePaths } from "config/paths";
-import { createClient } from "lib/supabase/server";
 import { requireCurrentUserAndLedger } from "server/context/currentLedger";
 import {
   archiveMerchantAliasService,
@@ -107,20 +106,9 @@ export async function createMerchantAlias(formData: FormData) {
   if (alias.length > aliasMaxLength)
     redirect(merchantsErrorHref("alias_too_long", merchantId));
 
-  // 确认商家属于当前账本后再创建别名
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("merchant")
-    .select("id")
-    .eq("id", merchantId)
-    .eq("ledger_id", currentLedger.id)
-    .eq("is_archived", false)
-    .maybeSingle();
-
-  if (error || !data) redirect(merchantsErrorHref("merchant_invalid"));
-
   const result = await createMerchantAliasService({
     alias,
+    ledgerId: currentLedger.id,
     merchantId,
     userId,
   });
