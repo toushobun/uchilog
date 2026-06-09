@@ -12,32 +12,30 @@ import {
   createMerchantService,
   updateMerchantService,
 } from "server/services/merchants";
-import { getFormText, isUuid, parseOptionalText } from "utils/formData";
-import { parseWebsiteUrl } from "utils/merchants";
-
-const merchantNameMaxLength = 100;
-const textMaxLength = 1000;
-const aliasMaxLength = 100;
+import {
+  validateArchiveMerchantAliasForm,
+  validateArchiveMerchantForm,
+  validateCreateMerchantAliasForm,
+  validateCreateMerchantForm,
+  validateUpdateMerchantForm,
+} from "server/validators/merchants";
 
 export async function createMerchant(formData: FormData) {
   const { currentLedger, userId } = await requireCurrentUserAndLedger();
-  const name = getFormText(formData, "name");
-  const websiteUrl = parseWebsiteUrl(getFormText(formData, "websiteUrl"));
-  const note = parseOptionalText(getFormText(formData, "note"), textMaxLength);
+  const validation = validateCreateMerchantForm(formData);
 
-  if (name.length === 0) redirect(merchantsErrorHref("name_required"));
-  if (name.length > merchantNameMaxLength)
-    redirect(merchantsErrorHref("name_too_long"));
-  if (websiteUrl === undefined)
-    redirect(merchantsErrorHref("website_url_invalid"));
-  if (!note.ok) redirect(merchantsErrorHref("note_too_long"));
+  if (!validation.ok) {
+    redirect(merchantsErrorHref(validation.error));
+  }
+
+  const values = validation.value;
 
   const result = await createMerchantService({
     ledgerId: currentLedger.id,
-    name,
-    note: note.value,
+    name: values.name,
+    note: values.note,
     userId,
-    websiteUrl: websiteUrl ?? null,
+    websiteUrl: values.websiteUrl,
   });
 
   if (!result.ok) redirect(merchantsErrorHref(result.error));
@@ -48,30 +46,24 @@ export async function createMerchant(formData: FormData) {
 
 export async function updateMerchant(formData: FormData) {
   const { currentLedger, userId } = await requireCurrentUserAndLedger();
-  const merchantId = getFormText(formData, "merchantId");
-  const name = getFormText(formData, "name");
-  const websiteUrl = parseWebsiteUrl(getFormText(formData, "websiteUrl"));
-  const note = parseOptionalText(getFormText(formData, "note"), textMaxLength);
+  const validation = validateUpdateMerchantForm(formData);
 
-  if (!isUuid(merchantId)) redirect(merchantsErrorHref("merchant_invalid"));
-  if (name.length === 0)
-    redirect(merchantsErrorHref("name_required", merchantId));
-  if (name.length > merchantNameMaxLength)
-    redirect(merchantsErrorHref("name_too_long", merchantId));
-  if (websiteUrl === undefined)
-    redirect(merchantsErrorHref("website_url_invalid", merchantId));
-  if (!note.ok) redirect(merchantsErrorHref("note_too_long", merchantId));
+  if (!validation.ok) {
+    redirect(merchantsErrorHref(validation.error, validation.merchantId));
+  }
+
+  const values = validation.value;
 
   const result = await updateMerchantService({
     ledgerId: currentLedger.id,
-    merchantId,
-    name,
-    note: note.value,
+    merchantId: values.merchantId,
+    name: values.name,
+    note: values.note,
     userId,
-    websiteUrl: websiteUrl ?? null,
+    websiteUrl: values.websiteUrl,
   });
 
-  if (!result.ok) redirect(merchantsErrorHref(result.error, merchantId));
+  if (!result.ok) redirect(merchantsErrorHref(result.error, values.merchantId));
 
   revalidatePath(routePaths.merchants);
   redirect(routePaths.merchants);
@@ -79,17 +71,21 @@ export async function updateMerchant(formData: FormData) {
 
 export async function archiveMerchant(formData: FormData) {
   const { currentLedger, userId } = await requireCurrentUserAndLedger();
-  const merchantId = getFormText(formData, "merchantId");
+  const validation = validateArchiveMerchantForm(formData);
 
-  if (!isUuid(merchantId)) redirect(merchantsErrorHref("merchant_invalid"));
+  if (!validation.ok) {
+    redirect(merchantsErrorHref(validation.error));
+  }
+
+  const values = validation.value;
 
   const result = await archiveMerchantService({
     ledgerId: currentLedger.id,
-    merchantId,
+    merchantId: values.merchantId,
     userId,
   });
 
-  if (!result.ok) redirect(merchantsErrorHref(result.error, merchantId));
+  if (!result.ok) redirect(merchantsErrorHref(result.error, values.merchantId));
 
   revalidatePath(routePaths.merchants);
   redirect(routePaths.merchants);
@@ -97,23 +93,22 @@ export async function archiveMerchant(formData: FormData) {
 
 export async function createMerchantAlias(formData: FormData) {
   const { currentLedger, userId } = await requireCurrentUserAndLedger();
-  const merchantId = getFormText(formData, "merchantId");
-  const alias = getFormText(formData, "alias");
+  const validation = validateCreateMerchantAliasForm(formData);
 
-  if (!isUuid(merchantId)) redirect(merchantsErrorHref("merchant_invalid"));
-  if (alias.length === 0)
-    redirect(merchantsErrorHref("alias_required", merchantId));
-  if (alias.length > aliasMaxLength)
-    redirect(merchantsErrorHref("alias_too_long", merchantId));
+  if (!validation.ok) {
+    redirect(merchantsErrorHref(validation.error, validation.merchantId));
+  }
+
+  const values = validation.value;
 
   const result = await createMerchantAliasService({
-    alias,
+    alias: values.alias,
     ledgerId: currentLedger.id,
-    merchantId,
+    merchantId: values.merchantId,
     userId,
   });
 
-  if (!result.ok) redirect(merchantsErrorHref(result.error, merchantId));
+  if (!result.ok) redirect(merchantsErrorHref(result.error, values.merchantId));
 
   revalidatePath(routePaths.merchants);
   redirect(routePaths.merchants);
@@ -121,12 +116,16 @@ export async function createMerchantAlias(formData: FormData) {
 
 export async function archiveMerchantAlias(formData: FormData) {
   const { currentLedger, userId } = await requireCurrentUserAndLedger();
-  const aliasId = getFormText(formData, "aliasId");
+  const validation = validateArchiveMerchantAliasForm(formData);
 
-  if (!isUuid(aliasId)) redirect(merchantsErrorHref("alias_invalid"));
+  if (!validation.ok) {
+    redirect(merchantsErrorHref(validation.error));
+  }
+
+  const values = validation.value;
 
   const result = await archiveMerchantAliasService({
-    aliasId,
+    aliasId: values.aliasId,
     ledgerId: currentLedger.id,
     userId,
   });

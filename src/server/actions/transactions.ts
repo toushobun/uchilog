@@ -13,17 +13,19 @@ import {
   createTransactionService,
   voidTransactionService,
 } from "server/services/transactions";
-import { getFormText, isUuid } from "utils/formData";
-import { validateTransactionForm } from "utils/transactionValidation";
+import {
+  validateTransactionForm,
+  validateVoidTransactionForm,
+} from "server/validators/transactions";
 
 export async function createTransaction(formData: FormData) {
+  const { currentLedger } = await requireCurrentUserAndLedger();
   const validation = validateTransactionForm(formData);
 
   if (!validation.ok) {
     redirect(newTransactionErrorHref(validation.error));
   }
 
-  const { currentLedger } = await requireCurrentUserAndLedger();
   const values = validation.value;
 
   const result = await createTransactionService({
@@ -46,17 +48,18 @@ export async function createTransaction(formData: FormData) {
 }
 
 export async function voidTransaction(formData: FormData) {
-  const transactionRecordId = getFormText(formData, "transactionRecordId");
+  const { currentLedger } = await requireCurrentUserAndLedger();
+  const validation = validateVoidTransactionForm(formData);
 
-  if (!isUuid(transactionRecordId)) {
-    redirect(transactionsErrorHref("void_invalid"));
+  if (!validation.ok) {
+    redirect(transactionsErrorHref(validation.error));
   }
 
-  const { currentLedger } = await requireCurrentUserAndLedger();
+  const values = validation.value;
 
   const result = await voidTransactionService({
     ledgerId: currentLedger.id,
-    transactionRecordId,
+    transactionRecordId: values.transactionRecordId,
   });
 
   if (!result.ok) redirect(transactionsErrorHref(result.error));

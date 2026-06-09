@@ -91,12 +91,12 @@ describe("createTransaction", () => {
     setupActionMocks();
   });
 
-  it("输入值不合法时带错误参数跳回新增页面", async () => {
+  it("输入值不合法时认证后带错误参数跳回新增页面", async () => {
     await expect(
       createTransaction(createValidFormData({ amount: "0" })),
     ).rejects.toThrow("NEXT_REDIRECT:/transactions/new?error=amount_invalid");
 
-    expect(mocks.getCurrentLedgerContext).not.toHaveBeenCalled();
+    expect(mocks.getCurrentLedgerContext).toHaveBeenCalledTimes(1);
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
@@ -156,12 +156,12 @@ describe("voidTransaction", () => {
     setupActionMocks();
   });
 
-  it("transactionRecordId 不合法时带错误参数跳回列表页", async () => {
+  it("transactionRecordId 不合法时认证后带错误参数跳回列表页", async () => {
     await expect(
       voidTransaction(createVoidFormData("invalid-id")),
     ).rejects.toThrow("NEXT_REDIRECT:/transactions?error=void_invalid");
 
-    expect(mocks.getCurrentLedgerContext).not.toHaveBeenCalled();
+    expect(mocks.getCurrentLedgerContext).toHaveBeenCalledTimes(1);
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
