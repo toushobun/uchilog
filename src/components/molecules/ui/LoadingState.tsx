@@ -17,7 +17,7 @@ export function LoadingState({
   return (
     <SectionCard role="status">
       <Stack spacing={2} sx={{ alignItems: "center", textAlign: "center" }}>
-        <CircularProgress aria-label="读取中" size={28} />
+        <CircularProgress aria-hidden="true" size={28} />
         <Typography variant="h6" sx={{ fontWeight: 700 }}>
           {title}
         </Typography>

@@ -1,11 +1,10 @@
-import type { PaperProps } from "@mui/material/Paper";
+import Card, { type CardProps } from "@mui/material/Card";
 
-import { GlassCard } from "atoms/ui/GlassCard";
 import { designTokens } from "theme/theme";
 
-export function SectionCard({ sx, ...props }: PaperProps) {
+export function SectionCard({ sx, ...props }: CardProps) {
   return (
-    <GlassCard
+    <Card
       sx={[
         {
           p: designTokens.spacing.card,

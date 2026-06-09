@@ -3,6 +3,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import type { ReactNode } from "react";
 
 import { AccountHolderCheckboxGroup } from "molecules/accounts/AccountHolderCheckboxGroup";
 import { FormActions } from "molecules/ui/FormActions";
@@ -14,17 +15,19 @@ type AccountFormProps = {
   createAccountAction: ServerAction;
   defaultCurrency: string;
   holderOptions: AccountHolderOption[];
+  title?: ReactNode;
 };
 
 export function AccountForm({
   createAccountAction,
   defaultCurrency,
   holderOptions,
+  title = "新增账户",
 }: AccountFormProps) {
   return (
     <Stack spacing={3}>
       <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
-        新增账户
+        {title}
       </Typography>
 
       <Stack component="form" action={createAccountAction} spacing={2.5}>
