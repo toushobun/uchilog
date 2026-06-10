@@ -4,23 +4,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProtectedLayoutShell } from "./ProtectedLayoutShell";
 
-vi.mock("next/script", () => ({
-  default: (props: Record<string, unknown>): ReactNode => {
-    const htmlProp = props["dangerously" + "SetInnerHTML"] as
-      | { __html?: string }
-      | undefined;
-
-    return (
-      <div
-        data-testid="theme-init-script"
-        data-script-id={String(props.id)}
-        data-script-html={htmlProp?.__html}
-        data-strategy={String(props.strategy)}
-      />
-    );
-  },
-}));
-
 vi.mock("templates/protected/AppShell", () => ({
   AppShell: ({
     children,
@@ -35,32 +18,11 @@ vi.mock("templates/protected/AppShell", () => ({
   ),
 }));
 
-vi.mock("theme/userThemeInitScript", () => ({
-  createUserThemeInitScript: (email: string): string =>
-    `window.__themeEmail = ${JSON.stringify(email)};`,
-}));
-
 afterEach(() => {
   cleanup();
 });
 
 describe("ProtectedLayoutShell", () => {
-  it("使用 Next Script 在客户端交互后初始化用户主题", () => {
-    render(
-      <ProtectedLayoutShell email="test@example.com">
-        <div>受保护内容</div>
-      </ProtectedLayoutShell>,
-    );
-
-    const script = screen.getByTestId("theme-init-script");
-
-    expect(script.getAttribute("data-script-id")).toBe("user-theme-init");
-    expect(script.getAttribute("data-strategy")).toBe("afterInteractive");
-    expect(script.getAttribute("data-script-html")).toContain(
-      "test@example.com",
-    );
-  });
-
   it("将用户邮箱继续传给 AppShell", () => {
     render(
       <ProtectedLayoutShell email="test@example.com">

@@ -17,6 +17,7 @@ import type { TransactionRowItem } from "types/transactions";
 import { getMerchantInitial } from "utils/merchants";
 import {
   formatTransactionRowAmount,
+  formatTransactionTime,
   getCategoryLabel,
 } from "utils/transactions";
 
@@ -42,10 +43,7 @@ export function TransactionRow({
   const merchantName = item.merchant_name ?? "未指定商家";
   const amountColor =
     item.type === "income" ? transactionIncomeColor : transactionExpenseColor;
-  const time = new Date(item.transaction_at).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const time = formatTransactionTime(item.transaction_at);
   const signedAmount = formatTransactionRowAmount(item.type, item.amount);
   const categoryLabel = getCategoryLabel(item.categoryItems);
 

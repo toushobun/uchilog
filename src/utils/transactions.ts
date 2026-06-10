@@ -189,6 +189,15 @@ export function formatTransactionAt(value: string) {
   }).format(new Date(value));
 }
 
+export function formatTransactionTime(value: string) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    hour12: false,
+    minute: "2-digit",
+    timeZone: "Asia/Tokyo",
+  }).format(new Date(value));
+}
+
 function padDatePart(value: number) {
   return String(value).padStart(2, "0");
 }
