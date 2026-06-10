@@ -1,4 +1,8 @@
 import { createClient } from "lib/supabase/server";
+import {
+  accountErrorCodes,
+  type AccountServiceErrorCode,
+} from "server/errors/accounts";
 import type { ServiceResult } from "server/services/serviceResult";
 import type { AccountType } from "types/accounts";
 
@@ -28,7 +32,7 @@ export type ArchiveAccountParams = {
 
 export async function createAccountService(
   params: CreateAccountParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<AccountServiceErrorCode>> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("create_account_with_holders", {
     p_currency: params.currency,
@@ -40,7 +44,7 @@ export async function createAccountService(
   });
 
   if (error) {
-    return { ok: false, error: "create_failed" };
+    return { ok: false, error: accountErrorCodes.createFailed };
   }
 
   return { ok: true };
@@ -48,7 +52,7 @@ export async function createAccountService(
 
 export async function updateAccountService(
   params: UpdateAccountParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<AccountServiceErrorCode>> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("update_account_with_holders", {
     p_account_id: params.accountId,
@@ -60,7 +64,7 @@ export async function updateAccountService(
   });
 
   if (error) {
-    return { ok: false, error: "update_failed" };
+    return { ok: false, error: accountErrorCodes.updateFailed };
   }
 
   return { ok: true };
@@ -68,7 +72,7 @@ export async function updateAccountService(
 
 export async function archiveAccountService(
   params: ArchiveAccountParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<AccountServiceErrorCode>> {
   const supabase = await createClient();
   const { error, count } = await supabase
     .from("account")
@@ -86,7 +90,7 @@ export async function archiveAccountService(
     .eq("is_archived", false);
 
   if (error || count !== 1) {
-    return { ok: false, error: "archive_failed" };
+    return { ok: false, error: accountErrorCodes.archiveFailed };
   }
 
   return { ok: true };

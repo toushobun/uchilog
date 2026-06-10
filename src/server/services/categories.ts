@@ -1,4 +1,8 @@
 import { createClient } from "lib/supabase/server";
+import {
+  categoryErrorCodes,
+  type CategoryServiceErrorCode,
+} from "server/errors/categories";
 import type { ServiceResult } from "server/services/serviceResult";
 import type { TransactionType } from "types/transactions";
 
@@ -60,7 +64,7 @@ async function loadNextSortOrder(
 
 export async function createCategoryService(
   params: CreateCategoryParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<CategoryServiceErrorCode>> {
   const supabase = await createClient();
 
   if (params.parentId !== null) {
@@ -75,14 +79,14 @@ export async function createCategoryService(
       .maybeSingle();
 
     if (error || !data) {
-      return { ok: false, error: "parent_invalid" };
+      return { ok: false, error: categoryErrorCodes.parentInvalid };
     }
   }
 
   const sortOrder = await loadNextSortOrder(supabase, params);
 
   if (sortOrder === null) {
-    return { ok: false, error: "create_failed" };
+    return { ok: false, error: categoryErrorCodes.createFailed };
   }
 
   const { error } = await supabase.from("category").insert({
@@ -96,7 +100,7 @@ export async function createCategoryService(
   });
 
   if (error) {
-    return { ok: false, error: "create_failed" };
+    return { ok: false, error: categoryErrorCodes.createFailed };
   }
 
   return { ok: true };
@@ -104,7 +108,7 @@ export async function createCategoryService(
 
 export async function updateCategoryService(
   params: UpdateCategoryParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<CategoryServiceErrorCode>> {
   const supabase = await createClient();
   const { error, count } = await supabase
     .from("category")
@@ -120,7 +124,7 @@ export async function updateCategoryService(
     .eq("is_archived", false);
 
   if (error || count !== 1) {
-    return { ok: false, error: "update_failed" };
+    return { ok: false, error: categoryErrorCodes.updateFailed };
   }
 
   return { ok: true };
@@ -128,7 +132,7 @@ export async function updateCategoryService(
 
 export async function archiveCategoryService(
   params: ArchiveCategoryParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<CategoryServiceErrorCode>> {
   const supabase = await createClient();
   const { data: category, error: categoryError } = await supabase
     .from("category")
@@ -139,7 +143,7 @@ export async function archiveCategoryService(
     .maybeSingle();
 
   if (categoryError || !category) {
-    return { ok: false, error: "archive_failed" };
+    return { ok: false, error: categoryErrorCodes.archiveFailed };
   }
 
   let query = supabase
@@ -164,7 +168,7 @@ export async function archiveCategoryService(
   const { error, count } = await query;
 
   if (error || !count) {
-    return { ok: false, error: "archive_failed" };
+    return { ok: false, error: categoryErrorCodes.archiveFailed };
   }
 
   return { ok: true };

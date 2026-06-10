@@ -35,7 +35,7 @@ export async function createMerchant(formData: FormData) {
     name: values.name,
     note: values.note,
     userId,
-    websiteUrl: values.websiteUrl,
+    siteUrl: values.siteUrl,
   });
 
   if (!result.ok) redirect(merchantsErrorHref(result.error));
@@ -60,7 +60,7 @@ export async function updateMerchant(formData: FormData) {
     name: values.name,
     note: values.note,
     userId,
-    websiteUrl: values.websiteUrl,
+    siteUrl: values.siteUrl,
   });
 
   if (!result.ok) redirect(merchantsErrorHref(result.error, values.merchantId));

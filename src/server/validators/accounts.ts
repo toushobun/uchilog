@@ -1,3 +1,7 @@
+import {
+  accountErrorCodes,
+  type AccountValidationErrorCode,
+} from "server/errors/accounts";
 import { accountTypeOptions, type AccountType } from "types/accounts";
 import { getFormText } from "utils/formData";
 
@@ -11,6 +15,8 @@ import {
   type ValidationResult,
   valid,
 } from "./common";
+
+export type { AccountValidationErrorCode };
 
 const accountTypeValues = accountTypeOptions.map((option) => option.value);
 
@@ -33,38 +39,30 @@ export type ArchiveAccountValues = {
   accountId: string;
 };
 
-export type AccountValidationErrorCode =
-  | "account_invalid"
-  | "currency_invalid"
-  | "holder_invalid"
-  | "initial_balance_invalid"
-  | "name_required"
-  | "type_invalid";
-
 function parseAccountType(
   formData: FormData,
-): ValidationResult<AccountType, "type_invalid"> {
+): ValidationResult<AccountType, typeof accountErrorCodes.typeInvalid> {
   return parseEnumValue(
     getFormText(formData, "type"),
     accountTypeValues,
-    "type_invalid",
+    accountErrorCodes.typeInvalid,
   );
 }
 
 function parseHolderUserIds(
   formData: FormData,
-): ValidationResult<string[], "holder_invalid"> {
-  return parseUuidList(formData.getAll("holderUserIds"), "holder_invalid");
+): ValidationResult<string[], typeof accountErrorCodes.holderInvalid> {
+  return parseUuidList(
+    formData.getAll("holderUserIds"),
+    accountErrorCodes.holderInvalid,
+  );
 }
 
 function validateAccountFormFields(
   formData: FormData,
-): ValidationResult<
-  AccountFormFields,
-  "currency_invalid" | "holder_invalid" | "name_required" | "type_invalid"
-> {
+): ValidationResult<AccountFormFields, AccountValidationErrorCode> {
   const nameResult = parseTextField(formData, "name", {
-    requiredError: "name_required",
+    requiredError: accountErrorCodes.nameRequired,
   });
 
   if (!nameResult.ok) {
@@ -79,7 +77,7 @@ function validateAccountFormFields(
 
   const currencyResult = parseCurrencyCode(
     getFormText(formData, "currency"),
-    "currency_invalid",
+    accountErrorCodes.currencyInvalid,
   );
 
   if (!currencyResult.ok) {
@@ -115,7 +113,7 @@ export function validateCreateAccountForm(
       allowNegative: true,
       allowZero: true,
       emptyFallback: 0,
-      error: "initial_balance_invalid",
+      error: accountErrorCodes.initialBalanceInvalid,
     },
   );
 
@@ -135,7 +133,7 @@ export function validateUpdateAccountForm(
   const accountIdResult = parseRequiredUuidField(
     formData,
     "accountId",
-    "account_invalid",
+    accountErrorCodes.accountInvalid,
   );
 
   if (!accountIdResult.ok) {
@@ -156,11 +154,14 @@ export function validateUpdateAccountForm(
 
 export function validateArchiveAccountForm(
   formData: FormData,
-): ValidationResult<ArchiveAccountValues, "account_invalid"> {
+): ValidationResult<
+  ArchiveAccountValues,
+  typeof accountErrorCodes.accountInvalid
+> {
   const accountIdResult = parseRequiredUuidField(
     formData,
     "accountId",
-    "account_invalid",
+    accountErrorCodes.accountInvalid,
   );
 
   if (!accountIdResult.ok) {

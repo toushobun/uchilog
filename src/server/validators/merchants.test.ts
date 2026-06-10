@@ -35,7 +35,7 @@ describe("merchant validators", () => {
       value: {
         name: "LIFE",
         note: "常用超市",
-        websiteUrl: "https://example.com",
+        siteUrl: "https://example.com",
       },
     });
   });
@@ -47,7 +47,7 @@ describe("merchant validators", () => {
 
     expect(result).toEqual({
       ok: true,
-      value: { name: "LIFE", note: null, websiteUrl: null },
+      value: { name: "LIFE", note: null, siteUrl: null },
     });
   });
 

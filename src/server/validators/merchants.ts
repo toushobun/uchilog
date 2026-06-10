@@ -1,3 +1,7 @@
+import {
+  merchantErrorCodes,
+  type MerchantValidationErrorCode,
+} from "server/errors/merchants";
 import { getFormText } from "utils/formData";
 import { parseWebsiteUrl } from "utils/merchants";
 
@@ -10,6 +14,8 @@ import {
   valid,
 } from "./common";
 
+export type { MerchantValidationErrorCode };
+
 const merchantNameMaxLength = 100;
 const textMaxLength = 1000;
 const aliasMaxLength = 100;
@@ -17,7 +23,7 @@ const aliasMaxLength = 100;
 export type CreateMerchantValues = {
   name: string;
   note: string | null;
-  websiteUrl: string | null;
+  siteUrl: string | null;
 };
 
 export type UpdateMerchantValues = CreateMerchantValues & {
@@ -36,16 +42,6 @@ export type CreateMerchantAliasValues = {
 export type ArchiveMerchantAliasValues = {
   aliasId: string;
 };
-
-export type MerchantValidationErrorCode =
-  | "alias_invalid"
-  | "alias_required"
-  | "alias_too_long"
-  | "merchant_invalid"
-  | "name_required"
-  | "name_too_long"
-  | "note_too_long"
-  | "website_url_invalid";
 
 type MerchantFormFailure = {
   error: MerchantValidationErrorCode;
@@ -66,51 +62,54 @@ function invalidWithMerchantId(
 
 function parseMerchantName(
   formData: FormData,
-): ValidationResult<string, "name_required" | "name_too_long"> {
+): ValidationResult<
+  string,
+  typeof merchantErrorCodes.nameRequired | typeof merchantErrorCodes.nameTooLong
+> {
   return parseTextField(formData, "name", {
     maxLength: merchantNameMaxLength,
-    maxLengthError: "name_too_long",
-    requiredError: "name_required",
+    maxLengthError: merchantErrorCodes.nameTooLong,
+    requiredError: merchantErrorCodes.nameRequired,
   });
 }
 
-function parseMerchantWebsiteUrl(
+function parseMerchantSiteUrl(
   formData: FormData,
-): ValidationResult<string | null, "website_url_invalid"> {
-  const websiteUrl = parseWebsiteUrl(getFormText(formData, "websiteUrl"));
+): ValidationResult<
+  string | null,
+  typeof merchantErrorCodes.websiteUrlInvalid
+> {
+  const siteUrl = parseWebsiteUrl(getFormText(formData, "websiteUrl"));
 
-  return websiteUrl === undefined
-    ? invalid("website_url_invalid")
-    : valid(websiteUrl ?? null);
+  return siteUrl === undefined
+    ? invalid(merchantErrorCodes.websiteUrlInvalid)
+    : valid(siteUrl ?? null);
 }
 
 function parseMerchantNote(
   formData: FormData,
-): ValidationResult<string | null, "note_too_long"> {
+): ValidationResult<string | null, typeof merchantErrorCodes.noteTooLong> {
   return parseOptionalTextField(
     formData,
     "note",
     textMaxLength,
-    "note_too_long",
+    merchantErrorCodes.noteTooLong,
   );
 }
 
 function parseMerchantValues(
   formData: FormData,
-): ValidationResult<
-  CreateMerchantValues,
-  "name_required" | "name_too_long" | "note_too_long" | "website_url_invalid"
-> {
+): ValidationResult<CreateMerchantValues, MerchantValidationErrorCode> {
   const nameResult = parseMerchantName(formData);
 
   if (!nameResult.ok) {
     return nameResult;
   }
 
-  const websiteUrlResult = parseMerchantWebsiteUrl(formData);
+  const siteUrlResult = parseMerchantSiteUrl(formData);
 
-  if (!websiteUrlResult.ok) {
-    return websiteUrlResult;
+  if (!siteUrlResult.ok) {
+    return siteUrlResult;
   }
 
   const noteResult = parseMerchantNote(formData);
@@ -122,7 +121,7 @@ function parseMerchantValues(
   return valid({
     name: nameResult.value,
     note: noteResult.value,
-    websiteUrl: websiteUrlResult.value,
+    siteUrl: siteUrlResult.value,
   });
 }
 
@@ -139,7 +138,7 @@ export function validateUpdateMerchantForm(
   const merchantIdResult = parseRequiredUuidField(
     formData,
     "merchantId",
-    "merchant_invalid",
+    merchantErrorCodes.merchantInvalid,
   );
 
   if (!merchantIdResult.ok) {
@@ -160,11 +159,14 @@ export function validateUpdateMerchantForm(
 
 export function validateArchiveMerchantForm(
   formData: FormData,
-): ValidationResult<ArchiveMerchantValues, "merchant_invalid"> {
+): ValidationResult<
+  ArchiveMerchantValues,
+  typeof merchantErrorCodes.merchantInvalid
+> {
   const merchantIdResult = parseRequiredUuidField(
     formData,
     "merchantId",
-    "merchant_invalid",
+    merchantErrorCodes.merchantInvalid,
   );
 
   if (!merchantIdResult.ok) {
@@ -181,7 +183,7 @@ export function validateCreateMerchantAliasForm(
   const merchantIdResult = parseRequiredUuidField(
     formData,
     "merchantId",
-    "merchant_invalid",
+    merchantErrorCodes.merchantInvalid,
   );
 
   if (!merchantIdResult.ok) {
@@ -190,8 +192,8 @@ export function validateCreateMerchantAliasForm(
 
   const aliasResult = parseTextField(formData, "alias", {
     maxLength: aliasMaxLength,
-    maxLengthError: "alias_too_long",
-    requiredError: "alias_required",
+    maxLengthError: merchantErrorCodes.aliasTooLong,
+    requiredError: merchantErrorCodes.aliasRequired,
   });
 
   if (!aliasResult.ok) {
@@ -206,11 +208,14 @@ export function validateCreateMerchantAliasForm(
 
 export function validateArchiveMerchantAliasForm(
   formData: FormData,
-): ValidationResult<ArchiveMerchantAliasValues, "alias_invalid"> {
+): ValidationResult<
+  ArchiveMerchantAliasValues,
+  typeof merchantErrorCodes.aliasInvalid
+> {
   const aliasIdResult = parseRequiredUuidField(
     formData,
     "aliasId",
-    "alias_invalid",
+    merchantErrorCodes.aliasInvalid,
   );
 
   if (!aliasIdResult.ok) {

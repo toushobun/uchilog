@@ -1,3 +1,7 @@
+import {
+  categoryErrorCodes,
+  type CategoryValidationErrorCode,
+} from "server/errors/categories";
 import { categoryTypeOptions } from "types/categories";
 import type { TransactionType } from "types/transactions";
 import { getFormText } from "utils/formData";
@@ -10,6 +14,8 @@ import {
   type ValidationResult,
   valid,
 } from "./common";
+
+export type { CategoryValidationErrorCode };
 
 const categoryTypeValues = categoryTypeOptions.map((option) => option.value);
 const categoryNameMaxLength = 100;
@@ -28,13 +34,6 @@ export type UpdateCategoryValues = {
 export type ArchiveCategoryValues = {
   categoryId: string;
 };
-
-export type CategoryValidationErrorCode =
-  | "category_invalid"
-  | "name_required"
-  | "name_too_long"
-  | "parent_invalid"
-  | "type_invalid";
 
 type CategoryFormFailure = {
   categoryId?: string;
@@ -55,11 +54,14 @@ function invalidWithCategoryId(
 
 function parseCategoryName(
   formData: FormData,
-): ValidationResult<string, "name_required" | "name_too_long"> {
+): ValidationResult<
+  string,
+  typeof categoryErrorCodes.nameRequired | typeof categoryErrorCodes.nameTooLong
+> {
   return parseTextField(formData, "name", {
     maxLength: categoryNameMaxLength,
-    maxLengthError: "name_too_long",
-    requiredError: "name_required",
+    maxLengthError: categoryErrorCodes.nameTooLong,
+    requiredError: categoryErrorCodes.nameRequired,
   });
 }
 
@@ -75,7 +77,7 @@ export function validateCreateCategoryForm(
   const typeResult = parseEnumValue(
     getFormText(formData, "type"),
     categoryTypeValues,
-    "type_invalid",
+    categoryErrorCodes.typeInvalid,
   );
 
   if (!typeResult.ok) {
@@ -84,7 +86,7 @@ export function validateCreateCategoryForm(
 
   const parentIdResult = parseOptionalUuidText(
     getFormText(formData, "parentId"),
-    "parent_invalid",
+    categoryErrorCodes.parentInvalid,
   );
 
   if (!parentIdResult.ok) {
@@ -105,7 +107,7 @@ export function validateUpdateCategoryForm(
   const categoryIdResult = parseRequiredUuidField(
     formData,
     "categoryId",
-    "category_invalid",
+    categoryErrorCodes.categoryInvalid,
   );
 
   if (!categoryIdResult.ok) {
@@ -123,11 +125,14 @@ export function validateUpdateCategoryForm(
 
 export function validateArchiveCategoryForm(
   formData: FormData,
-): ValidationResult<ArchiveCategoryValues, "category_invalid"> {
+): ValidationResult<
+  ArchiveCategoryValues,
+  typeof categoryErrorCodes.categoryInvalid
+> {
   const categoryIdResult = parseRequiredUuidField(
     formData,
     "categoryId",
-    "category_invalid",
+    categoryErrorCodes.categoryInvalid,
   );
 
   if (!categoryIdResult.ok) {

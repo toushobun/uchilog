@@ -1,4 +1,9 @@
 import {
+  transactionErrorCodes,
+  type TransactionValidationErrorCode,
+  type VoidTransactionValidationErrorCode,
+} from "server/errors/transactions";
+import {
   transactionTypeOptions,
   type TransactionType,
 } from "types/transactions";
@@ -15,6 +20,8 @@ import {
   valid,
 } from "./common";
 
+export type { TransactionValidationErrorCode };
+
 const transactionTypeValues = transactionTypeOptions.map(
   (option) => option.value,
 );
@@ -28,15 +35,6 @@ export type TransactionFormValues = {
   merchantId: string | null;
   note: string | null;
 };
-
-export type TransactionValidationErrorCode =
-  | "account_invalid"
-  | "amount_invalid"
-  | "category_invalid"
-  | "date_invalid"
-  | "merchant_invalid"
-  | "type_invalid"
-  | "note_too_long";
 
 export type VoidTransactionValues = {
   transactionRecordId: string;
@@ -101,7 +99,7 @@ export function validateTransactionForm(
   const typeResult = parseEnumValue(
     getFormText(formData, "type"),
     transactionTypeValues,
-    "type_invalid",
+    transactionErrorCodes.typeInvalid,
   );
 
   if (!typeResult.ok) {
@@ -113,7 +111,7 @@ export function validateTransactionForm(
   );
 
   if (offsetMinutes === null) {
-    return invalid("date_invalid");
+    return invalid(transactionErrorCodes.dateInvalid);
   }
 
   const transactionAt = parseTransactionAt(
@@ -122,13 +120,13 @@ export function validateTransactionForm(
   );
 
   if (!transactionAt) {
-    return invalid("date_invalid");
+    return invalid(transactionErrorCodes.dateInvalid);
   }
 
   const amountResult = parseMoneyAmount(formData.get("amount"), {
     allowNegative: false,
     allowZero: false,
-    error: "amount_invalid",
+    error: transactionErrorCodes.amountInvalid,
   });
 
   if (!amountResult.ok) {
@@ -138,7 +136,7 @@ export function validateTransactionForm(
   const accountIdResult = parseRequiredUuidField(
     formData,
     "accountId",
-    "account_invalid",
+    transactionErrorCodes.accountInvalid,
   );
 
   if (!accountIdResult.ok) {
@@ -148,7 +146,7 @@ export function validateTransactionForm(
   const categoryIdResult = parseRequiredUuidField(
     formData,
     "categoryId",
-    "category_invalid",
+    transactionErrorCodes.categoryInvalid,
   );
 
   if (!categoryIdResult.ok) {
@@ -157,7 +155,7 @@ export function validateTransactionForm(
 
   const merchantIdResult = parseOptionalUuidText(
     getFormText(formData, "merchantId"),
-    "merchant_invalid",
+    transactionErrorCodes.merchantInvalid,
   );
 
   if (!merchantIdResult.ok) {
@@ -168,7 +166,7 @@ export function validateTransactionForm(
     formData,
     "note",
     2000,
-    "note_too_long",
+    transactionErrorCodes.noteTooLong,
   );
 
   if (!noteResult.ok) {
@@ -188,11 +186,11 @@ export function validateTransactionForm(
 
 export function validateVoidTransactionForm(
   formData: FormData,
-): ValidationResult<VoidTransactionValues, "void_invalid"> {
+): ValidationResult<VoidTransactionValues, VoidTransactionValidationErrorCode> {
   const transactionRecordIdResult = parseRequiredUuidField(
     formData,
     "transactionRecordId",
-    "void_invalid",
+    transactionErrorCodes.voidInvalid,
   );
 
   if (!transactionRecordIdResult.ok) {

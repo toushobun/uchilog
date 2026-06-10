@@ -1,4 +1,8 @@
 import { createClient } from "lib/supabase/server";
+import {
+  transactionErrorCodes,
+  type TransactionServiceErrorCode,
+} from "server/errors/transactions";
 import type { ServiceResult } from "server/services/serviceResult";
 import type { TransactionType } from "types/transactions";
 
@@ -20,7 +24,7 @@ export type VoidTransactionParams = {
 
 export async function createTransactionService(
   params: CreateTransactionParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<TransactionServiceErrorCode>> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("create_transaction", {
     p_account_id: params.accountId,
@@ -34,7 +38,7 @@ export async function createTransactionService(
   });
 
   if (error) {
-    return { ok: false, error: "create_failed" };
+    return { ok: false, error: transactionErrorCodes.createFailed };
   }
 
   return { ok: true };
@@ -42,7 +46,7 @@ export async function createTransactionService(
 
 export async function voidTransactionService(
   params: VoidTransactionParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<TransactionServiceErrorCode>> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("void_transaction", {
     p_ledger_id: params.ledgerId,
@@ -50,7 +54,7 @@ export async function voidTransactionService(
   });
 
   if (error) {
-    return { ok: false, error: "void_failed" };
+    return { ok: false, error: transactionErrorCodes.voidFailed };
   }
 
   return { ok: true };

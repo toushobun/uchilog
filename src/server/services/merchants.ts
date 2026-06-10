@@ -1,4 +1,8 @@
 import { createClient } from "lib/supabase/server";
+import {
+  merchantErrorCodes,
+  type MerchantServiceErrorCode,
+} from "server/errors/merchants";
 import type { ServiceResult } from "server/services/serviceResult";
 
 export type CreateMerchantParams = {
@@ -6,7 +10,7 @@ export type CreateMerchantParams = {
   name: string;
   note: string | null;
   userId: string;
-  websiteUrl: string | null;
+  siteUrl: string | null;
 };
 
 export type UpdateMerchantParams = {
@@ -15,7 +19,7 @@ export type UpdateMerchantParams = {
   name: string;
   note: string | null;
   userId: string;
-  websiteUrl: string | null;
+  siteUrl: string | null;
 };
 
 export type ArchiveMerchantParams = {
@@ -39,12 +43,12 @@ export type ArchiveMerchantAliasParams = {
 
 export async function createMerchantService(
   params: CreateMerchantParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<MerchantServiceErrorCode>> {
   const supabase = await createClient();
   const { error } = await supabase.from("merchant").insert({
     ledger_id: params.ledgerId,
     name: params.name,
-    website_url: params.websiteUrl,
+    website_url: params.siteUrl,
     note: params.note,
     sort_order: 0,
     created_by: params.userId,
@@ -52,7 +56,7 @@ export async function createMerchantService(
   });
 
   if (error) {
-    return { ok: false, error: "create_failed" };
+    return { ok: false, error: merchantErrorCodes.createFailed };
   }
 
   return { ok: true };
@@ -60,14 +64,14 @@ export async function createMerchantService(
 
 export async function updateMerchantService(
   params: UpdateMerchantParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<MerchantServiceErrorCode>> {
   const supabase = await createClient();
   const { error, count } = await supabase
     .from("merchant")
     .update(
       {
         name: params.name,
-        website_url: params.websiteUrl,
+        website_url: params.siteUrl,
         note: params.note,
         updated_by: params.userId,
       },
@@ -78,7 +82,7 @@ export async function updateMerchantService(
     .eq("is_archived", false);
 
   if (error || count !== 1) {
-    return { ok: false, error: "update_failed" };
+    return { ok: false, error: merchantErrorCodes.updateFailed };
   }
 
   return { ok: true };
@@ -86,7 +90,7 @@ export async function updateMerchantService(
 
 export async function archiveMerchantService(
   params: ArchiveMerchantParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<MerchantServiceErrorCode>> {
   const supabase = await createClient();
   const { error, count } = await supabase
     .from("merchant")
@@ -104,7 +108,7 @@ export async function archiveMerchantService(
     .eq("is_archived", false);
 
   if (error || count !== 1) {
-    return { ok: false, error: "archive_failed" };
+    return { ok: false, error: merchantErrorCodes.archiveFailed };
   }
 
   return { ok: true };
@@ -112,7 +116,7 @@ export async function archiveMerchantService(
 
 export async function createMerchantAliasService(
   params: CreateMerchantAliasParams,
-): Promise<ServiceResult> {
+): Promise<ServiceResult<MerchantServiceErrorCode>> {
   const supabase = await createClient();
 
   const { data: merchant, error: merchantError } = await supabase
@@ -124,7 +128,7 @@ export async function createMerchantAliasService(
     .maybeSingle();
 
   if (merchantError || !merchant) {
-    return { ok: false, error: "merchant_invalid" };
+    return { ok: false, error: merchantErrorCodes.merchantInvalid };
   }
 
   const { error } = await supabase.from("merchant_alias").insert({
@@ -136,7 +140,7 @@ export async function createMerchantAliasService(
   });
 
   if (error) {
-    return { ok: false, error: "alias_create_failed" };
+    return { ok: false, error: merchantErrorCodes.aliasCreateFailed };
   }
 
   return { ok: true };
@@ -144,7 +148,7 @@ export async function createMerchantAliasService(
 
 export async function archiveMerchantAliasService(
   params: ArchiveMerchantAliasParams,
-): Promise<ServiceResult & { merchantId?: string }> {
+): Promise<ServiceResult<MerchantServiceErrorCode> & { merchantId?: string }> {
   const supabase = await createClient();
 
   const { data: aliasRow, error: aliasError } = await supabase
@@ -155,7 +159,7 @@ export async function archiveMerchantAliasService(
     .maybeSingle();
 
   if (aliasError || !aliasRow) {
-    return { ok: false, error: "alias_invalid" };
+    return { ok: false, error: merchantErrorCodes.aliasInvalid };
   }
 
   // 确认商家属于当前账本
@@ -168,7 +172,7 @@ export async function archiveMerchantAliasService(
     .maybeSingle();
 
   if (merchantError || !merchantRow) {
-    return { ok: false, error: "alias_invalid" };
+    return { ok: false, error: merchantErrorCodes.aliasInvalid };
   }
 
   const { error, count } = await supabase
@@ -188,7 +192,7 @@ export async function archiveMerchantAliasService(
   if (error || count !== 1) {
     return {
       ok: false,
-      error: "alias_archive_failed",
+      error: merchantErrorCodes.aliasArchiveFailed,
       merchantId: aliasRow.merchant_id,
     };
   }
