@@ -8,6 +8,7 @@ import { transactionErrorCodes } from "server/errors/transactions";
 import {
   getAccountErrorMessage,
   getCategoryErrorMessage,
+  getLedgerSetupErrorMessage,
   getMerchantErrorMessage,
   getNewTransactionErrorMessage,
   getTransactionErrorMessage,
@@ -32,6 +33,15 @@ describe("pageErrors", () => {
     );
   });
 
+  it("使用统一错误码映射账本初始化错误提示", () => {
+    expect(getLedgerSetupErrorMessage("name_required")).toBe(
+      "请输入账本名称。",
+    );
+    expect(getLedgerSetupErrorMessage("currency_invalid")).toBe(
+      "基础货币必须是 3 位大写字母，例如 JPY。",
+    );
+  });
+
   it("使用统一错误码映射商家错误提示", () => {
     expect(getMerchantErrorMessage(merchantErrorCodes.aliasRequired)).toBe(
       "请输入商家别名。",
@@ -52,6 +62,7 @@ describe("pageErrors", () => {
 
   it("空值或未知错误码返回 null", () => {
     expect(getAccountErrorMessage()).toBeNull();
+    expect(getLedgerSetupErrorMessage()).toBeNull();
     expect(getTransactionErrorMessage("unknown")).toBeNull();
   });
 });
