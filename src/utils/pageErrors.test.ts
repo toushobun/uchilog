@@ -40,6 +40,9 @@ describe("pageErrors", () => {
     expect(getLedgerSetupErrorMessage("currency_invalid")).toBe(
       "基础货币必须是 3 位大写字母，例如 JPY。",
     );
+    expect(getLedgerSetupErrorMessage("create_failed")).toBe(
+      "账本创建失败，请稍后重试。",
+    );
   });
 
   it("使用统一错误码映射商家错误提示", () => {
