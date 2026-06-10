@@ -1,4 +1,4 @@
-import { appDateTimeLocale, serverFallbackTimeZone } from "config/dateTime";
+import { serverFallbackTimeZone, transactionTimeLocale } from "config/dateTime";
 import type {
   CategorySummaryItem,
   TransactionAmountSummary,
@@ -194,7 +194,7 @@ export function formatTransactionTime(
   value: string,
   options: { timeZone?: string } = {},
 ) {
-  return new Intl.DateTimeFormat(appDateTimeLocale, {
+  return new Intl.DateTimeFormat(transactionTimeLocale, {
     hour: "2-digit",
     hour12: false,
     minute: "2-digit",

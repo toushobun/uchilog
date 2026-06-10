@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { TransactionRowItem } from "types/transactions";
@@ -6,10 +7,12 @@ import type { TransactionRowItem } from "types/transactions";
 import { TransactionRow } from "./TransactionRow";
 
 const originalConfirm = window.confirm;
+const nativeDateTimeFormat = Intl.DateTimeFormat;
 
 afterEach(() => {
   cleanup();
   window.confirm = originalConfirm;
+  vi.unstubAllGlobals();
 });
 
 function createItem(
@@ -86,6 +89,22 @@ describe("TransactionRow", () => {
     expect(screen.getByText(/日元现金/)).toBeTruthy();
   });
 
+  it("服务端渲染时使用日本 fallback 时区显示时间", () => {
+    const html = renderToString(
+      <TransactionRow item={createItem()} showAccount showTime />,
+    );
+
+    expect(html).toContain("日元现金 · 12:20");
+  });
+
+  it("客户端渲染时使用浏览器时区显示时间", () => {
+    stubBrowserTimeZone("Asia/Shanghai");
+
+    render(<TransactionRow item={createItem()} showAccount showTime />);
+
+    expect(screen.getByText("日元现金 · 11:20")).toBeTruthy();
+  });
+
   it("merchant_name 为 null 时显示未指定商家", () => {
     render(<TransactionRow item={createItem({ merchant_name: null })} />);
 
@@ -129,3 +148,29 @@ describe("TransactionRow", () => {
     expect(voidAction).not.toHaveBeenCalled();
   });
 });
+
+function stubBrowserTimeZone(timeZone: string) {
+  const mockedIntl = Object.create(Intl) as typeof Intl;
+
+  mockedIntl.DateTimeFormat = function DateTimeFormat(
+    locales?: Intl.LocalesArgument,
+    options?: Intl.DateTimeFormatOptions,
+  ) {
+    if (locales === undefined && options === undefined) {
+      const formatter = new nativeDateTimeFormat();
+
+      return {
+        ...formatter,
+        format: formatter.format.bind(formatter),
+        resolvedOptions: () => ({
+          ...formatter.resolvedOptions(),
+          timeZone,
+        }),
+      };
+    }
+
+    return new nativeDateTimeFormat(locales, options);
+  } as typeof Intl.DateTimeFormat;
+
+  vi.stubGlobal("Intl", mockedIntl);
+}
