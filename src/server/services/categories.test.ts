@@ -218,6 +218,25 @@ describe("category services", () => {
     });
   });
 
+  it("更新分类数据库错误时返回 update_failed", async () => {
+    const supabase = createSupabaseMock({
+      queryResponses: [{ error: { message: "update error" } }],
+    });
+    mocks.createClient.mockResolvedValue(supabase.client);
+
+    await expect(
+      updateCategoryService({
+        categoryId,
+        ledgerId,
+        name: "外食",
+        userId,
+      }),
+    ).resolves.toEqual({
+      error: categoryErrorCodes.updateFailed,
+      ok: false,
+    });
+  });
+
   it("归档大分类成功时同时归档其子分类", async () => {
     const supabase = createSupabaseMock({
       queryResponses: [
@@ -265,6 +284,23 @@ describe("category services", () => {
   it("归档分类不属于当前账本时返回 archive_failed", async () => {
     const supabase = createSupabaseMock({
       queryResponses: [{ data: null }],
+    });
+    mocks.createClient.mockResolvedValue(supabase.client);
+
+    await expect(
+      archiveCategoryService({ categoryId, ledgerId, userId }),
+    ).resolves.toEqual({
+      error: categoryErrorCodes.archiveFailed,
+      ok: false,
+    });
+  });
+
+  it("归档分类时 update 命中 0 行时返回 archive_failed", async () => {
+    const supabase = createSupabaseMock({
+      queryResponses: [
+        { data: { id: categoryId, parent_id: null } },
+        { count: 0 },
+      ],
     });
     mocks.createClient.mockResolvedValue(supabase.client);
 
