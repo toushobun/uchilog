@@ -51,6 +51,7 @@ Implemented so far:
 - Basic App Shell after login
 - Initial household ledger setup
 - Basic account management
+- Account holder management (assign holders when creating/editing accounts)
 - Basic merchant management
 - Merchant alias schema and search support
 - Local development seed data
@@ -61,7 +62,7 @@ Planned next:
 - Minimal transaction creation flow
 - Transaction list
 - Category management improvements
-- Account ownership
+- Account holder experience improvements
 - Merchant-based spending summaries and trend analysis
 - Basic summaries and charts
 - PWA setup
