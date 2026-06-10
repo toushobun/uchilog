@@ -59,5 +59,4 @@ describe("userThemeTokens", () => {
       getUserThemeStorageKey("b@example.com"),
     );
   });
-
 });

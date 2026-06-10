@@ -1,7 +1,4 @@
-import {
-  appDateTimeLocale,
-  serverFallbackTimeZone,
-} from "config/dateTime";
+import { appDateTimeLocale, serverFallbackTimeZone } from "config/dateTime";
 import type {
   CategorySummaryItem,
   TransactionAmountSummary,
