@@ -4,7 +4,6 @@ import { renderToString } from "react-dom/server";
 
 import { UserThemePicker } from "molecules/theme/UserThemePicker";
 import { UserThemeProvider } from "./UserThemeProvider";
-import { createUserThemeInitScript } from "./userThemeInitScript";
 import { getUserThemeStorageKey } from "./userThemeStorage";
 
 describe("user theme runtime", () => {
@@ -14,38 +13,13 @@ describe("user theme runtime", () => {
     document.documentElement.removeAttribute("style");
   });
 
-  it("首屏脚本会按当前登录用户保存的主题设置背景", () => {
-    window.localStorage.setItem(
-      getUserThemeStorageKey("a@example.com"),
-      "jade_morning_dew",
-    );
-    window.localStorage.setItem(
-      getUserThemeStorageKey("b@example.com"),
-      "sakura_story",
-    );
-
-    runInitScript("a@example.com");
-
-    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
-    expect(
-      document.documentElement.style.getPropertyValue("--user-theme-page-bg"),
-    ).toContain("#fce7f3");
-
-    runInitScript("b@example.com");
-
-    expect(document.documentElement.dataset.userTheme).toBe("sakura_story");
-    expect(
-      document.documentElement.style.getPropertyValue("--user-theme-page-bg"),
-    ).toContain("#fef9c3");
-  });
-
   it("退出登录卸载 protected provider 时会恢复默认主题背景", async () => {
     window.localStorage.setItem(
       getUserThemeStorageKey("a@example.com"),
       "jade_morning_dew",
     );
 
-    runInitScript("a@example.com");
+    document.documentElement.dataset.userTheme = "jade_morning_dew";
 
     const { unmount } = render(
       <UserThemeProvider storageScope="a@example.com">
@@ -69,7 +43,7 @@ describe("user theme runtime", () => {
       "sakura_story",
     );
 
-    runInitScript("a@example.com");
+    document.documentElement.dataset.userTheme = "sakura_story";
 
     const initialMarkup = renderToString(
       <UserThemeProvider storageScope="a@example.com">
@@ -97,9 +71,3 @@ describe("user theme runtime", () => {
     ).toBe("false");
   });
 });
-
-function runInitScript(storageScope: string) {
-  const script = createUserThemeInitScript(storageScope);
-
-  window.eval(script);
-}

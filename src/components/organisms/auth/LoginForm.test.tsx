@@ -32,4 +32,11 @@ describe("LoginForm", () => {
 
     expect(screen.getByLabelText(/密码/).getAttribute("type")).toBe("password");
   });
+
+  it("输入框标签默认保持收缩，避免浏览器自动填充时重叠", () => {
+    render(<LoginForm action={vi.fn(async () => ({}))} />);
+
+    expect(screen.getByText("邮箱").getAttribute("data-shrink")).toBe("true");
+    expect(screen.getByText("密码").getAttribute("data-shrink")).toBe("true");
+  });
 });

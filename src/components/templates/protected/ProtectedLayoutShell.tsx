@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 import { AppShell } from "templates/protected/AppShell";
-import { createUserThemeInitScript } from "theme/userThemeInitScript";
 
 type ProtectedLayoutShellProps = {
   children: ReactNode;
@@ -12,14 +11,5 @@ export function ProtectedLayoutShell({
   children,
   email,
 }: ProtectedLayoutShellProps) {
-  return (
-    <>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: createUserThemeInitScript(email),
-        }}
-      />
-      <AppShell email={email}>{children}</AppShell>
-    </>
-  );
+  return <AppShell email={email}>{children}</AppShell>;
 }

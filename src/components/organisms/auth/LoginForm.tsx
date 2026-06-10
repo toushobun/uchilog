@@ -16,6 +16,11 @@ type LoginFormProps = {
 };
 
 const initialState: LoginActionState = {};
+const shrinkInputLabelSlotProps = {
+  inputLabel: {
+    shrink: true,
+  },
+} as const;
 
 export function LoginForm({ action }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
@@ -38,6 +43,7 @@ export function LoginForm({ action }: LoginFormProps) {
         autoComplete="email"
         required
         fullWidth
+        slotProps={shrinkInputLabelSlotProps}
       />
 
       <TextField
@@ -47,6 +53,7 @@ export function LoginForm({ action }: LoginFormProps) {
         autoComplete="current-password"
         required
         fullWidth
+        slotProps={shrinkInputLabelSlotProps}
       />
 
       <Button
