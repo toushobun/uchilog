@@ -17,7 +17,7 @@ export function ProtectedLayoutShell({
     <>
       <Script
         id="user-theme-init"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: createUserThemeInitScript(email),
         }}
