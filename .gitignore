@@ -16,6 +16,10 @@ build
 # supabase dotenvx
 .env.keys
 
+# local AI tool files
+.claude/
+.cursor/
+
 # macOS
 .DS_Store
 

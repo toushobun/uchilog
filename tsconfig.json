@@ -20,13 +20,18 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "accounts/*": ["./src/components/accounts/*"],
-      "accounts-route/*": ["./src/app/(protected)/accounts/*"],
+      "atoms/*": ["./src/components/atoms/*"],
+      "molecules/*": ["./src/components/molecules/*"],
+      "organisms/*": ["./src/components/organisms/*"],
+      "templates/*": ["./src/components/templates/*"],
+      "providers/*": ["./src/components/providers/*"],
+      "config/*": ["./src/config/*"],
+      "server/*": ["./src/server/*"],
       "theme/*": ["./src/theme/*"],
-      "ui/*": ["./src/components/ui/*"],
+      "types/*": ["./src/types/*"],
+      "utils/*": ["./src/utils/*"],
       "lib/*": ["./src/lib/*"],
-      "transactions/*": ["./src/components/transactions/*"],
-      "transactions-route/*": ["./src/app/(protected)/transactions/*"]
+      "test/*": ["./src/test/*"]
     }
   },
   "include": [
