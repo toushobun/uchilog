@@ -156,7 +156,7 @@ export function TransactionForm({
     accountOptions.length === 0 || filteredCategoryOptions.length === 0;
   const signedTotalAmount =
     totalAmount > 0
-      ? `${selectedType === "expense" ? "-" : "+"}${totalAmount}`
+      ? `${selectedType === "expense" ? "-" : "+"}${parseFloat(totalAmount.toFixed(2))}`
       : "未填写金额";
 
   function addItem(categoryId: string, amount: string) {

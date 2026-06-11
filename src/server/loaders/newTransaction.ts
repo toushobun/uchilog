@@ -52,22 +52,7 @@ export async function loadNewTransactionView() {
   const accountOptions = (accountResult.data ??
     []) as TransactionAccountOption[];
   const categoryRows = (categoryResult.data ?? []) as CategoryOptionDbRow[];
-  const parentNameById = new Map(
-    categoryRows
-      .filter((category) => category.parent_id === null)
-      .map((category) => [category.id, category.name]),
-  );
-  const categoryOptions = categoryRows
-    .filter((category) => category.parent_id !== null)
-    .map((category) => ({
-      id: category.id,
-      name: category.name,
-      parentId: category.parent_id,
-      parentName: category.parent_id
-        ? (parentNameById.get(category.parent_id) ?? null)
-        : null,
-      type: category.type,
-    }));
+  const categoryOptions = buildCategoryOptions(categoryRows);
   const merchantOptions = (merchantResult.data ??
     []) as TransactionMerchantOption[];
 
@@ -77,4 +62,21 @@ export async function loadNewTransactionView() {
     ledgerName: currentLedger.name,
     merchantOptions,
   };
+}
+
+export function buildCategoryOptions(rows: CategoryOptionDbRow[]) {
+  const parentNameById = new Map(
+    rows
+      .filter((row) => row.parent_id === null)
+      .map((row) => [row.id, row.name]),
+  );
+  return rows
+    .filter((row) => row.parent_id !== null)
+    .map((row) => ({
+      id: row.id,
+      name: row.name,
+      parentId: row.parent_id,
+      parentName: parentNameById.get(row.parent_id!) ?? null,
+      type: row.type,
+    }));
 }
