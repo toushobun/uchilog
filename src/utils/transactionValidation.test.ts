@@ -15,9 +15,9 @@ function createFormData(overrides: Record<string, string> = {}) {
   formData.set("type", "expense");
   formData.set("transactionAt", "2026-06-04T10:30:05");
   formData.set("timeZoneOffsetMinutes", "-540");
-  formData.set("amount", "1200");
   formData.set("accountId", accountId);
-  formData.set("categoryId", categoryId);
+  formData.append("itemCategoryId", categoryId);
+  formData.append("itemAmount", "1200");
   formData.set("merchantId", merchantId);
   formData.set("note", "测试记录");
 
@@ -36,8 +36,7 @@ describe("validateTransactionForm", () => {
       ok: true,
       value: {
         accountId,
-        amount: 1200,
-        categoryId,
+        items: [{ amount: 1200, categoryId }],
         merchantId,
         note: "测试记录",
         transactionAt: "2026-06-04T01:30:05.000Z",
@@ -57,25 +56,29 @@ describe("validateTransactionForm", () => {
   });
 
   it("金额为空时校验失败", () => {
-    const result = validateTransactionForm(createFormData({ amount: "" }));
+    const result = validateTransactionForm(createFormData({ itemAmount: "" }));
 
     expect(result).toEqual({ ok: false, error: "amount_invalid" });
   });
 
   it("金额为 0 时校验失败", () => {
-    const result = validateTransactionForm(createFormData({ amount: "0" }));
+    const result = validateTransactionForm(createFormData({ itemAmount: "0" }));
 
     expect(result).toEqual({ ok: false, error: "amount_invalid" });
   });
 
   it("金额为负数时校验失败", () => {
-    const result = validateTransactionForm(createFormData({ amount: "-1" }));
+    const result = validateTransactionForm(
+      createFormData({ itemAmount: "-1" }),
+    );
 
     expect(result).toEqual({ ok: false, error: "amount_invalid" });
   });
 
   it("金额超过两位小数时校验失败", () => {
-    const result = validateTransactionForm(createFormData({ amount: "1.234" }));
+    const result = validateTransactionForm(
+      createFormData({ itemAmount: "1.234" }),
+    );
 
     expect(result).toEqual({ ok: false, error: "amount_invalid" });
   });
@@ -130,7 +133,7 @@ describe("validateTransactionForm", () => {
 
   it("分类 ID 不合法时校验失败", () => {
     const result = validateTransactionForm(
-      createFormData({ categoryId: "invalid" }),
+      createFormData({ itemCategoryId: "invalid" }),
     );
 
     expect(result).toEqual({ ok: false, error: "category_invalid" });

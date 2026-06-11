@@ -40,8 +40,7 @@ describe("transactions service", () => {
 
       const result = await createTransactionService({
         accountId,
-        amount: 1200,
-        categoryId,
+        items: [{ amount: 1200, categoryId }],
         ledgerId,
         merchantId,
         note: "晚餐",
@@ -53,8 +52,7 @@ describe("transactions service", () => {
       expect(createClientMock).toHaveBeenCalledTimes(1);
       expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
         p_account_id: accountId,
-        p_amount: 1200,
-        p_category_id: categoryId,
+        p_items: [{ amount: 1200, categoryId }],
         p_ledger_id: ledgerId,
         p_merchant_id: merchantId,
         p_note: "晚餐",
@@ -68,8 +66,7 @@ describe("transactions service", () => {
 
       const result = await createTransactionService({
         accountId,
-        amount: 250000,
-        categoryId,
+        items: [{ amount: 250000, categoryId }],
         ledgerId,
         merchantId: null,
         note: "工资",
@@ -80,8 +77,7 @@ describe("transactions service", () => {
       expect(result).toEqual({ ok: true });
       expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
         p_account_id: accountId,
-        p_amount: 250000,
-        p_category_id: categoryId,
+        p_items: [{ amount: 250000, categoryId }],
         p_ledger_id: ledgerId,
         p_merchant_id: null,
         p_note: "工资",
@@ -90,13 +86,12 @@ describe("transactions service", () => {
       });
     });
 
-    it("允许分类、商家、备注为空的交易进入 RPC", async () => {
+    it("允许商家、备注为空的交易进入 RPC", async () => {
       mockRpcResult();
 
       const result = await createTransactionService({
         accountId,
-        amount: 500,
-        categoryId: null,
+        items: [{ amount: 500, categoryId }],
         ledgerId,
         merchantId: null,
         note: null,
@@ -107,11 +102,42 @@ describe("transactions service", () => {
       expect(result).toEqual({ ok: true });
       expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
         p_account_id: accountId,
-        p_amount: 500,
-        p_category_id: null,
+        p_items: [{ amount: 500, categoryId }],
         p_ledger_id: ledgerId,
         p_merchant_id: null,
         p_note: null,
+        p_transaction_at: transactionAt,
+        p_type: "expense",
+      });
+    });
+
+    it("多条明细创建成功时传递 items 给 create_transaction RPC", async () => {
+      mockRpcResult();
+      const secondCategoryId = "00000000-0000-4000-8000-000000000102";
+
+      const result = await createTransactionService({
+        accountId,
+        items: [
+          { amount: 286, categoryId },
+          { amount: 45, categoryId: secondCategoryId },
+        ],
+        ledgerId,
+        merchantId,
+        note: "超市",
+        transactionAt,
+        type: "expense",
+      });
+
+      expect(result).toEqual({ ok: true });
+      expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
+        p_account_id: accountId,
+        p_items: [
+          { amount: 286, categoryId },
+          { amount: 45, categoryId: secondCategoryId },
+        ],
+        p_ledger_id: ledgerId,
+        p_merchant_id: merchantId,
+        p_note: "超市",
         p_transaction_at: transactionAt,
         p_type: "expense",
       });
@@ -133,8 +159,7 @@ describe("transactions service", () => {
       await expect(
         createTransactionService({
           accountId,
-          amount: 1200,
-          categoryId,
+          items: [{ amount: 1200, categoryId }],
           ledgerId,
           merchantId,
           note: "晚餐",

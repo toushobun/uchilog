@@ -16,9 +16,9 @@ function createFormData(overrides: Record<string, string> = {}) {
   formData.set("type", "expense");
   formData.set("transactionAt", "2026-06-04T10:30:05");
   formData.set("timeZoneOffsetMinutes", "-540");
-  formData.set("amount", "1200");
   formData.set("accountId", accountId);
-  formData.set("categoryId", categoryId);
+  formData.append("itemCategoryId", categoryId);
+  formData.append("itemAmount", "1200");
   formData.set("merchantId", merchantId);
   formData.set("note", "测试记录");
   formData.set("transactionRecordId", transactionRecordId);
@@ -36,8 +36,7 @@ describe("transaction validators", () => {
       ok: true,
       value: {
         accountId,
-        amount: 1200,
-        categoryId,
+        items: [{ amount: 1200, categoryId }],
         merchantId,
         note: "测试记录",
         transactionAt: "2026-06-04T01:30:05.000Z",
@@ -54,9 +53,34 @@ describe("transaction validators", () => {
   });
 
   it("拒绝非法金额", () => {
-    expect(validateTransactionForm(createFormData({ amount: "0" }))).toEqual({
+    expect(
+      validateTransactionForm(createFormData({ itemAmount: "0" })),
+    ).toEqual({
       error: "amount_invalid",
       ok: false,
+    });
+  });
+
+  it("多条明细表单校验通过", () => {
+    const formData = createFormData();
+    const secondCategoryId = "00000000-0000-4000-8000-000000000102";
+
+    formData.append("itemCategoryId", secondCategoryId);
+    formData.append("itemAmount", "45");
+
+    expect(validateTransactionForm(formData)).toEqual({
+      ok: true,
+      value: {
+        accountId,
+        items: [
+          { amount: 1200, categoryId },
+          { amount: 45, categoryId: secondCategoryId },
+        ],
+        merchantId,
+        note: "测试记录",
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        type: "expense",
+      },
     });
   });
 

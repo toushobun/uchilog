@@ -19,16 +19,22 @@ const categoryOptions = [
   {
     id: "00000000-0000-4000-8000-000000005072",
     name: "餐饮",
+    parentId: "00000000-0000-4000-8000-000000005001",
+    parentName: "食材/调料",
     type: "expense" as const,
   },
   {
     id: "00000000-0000-4000-8000-000000005073",
     name: "交通",
+    parentId: "00000000-0000-4000-8000-000000005002",
+    parentName: "交通出行",
     type: "expense" as const,
   },
   {
     id: "00000000-0000-4000-8000-000000005074",
     name: "工资",
+    parentId: "00000000-0000-4000-8000-000000005003",
+    parentName: "固定收入",
     type: "income" as const,
   },
 ];

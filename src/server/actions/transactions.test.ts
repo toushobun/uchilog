@@ -44,9 +44,9 @@ function createValidFormData(overrides: Record<string, string> = {}) {
   formData.set("type", "expense");
   formData.set("transactionAt", "2026-06-04T10:30:05");
   formData.set("timeZoneOffsetMinutes", "-540");
-  formData.set("amount", "1234");
   formData.set("accountId", accountId);
-  formData.set("categoryId", categoryId);
+  formData.append("itemCategoryId", categoryId);
+  formData.append("itemAmount", "1234");
   formData.set("merchantId", merchantId);
   formData.set("note", "测试记录");
 
@@ -93,7 +93,7 @@ describe("createTransaction", () => {
 
   it("输入值不合法时认证后带错误参数跳回新增页面", async () => {
     await expect(
-      createTransaction(createValidFormData({ amount: "0" })),
+      createTransaction(createValidFormData({ itemAmount: "0" })),
     ).rejects.toThrow("NEXT_REDIRECT:/transactions/new?error=amount_invalid");
 
     expect(mocks.getCurrentLedgerContext).toHaveBeenCalledTimes(1);
@@ -107,8 +107,7 @@ describe("createTransaction", () => {
 
     expect(mocks.rpc).toHaveBeenCalledWith("create_transaction", {
       p_account_id: accountId,
-      p_amount: 1234,
-      p_category_id: categoryId,
+      p_items: [{ amount: 1234, categoryId }],
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: "测试记录",

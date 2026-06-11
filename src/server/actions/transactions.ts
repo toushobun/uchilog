@@ -30,8 +30,7 @@ export async function createTransaction(formData: FormData) {
 
   const result = await createTransactionService({
     accountId: values.accountId,
-    amount: values.amount,
-    categoryId: values.categoryId,
+    items: values.items,
     ledgerId: currentLedger.id,
     merchantId: values.merchantId,
     note: values.note,

@@ -34,6 +34,8 @@ export type TransactionAccountOption = {
 export type TransactionCategoryOption = {
   id: string;
   name: string;
+  parentId: string | null;
+  parentName: string | null;
   type: TransactionType;
 };
 

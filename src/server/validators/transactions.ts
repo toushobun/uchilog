@@ -29,11 +29,15 @@ const transactionTypeValues = transactionTypeOptions.map(
 export type TransactionFormValues = {
   type: TransactionType;
   transactionAt: string;
-  amount: number;
   accountId: string;
-  categoryId: string;
+  items: TransactionFormItemValues[];
   merchantId: string | null;
   note: string | null;
+};
+
+export type TransactionFormItemValues = {
+  amount: number;
+  categoryId: string;
 };
 
 export type VoidTransactionValues = {
@@ -93,6 +97,53 @@ function parseTransactionAt(value: string, offsetMinutes: number) {
   ).toISOString();
 }
 
+function parseTransactionItems(
+  formData: FormData,
+): ValidationResult<
+  TransactionFormItemValues[],
+  TransactionValidationErrorCode
+> {
+  const categoryValues = formData.getAll("itemCategoryId");
+  const amountValues = formData.getAll("itemAmount");
+
+  if (
+    categoryValues.length === 0 ||
+    categoryValues.length !== amountValues.length
+  ) {
+    return invalid(transactionErrorCodes.amountInvalid);
+  }
+
+  const items: TransactionFormItemValues[] = [];
+
+  for (const [index, categoryValue] of categoryValues.entries()) {
+    const categoryResult = parseOptionalUuidText(
+      String(categoryValue).trim(),
+      transactionErrorCodes.categoryInvalid,
+    );
+
+    if (!categoryResult.ok || !categoryResult.value) {
+      return invalid(transactionErrorCodes.categoryInvalid);
+    }
+
+    const amountResult = parseMoneyAmount(amountValues[index], {
+      allowNegative: false,
+      allowZero: false,
+      error: transactionErrorCodes.amountInvalid,
+    });
+
+    if (!amountResult.ok) {
+      return amountResult;
+    }
+
+    items.push({
+      amount: amountResult.value,
+      categoryId: categoryResult.value,
+    });
+  }
+
+  return valid(items);
+}
+
 export function validateTransactionForm(
   formData: FormData,
 ): ValidationResult<TransactionFormValues, TransactionValidationErrorCode> {
@@ -123,16 +174,6 @@ export function validateTransactionForm(
     return invalid(transactionErrorCodes.dateInvalid);
   }
 
-  const amountResult = parseMoneyAmount(formData.get("amount"), {
-    allowNegative: false,
-    allowZero: false,
-    error: transactionErrorCodes.amountInvalid,
-  });
-
-  if (!amountResult.ok) {
-    return amountResult;
-  }
-
   const accountIdResult = parseRequiredUuidField(
     formData,
     "accountId",
@@ -143,14 +184,10 @@ export function validateTransactionForm(
     return accountIdResult;
   }
 
-  const categoryIdResult = parseRequiredUuidField(
-    formData,
-    "categoryId",
-    transactionErrorCodes.categoryInvalid,
-  );
+  const itemsResult = parseTransactionItems(formData);
 
-  if (!categoryIdResult.ok) {
-    return categoryIdResult;
+  if (!itemsResult.ok) {
+    return itemsResult;
   }
 
   const merchantIdResult = parseOptionalUuidText(
@@ -175,8 +212,7 @@ export function validateTransactionForm(
 
   return valid({
     accountId: accountIdResult.value,
-    amount: amountResult.value,
-    categoryId: categoryIdResult.value,
+    items: itemsResult.value,
     merchantId: merchantIdResult.value,
     note: noteResult.value,
     transactionAt,

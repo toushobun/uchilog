@@ -39,11 +39,29 @@ const categoryOptions = [
   {
     id: "00000000-0000-4000-8000-000000005072",
     name: "餐饮",
+    parentId: "00000000-0000-4000-8000-000000005001",
+    parentName: "食材/调料",
+    type: "expense" as const,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000005074",
+    name: "日用品",
+    parentId: "00000000-0000-4000-8000-000000005001",
+    parentName: "食材/调料",
+    type: "expense" as const,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000005075",
+    name: "电车",
+    parentId: "00000000-0000-4000-8000-000000005002",
+    parentName: "交通出行",
     type: "expense" as const,
   },
   {
     id: "00000000-0000-4000-8000-000000005073",
     name: "工资",
+    parentId: "00000000-0000-4000-8000-000000005003",
+    parentName: "固定收入",
     type: "income" as const,
   },
 ];
@@ -85,6 +103,20 @@ function getCombobox(container: HTMLElement, name: string) {
   return within(container).getByRole("combobox", { name });
 }
 
+function openSheet(container: HTMLElement) {
+  fireEvent.click(
+    within(container).getByRole("button", { name: "+ 添加一项明细" }),
+  );
+}
+
+function addItemViaSheet(categoryName: string, amount: string) {
+  fireEvent.click(screen.getByRole("button", { name: categoryName }));
+  fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+    target: { value: amount },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "追加" }));
+}
+
 describe("TransactionForm", () => {
   it("显示移动端记账顶部操作区", () => {
     const { container } = renderForm({ ledgerName: "家庭账本" });
@@ -123,27 +155,167 @@ describe("TransactionForm", () => {
     expect(screen.getByText("日元现金（JPY）")).toBeTruthy();
   });
 
-  it("类型为支出时，只显示支出分类", () => {
+  it("打开弹框时只显示当前类型的大分类和小分类（支出）", () => {
     const { container } = renderForm();
 
-    fireEvent.mouseDown(getCombobox(container, "分类"));
+    openSheet(container);
 
-    expect(screen.getByText("餐饮")).toBeTruthy();
-    expect(screen.queryByText("工资")).toBeNull();
+    expect(screen.getByRole("heading", { name: "添加明细" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "食材/调料" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "交通出行" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "餐饮" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "日用品" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "固定收入" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "工资" })).toBeNull();
   });
 
-  it("类型切换为收入时，只显示收入分类", () => {
+  it("类型切换为收入时，弹框只显示收入大分类和小分类", () => {
     const { container } = renderForm();
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
+    openSheet(container);
 
-    fireEvent.mouseDown(getCombobox(container, "分类"));
-
-    expect(screen.getByText("工资")).toBeTruthy();
-    expect(screen.queryByText("餐饮")).toBeNull();
+    expect(screen.getByRole("button", { name: "固定收入" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "工资" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "食材/调料" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
   });
 
-  it("保存前汇总会显示当前表单摘要", () => {
+  it("切换大分类后右侧显示对应的小分类", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+
+    fireEvent.click(screen.getByRole("button", { name: "交通出行" }));
+
+    expect(screen.getByRole("button", { name: "电车" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
+  });
+
+  it("点击小分类 Chip 后可追加，未选分类直接点追加会提示错误", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+
+    // 选中分类、填金额、追加 —— 成功，无错误
+    fireEvent.click(screen.getByRole("button", { name: "餐饮" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+      target: { value: "100" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "追加" }));
+    expect(screen.queryByText("请至少选择一个小分类。")).toBeNull();
+
+    // 追加后 Drawer 还在，picker 已清空；不选分类直接填金额再追加
+    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+      target: { value: "50" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "追加" }));
+    expect(screen.getByText("请至少选择一个小分类。")).toBeTruthy();
+  });
+
+  it("未选小分类时点击追加显示错误提示", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+      target: { value: "500" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "追加" }));
+
+    expect(screen.getByText("请至少选择一个小分类。")).toBeTruthy();
+  });
+
+  it("未填金额时点击追加显示错误提示", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    fireEvent.click(screen.getByRole("button", { name: "餐饮" }));
+    fireEvent.click(screen.getByRole("button", { name: "追加" }));
+
+    expect(screen.getByText("请输入有效金额。")).toBeTruthy();
+  });
+
+  it("追加后 Chip 和金额输入框被清空，明细出现在已选列表", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    addItemViaSheet("餐饮", "500");
+
+    expect(screen.getByText("已选明细")).toBeTruthy();
+    // 追加后同时出现在 Drawer 已选区和主表单，各一条
+    expect(screen.getAllByText("食材/调料 / 餐饮")).toHaveLength(2);
+    expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
+      "value",
+      "",
+    );
+  });
+
+  it("可以连续追加多条明细，合计同步更新", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    addItemViaSheet("餐饮", "286");
+    addItemViaSheet("日用品", "45");
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
+
+    expect(within(container).getByText("共 2 项")).toBeTruthy();
+    expect(within(container).getByText("合计 -331")).toBeTruthy();
+  });
+
+  it("允许同一个小分类重复追加为多条明细", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    addItemViaSheet("餐饮", "500");
+    addItemViaSheet("餐饮", "300");
+
+    // Drawer 已选区有 2 条独立删除按钮
+    expect(
+      screen.getAllByRole("button", { name: /从已选中删除/ }),
+    ).toHaveLength(2);
+    // 主表单（getByText 不受 aria-hidden 限制）显示 2 项
+    expect(within(container).getByText("共 2 项")).toBeTruthy();
+  });
+
+  it("已有多条明细时可删除，删到最后一条仍可继续删除", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    addItemViaSheet("餐饮", "286");
+    addItemViaSheet("日用品", "45");
+
+    // 在 Drawer 已选区删除第二条
+    fireEvent.click(
+      screen.getByRole("button", { name: "从已选中删除 日用品" }),
+    );
+
+    expect(within(container).getByText("共 1 项")).toBeTruthy();
+    // 只剩一条时删除按钮仍然可用
+    expect(
+      screen.getByRole("button", { name: "从已选中删除 餐饮" }),
+    ).toHaveProperty("disabled", false);
+
+    // 再删最后一条，明细清空
+    fireEvent.click(screen.getByRole("button", { name: "从已选中删除 餐饮" }));
+    expect(within(container).queryByText("共 1 项")).toBeNull();
+  });
+
+  it("弹框内的已选列表也可删除明细", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    addItemViaSheet("餐饮", "286");
+    addItemViaSheet("日用品", "45");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "从已选中删除 日用品" }),
+    );
+
+    expect(screen.queryByText("食材/调料 / 日用品")).toBeNull();
+    expect(within(container).getByText("共 1 项")).toBeTruthy();
+  });
+
+  it("保存前汇总显示商家、账户和各条明细", () => {
     const { container } = renderForm();
 
     fireEvent.mouseDown(getCombobox(container, "商家"));
@@ -152,17 +324,14 @@ describe("TransactionForm", () => {
     fireEvent.mouseDown(getCombobox(container, "账户"));
     fireEvent.click(screen.getByText("日元现金（JPY）"));
 
-    fireEvent.mouseDown(getCombobox(container, "分类"));
-    fireEvent.click(screen.getByText("餐饮"));
-
-    fireEvent.change(within(container).getByRole("textbox", { name: /金额/ }), {
-      target: { value: "1200" },
-    });
+    openSheet(container);
+    addItemViaSheet("餐饮", "1200");
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
     expect(within(container).getByText("保存前汇总")).toBeTruthy();
     expect(within(container).getAllByText("便利店")).toHaveLength(2);
     expect(within(container).getAllByText("日元现金（JPY）")).toHaveLength(2);
-    expect(within(container).getByText("餐饮 / 1200")).toBeTruthy();
+    expect(within(container).getByText("食材/调料 / 餐饮 / 1200")).toBeTruthy();
     expect(within(container).getByText("合计金额")).toBeTruthy();
   });
 
@@ -219,12 +388,12 @@ describe("TransactionForm", () => {
     ).toHaveProperty("disabled", true);
   });
 
-  it("商家选项为空值和商家名称都能显示", () => {
+  it("商家下拉显示占位项和商家名称", () => {
     const { container } = renderForm();
 
     fireEvent.mouseDown(getCombobox(container, "商家"));
 
-    expect(screen.getByText("不选择")).toBeTruthy();
+    expect(screen.getByText("请选择商家")).toBeTruthy();
     expect(screen.getByText("便利店")).toBeTruthy();
   });
 });

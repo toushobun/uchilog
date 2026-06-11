@@ -8,13 +8,17 @@ import type { TransactionType } from "types/transactions";
 
 export type CreateTransactionParams = {
   accountId: string;
-  amount: number;
-  categoryId: string | null;
+  items: CreateTransactionItemParams[];
   ledgerId: string;
   merchantId: string | null;
   note: string | null;
   transactionAt: string;
   type: TransactionType;
+};
+
+export type CreateTransactionItemParams = {
+  amount: number;
+  categoryId: string;
 };
 
 export type VoidTransactionParams = {
@@ -28,8 +32,10 @@ export async function createTransactionService(
   const supabase = await createClient();
   const { error } = await supabase.rpc("create_transaction", {
     p_account_id: params.accountId,
-    p_amount: params.amount,
-    p_category_id: params.categoryId,
+    p_items: params.items.map((item) => ({
+      amount: item.amount,
+      categoryId: item.categoryId,
+    })),
     p_ledger_id: params.ledgerId,
     p_merchant_id: params.merchantId,
     p_note: params.note,
