@@ -1,12 +1,9 @@
-import Stack from "@mui/material/Stack";
-
 import { TransactionForm } from "organisms/transactions/TransactionForm";
 import type {
   TransactionAccountOption,
   TransactionCategoryOption,
   TransactionMerchantOption,
 } from "types/transactions";
-import { PageHeader } from "templates/layout/PageHeader";
 import { PageShell } from "templates/layout/PageShell";
 
 type NewTransactionTemplateProps = {
@@ -28,21 +25,12 @@ export function NewTransactionTemplate({
 }: NewTransactionTemplateProps) {
   return (
     <PageShell>
-      <PageHeader
-        title="新增记录"
-        subtitle={
-          <Stack spacing={0.5}>
-            <span>当前账本：{ledgerName}</span>
-            <span>录入一笔最基础的收入或支出。余额联动将在后续单独实现。</span>
-          </Stack>
-        }
-      />
-
       <TransactionForm
         action={action}
         accountOptions={accountOptions}
         categoryOptions={categoryOptions}
         errorMessage={errorMessage}
+        ledgerName={ledgerName}
         merchantOptions={merchantOptions}
       />
     </PageShell>

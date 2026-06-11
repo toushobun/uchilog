@@ -5,9 +5,25 @@ import {
   screen,
   within,
 } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { TransactionForm } from "./TransactionForm";
+
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: ReactNode;
+    href: string;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
 
 const accountOptions = [
   {
@@ -68,6 +84,21 @@ function getCombobox(container: HTMLElement, name: string) {
 }
 
 describe("TransactionForm", () => {
+  it("显示移动端记账顶部操作区", () => {
+    const { container } = renderForm({ ledgerName: "家庭账本" });
+
+    expect(
+      within(container).getByRole("heading", { name: "新增记账" }),
+    ).toBeTruthy();
+    expect(
+      within(container).getByRole("link", { name: "关闭" }),
+    ).toHaveProperty("href", "http://localhost:3000/transactions");
+    expect(
+      within(container).getByRole("button", { name: "保存" }),
+    ).toBeTruthy();
+    expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
+  });
+
   it("传入错误信息时显示 Alert", () => {
     renderForm({ errorMessage: "金额必须为正数，且最多两位小数。" });
 
@@ -94,13 +125,69 @@ describe("TransactionForm", () => {
   it("类型切换为收入时，只显示收入分类", () => {
     const { container } = renderForm();
 
-    fireEvent.mouseDown(getCombobox(container, "类型"));
-    fireEvent.click(screen.getByText("收入"));
+    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
 
     fireEvent.mouseDown(getCombobox(container, "分类"));
 
     expect(screen.getByText("工资")).toBeTruthy();
     expect(screen.queryByText("餐饮")).toBeNull();
+  });
+
+  it("保存前汇总会显示当前表单摘要", () => {
+    const { container } = renderForm();
+
+    fireEvent.mouseDown(getCombobox(container, "商家"));
+    fireEvent.click(screen.getByText("便利店"));
+
+    fireEvent.mouseDown(getCombobox(container, "账户"));
+    fireEvent.click(screen.getByText("日元现金（JPY）"));
+
+    fireEvent.mouseDown(getCombobox(container, "分类"));
+    fireEvent.click(screen.getByText("餐饮"));
+
+    fireEvent.change(within(container).getByRole("textbox", { name: /金额/ }), {
+      target: { value: "1200" },
+    });
+
+    expect(within(container).getByText("保存前汇总")).toBeTruthy();
+    expect(
+      within(container).getAllByText("便利店").length,
+    ).toBeGreaterThanOrEqual(2);
+    expect(within(container).getAllByText("日元现金（JPY）")).toHaveLength(2);
+    expect(within(container).getByText("餐饮 / 1200")).toBeTruthy();
+    expect(within(container).getByText("合计金额")).toBeTruthy();
+  });
+
+  it("显示设计图中的标签区但不提供未保存的交互", () => {
+    const { container } = renderForm();
+
+    expect(within(container).getByText("标签（选填）")).toBeTruthy();
+    expect(within(container).getByText("日常")).toBeTruthy();
+    expect(within(container).getByText("腐败")).toBeTruthy();
+    expect(within(container).getByText("公司")).toBeTruthy();
+    expect(within(container).getByText("人情")).toBeTruthy();
+    expect(within(container).getByText("孩子")).toBeTruthy();
+    expect(within(container).getByText("旅游")).toBeTruthy();
+    expect(within(container).getByText("装修")).toBeTruthy();
+    expect(within(container).getByText("结婚")).toBeTruthy();
+    expect(within(container).getByText("管理标签 >")).toBeTruthy();
+    expect(
+      within(container).queryByRole("button", { name: "日常" }),
+    ).toBeNull();
+  });
+
+  it("发生时间下面显示保存记账按钮", () => {
+    const { container } = renderForm();
+
+    const transactionAt = within(container).getByLabelText(/发生时间/);
+    const submitButton = within(container).getByRole("button", {
+      name: "保存记账",
+    });
+
+    expect(transactionAt.compareDocumentPosition(submitButton)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(submitButton).toHaveProperty("type", "submit");
   });
 
   it("没有账户时保存按钮不可用", () => {
@@ -109,6 +196,9 @@ describe("TransactionForm", () => {
     expect(
       within(container).getByRole("button", { name: "保存" }),
     ).toHaveProperty("disabled", true);
+    expect(
+      within(container).getByRole("button", { name: "保存记账" }),
+    ).toHaveProperty("disabled", true);
   });
 
   it("没有当前类型可用分类时保存按钮不可用", () => {
@@ -116,6 +206,9 @@ describe("TransactionForm", () => {
 
     expect(
       within(container).getByRole("button", { name: "保存" }),
+    ).toHaveProperty("disabled", true);
+    expect(
+      within(container).getByRole("button", { name: "保存记账" }),
     ).toHaveProperty("disabled", true);
   });
 

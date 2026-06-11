@@ -55,6 +55,7 @@ const meta = {
     action: noopAction,
     accountOptions,
     categoryOptions,
+    ledgerName: "家庭账本",
     merchantOptions,
   },
 } satisfies Meta<typeof TransactionForm>;

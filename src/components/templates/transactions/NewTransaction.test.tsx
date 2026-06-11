@@ -7,10 +7,14 @@ import { NewTransactionTemplate } from "./NewTransaction";
 vi.mock("organisms/transactions/TransactionForm", () => ({
   TransactionForm: ({
     errorMessage,
+    ledgerName,
   }: {
     errorMessage: string | null;
+    ledgerName?: string;
   }): ReactNode => (
     <div data-testid="transaction-form">
+      <h1>新增记账</h1>
+      {ledgerName ? <p>当前账本：{ledgerName}</p> : null}
       {errorMessage ? <div role="alert">{errorMessage}</div> : null}
     </div>
   ),
@@ -30,11 +34,11 @@ const baseProps = {
 };
 
 describe("NewTransactionTemplate", () => {
-  it("显示新增记录页面标题", () => {
+  it("显示新增记账页面标题", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     expect(
-      within(container).getByRole("heading", { name: "新增记录" }),
+      within(container).getByRole("heading", { name: "新增记账" }),
     ).toBeTruthy();
   });
 
