@@ -36,6 +36,7 @@ type TransactionFormProps = {
   merchantOptions: TransactionMerchantOption[];
 };
 
+// 后续标签维护功能落地后，这里会替换为可选择且可保存的标签数据。
 const tagPreviewOptions = [
   { label: "日常", sx: { bgcolor: "#E3E7F0", color: "#4D5565" } },
   { label: "腐败", sx: { bgcolor: "#FFE2B9", color: "#A45B00" } },
@@ -45,15 +46,6 @@ const tagPreviewOptions = [
   { label: "旅游", sx: { bgcolor: "#DDD2FF", color: "#5B48A0" } },
   { label: "装修", sx: { bgcolor: "#FFE6C7", color: "#A7611A" } },
   { label: "结婚", sx: { bgcolor: "#FFD9C7", color: "#A45230" } },
-  {
-    label: "管理标签 >",
-    sx: {
-      bgcolor: "background.paper",
-      border: "1px solid",
-      borderColor: "divider",
-      color: "text.secondary",
-    },
-  },
 ] as const;
 
 export function TransactionForm({
@@ -285,12 +277,7 @@ export function TransactionForm({
                 sx={{
                   borderRadius: 999,
                   fontWeight: 700,
-                  ...(tag.sx ?? {
-                    bgcolor: "background.paper",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    color: "text.secondary",
-                  }),
+                  ...tag.sx,
                 }}
               />
             ))}

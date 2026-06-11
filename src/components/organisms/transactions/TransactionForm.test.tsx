@@ -8,6 +8,8 @@ import {
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { routePaths } from "config/paths";
+
 import { TransactionForm } from "./TransactionForm";
 
 vi.mock("next/link", () => ({
@@ -91,12 +93,20 @@ describe("TransactionForm", () => {
       within(container).getByRole("heading", { name: "新增记账" }),
     ).toBeTruthy();
     expect(
-      within(container).getByRole("link", { name: "关闭" }),
-    ).toHaveProperty("href", "http://localhost:3000/transactions");
+      within(container)
+        .getByRole("link", { name: "关闭" })
+        .getAttribute("href"),
+    ).toBe(routePaths.transactions);
     expect(
       within(container).getByRole("button", { name: "保存" }),
     ).toBeTruthy();
     expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
+  });
+
+  it("未传入账本名时不显示当前账本", () => {
+    const { container } = renderForm();
+
+    expect(within(container).queryByText(/^当前账本：/)).toBeNull();
   });
 
   it("传入错误信息时显示 Alert", () => {
@@ -150,9 +160,7 @@ describe("TransactionForm", () => {
     });
 
     expect(within(container).getByText("保存前汇总")).toBeTruthy();
-    expect(
-      within(container).getAllByText("便利店").length,
-    ).toBeGreaterThanOrEqual(2);
+    expect(within(container).getAllByText("便利店")).toHaveLength(2);
     expect(within(container).getAllByText("日元现金（JPY）")).toHaveLength(2);
     expect(within(container).getByText("餐饮 / 1200")).toBeTruthy();
     expect(within(container).getByText("合计金额")).toBeTruthy();
@@ -170,7 +178,6 @@ describe("TransactionForm", () => {
     expect(within(container).getByText("旅游")).toBeTruthy();
     expect(within(container).getByText("装修")).toBeTruthy();
     expect(within(container).getByText("结婚")).toBeTruthy();
-    expect(within(container).getByText("管理标签 >")).toBeTruthy();
     expect(
       within(container).queryByRole("button", { name: "日常" }),
     ).toBeNull();
