@@ -1,4 +1,5 @@
 import { TransactionForm } from "organisms/transactions/TransactionForm";
+import { TransactionAmountKeypadLauncher } from "organisms/transactions/TransactionAmountKeypadLauncher";
 import type {
   TransactionAccountOption,
   TransactionCategoryOption,
@@ -33,6 +34,7 @@ export function NewTransactionTemplate({
         ledgerName={ledgerName}
         merchantOptions={merchantOptions}
       />
+      <TransactionAmountKeypadLauncher />
     </PageShell>
   );
 }
