@@ -44,15 +44,15 @@ const keyLabels: Record<AmountKeypadKey, string> = {
   "7": "7",
   "8": "8",
   "9": "9",
-  "backspace": "⌫",
-  "clear": "C",
+  backspace: "⌫",
+  clear: "C",
 };
 
 const keyAriaLabels: Record<string, string | undefined> = {
   "+": "加",
   "-": "减",
-  "backspace": "删除",
-  "clear": "清空",
+  backspace: "删除",
+  clear: "清空",
 };
 
 export function TransactionAmountKeypad({
