@@ -207,7 +207,7 @@ describe("TransactionAmountKeypad", () => {
     expect(handleConfirm).toHaveBeenCalledWith("0");
   });
 
-  it("刚打开时确认空金额会显示错误", () => {
+  it("刚打开时可直接确认显示的 0 金额", () => {
     const handleConfirm = vi.fn();
     const handleChange = vi.fn();
 
@@ -221,9 +221,9 @@ describe("TransactionAmountKeypad", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "确认" }));
 
-    expect(screen.getByText("请输入有效金额。")).toBeTruthy();
-    expect(handleChange).not.toHaveBeenCalled();
-    expect(handleConfirm).not.toHaveBeenCalled();
+    expect(screen.queryByText("请输入有效金额。")).toBeNull();
+    expect(handleChange).toHaveBeenCalledWith("0");
+    expect(handleConfirm).toHaveBeenCalledWith("0");
   });
 
   it("父组件清空金额后重置上一次的计算表达式", () => {

@@ -225,17 +225,27 @@ describe("TransactionForm", () => {
     expect(screen.getByText("请选择一个小分类。")).toBeTruthy();
   });
 
-  it("未填金额时点击追加显示错误提示", () => {
+  it("打开添加明细时金额默认是 0，并可直接追加 0 元明细", () => {
     const { container } = renderForm();
 
     openSheet(container);
+    expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
+      "value",
+      "0",
+    );
+
     fireEvent.click(screen.getByRole("button", { name: "餐饮" }));
     fireEvent.click(screen.getByRole("button", { name: "追加" }));
 
-    expect(screen.getByText("请输入有效金额。")).toBeTruthy();
+    expect(screen.queryByText("请输入有效金额。")).toBeNull();
+    expect(screen.getByText("已选明细")).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
+      "value",
+      "0",
+    );
   });
 
-  it("追加后 Chip 和金额输入框被清空，明细出现在已选列表", () => {
+  it("追加后 Chip 被清空且金额输入框回到 0，明细出现在已选列表", () => {
     const { container } = renderForm();
 
     openSheet(container);
@@ -246,7 +256,7 @@ describe("TransactionForm", () => {
     expect(screen.getAllByText("食材/调料 / 餐饮")).toHaveLength(2);
     expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
       "value",
-      "",
+      "0",
     );
   });
 

@@ -134,8 +134,10 @@ describe("transactionAmountInput", () => {
     if (result.ok) expect(result.value).toBe("103");
   });
 
-  it("确认时拒绝空金额和减到负数的金额，但允许 0 金额", () => {
-    expect(confirmAmountKeypadState(createAmountKeypadState()).ok).toBe(false);
+  it("确认时将空显示视为 0，但拒绝减到负数的金额", () => {
+    const emptyResult = confirmAmountKeypadState(createAmountKeypadState());
+    expect(emptyResult.ok).toBe(true);
+    if (emptyResult.ok) expect(emptyResult.value).toBe("0");
 
     const zeroResult = confirmAmountKeypadState(createAmountKeypadState("0"));
     expect(zeroResult.ok).toBe(true);

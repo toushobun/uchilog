@@ -189,7 +189,7 @@ export function TransactionForm({
 
   function openSheet() {
     setPickerCategoryId("");
-    setPickerAmount("");
+    setPickerAmount("0");
     setPickerErrors({});
     setSelectedCategoryGroupId(categoryGroups[0]?.id ?? "");
     setIsSheetOpen(true);
@@ -202,7 +202,7 @@ export function TransactionForm({
   function handlePickerGroupSelect(groupId: string) {
     setSelectedCategoryGroupId(groupId);
     setPickerCategoryId("");
-    setPickerAmount("");
+    setPickerAmount("0");
     setPickerErrors({});
   }
 
@@ -225,7 +225,7 @@ export function TransactionForm({
     setPickerErrors({});
     addItem(pickerCategoryId, pickerAmount);
     setPickerCategoryId("");
-    setPickerAmount("");
+    setPickerAmount("0");
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

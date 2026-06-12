@@ -177,7 +177,11 @@ export function confirmAmountKeypadState(
   state: AmountKeypadState,
   options: AmountInputOptions = {},
 ) {
-  const resolvedValue = resolveCurrentDisplayValue(state, options);
+  const displayState =
+    state.displayValue.trim().length === 0
+      ? { ...state, displayValue: "0" }
+      : state;
+  const resolvedValue = resolveCurrentDisplayValue(displayState, options);
   const normalizedValue =
     resolvedValue === null ? null : normalizeMoneyText(resolvedValue, options);
 
@@ -185,7 +189,7 @@ export function confirmAmountKeypadState(
     return {
       ok: false as const,
       state: {
-        ...state,
+        ...displayState,
         shouldReplaceDisplay: false,
       },
     };
