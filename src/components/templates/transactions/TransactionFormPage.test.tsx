@@ -2,7 +2,7 @@ import { cleanup, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { NewTransactionTemplate } from "./NewTransaction";
+import { NewTransactionTemplate } from "./TransactionFormPage";
 
 vi.mock("organisms/transactions/TransactionForm", () => ({
   TransactionForm: ({

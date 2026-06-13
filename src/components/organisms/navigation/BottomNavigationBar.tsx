@@ -11,13 +11,15 @@ import { usePathname } from "next/navigation";
 import { bottomNavigationRouteGroups, routePaths } from "config/paths";
 import { BottomNavButton } from "molecules/navigation/BottomNavButton";
 
+const transactionEditPathPattern = /^\/transactions\/[^/]+\/edit$/;
+
 export function BottomNavigationBar() {
   const pathname = usePathname();
-  const isCreateTransactionPage =
+  const isTransactionFormPage =
     pathname === routePaths.transactionsNew ||
-    pathname.startsWith(`${routePaths.transactionsNew}/`);
+    transactionEditPathPattern.test(pathname);
   const isBottomNavSelected = (href: string) =>
-    !isCreateTransactionPage &&
+    !isTransactionFormPage &&
     (pathname === href || pathname.startsWith(`${href}/`));
 
   return (

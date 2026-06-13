@@ -1,19 +1,10 @@
-import {
-  createTransaction,
-  updateTransaction,
-} from "server/actions/transactions";
-import {
-  loadEditTransactionView,
-  loadNewTransactionView,
-} from "server/loaders/newTransaction";
-import {
-  EditTransactionTemplate,
-  NewTransactionTemplate,
-} from "templates/transactions/NewTransaction";
-import {
-  getEditTransactionErrorMessage,
-  getNewTransactionErrorMessage,
-} from "utils/pageErrors";
+import { redirect } from "next/navigation";
+
+import { editTransactionErrorHref, transactionEditHref } from "config/paths";
+import { createTransaction } from "server/actions/transactions";
+import { loadNewTransactionView } from "server/loaders/transactionForm";
+import { NewTransactionTemplate } from "templates/transactions/TransactionFormPage";
+import { getNewTransactionErrorMessage } from "utils/pageErrors";
 
 export default async function TransactionsNewPage({
   searchParams,
@@ -23,14 +14,10 @@ export default async function TransactionsNewPage({
   const params = await searchParams;
 
   if (params.editId) {
-    const view = await loadEditTransactionView(params.editId);
-
-    return (
-      <EditTransactionTemplate
-        action={updateTransaction}
-        errorMessage={getEditTransactionErrorMessage(params.error)}
-        {...view}
-      />
+    redirect(
+      params.error
+        ? editTransactionErrorHref(params.editId, params.error)
+        : transactionEditHref(params.editId),
     );
   }
 

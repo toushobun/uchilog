@@ -7,6 +7,7 @@ import {
   editTransactionErrorHref,
   newTransactionErrorHref,
   routePaths,
+  transactionEditPagePath,
   transactionsErrorHref,
   transactionsMonthHref,
 } from "config/paths";
@@ -90,7 +91,7 @@ export async function updateTransaction(formData: FormData) {
 
   revalidatePath(routePaths.accounts);
   revalidatePath(routePaths.transactions);
-  revalidatePath(routePaths.transactionsNew);
+  revalidatePath(transactionEditPagePath, "page");
   redirect(transactionMonthRedirectHref(values.transactionAt));
 }
 

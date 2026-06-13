@@ -70,8 +70,8 @@ describe("BottomNavigationBar", () => {
     ).toBeNull();
   });
 
-  it("新增记录子路径也不选中明细导航", () => {
-    mockedPathname = "/transactions/new/template";
+  it("编辑记录页不选中明细导航", () => {
+    mockedPathname = "/transactions/00000000-0000-4000-8000-000000009999/edit";
     const { container } = renderBottomNavigationBar();
 
     expect(

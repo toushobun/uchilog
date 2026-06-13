@@ -16,6 +16,9 @@ export const routePaths = {
 export type AppRouteKey = keyof typeof routePaths;
 export type AppRoutePath = (typeof routePaths)[AppRouteKey];
 
+export const transactionEditPagePath =
+  "/transactions/[transactionRecordId]/edit";
+
 export const bottomNavigationRouteGroups = {
   left: [
     { href: routePaths.dashboard, label: "首页" },
@@ -52,9 +55,9 @@ export function transactionsMonthHref(month: string) {
 }
 
 export function transactionEditHref(transactionRecordId: string) {
-  return routeWithQuery(routePaths.transactionsNew, {
-    editId: transactionRecordId,
-  });
+  return `${routePaths.transactions}/${encodeURIComponent(
+    transactionRecordId,
+  )}/edit`;
 }
 
 export function transactionsErrorHref(error: string) {
@@ -69,10 +72,9 @@ export function editTransactionErrorHref(
   transactionRecordId: string,
   error: string,
 ) {
-  return routeWithQuery(routePaths.transactionsNew, {
-    editId: transactionRecordId,
-    error,
-  });
+  const searchParams = new URLSearchParams({ error });
+
+  return `${transactionEditHref(transactionRecordId)}?${searchParams.toString()}`;
 }
 
 export function accountsErrorHref(error: string) {

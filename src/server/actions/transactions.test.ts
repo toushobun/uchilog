@@ -178,7 +178,7 @@ describe("updateTransaction", () => {
     await expect(
       updateTransaction(createValidUpdateFormData({ itemAmount: "-1" })),
     ).rejects.toThrow(
-      `NEXT_REDIRECT:/transactions/new?editId=${transactionRecordId}&error=amount_invalid`,
+      `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit?error=amount_invalid`,
     );
 
     expect(mocks.getCurrentLedgerContext).toHaveBeenCalledTimes(1);
@@ -203,7 +203,10 @@ describe("updateTransaction", () => {
 
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/accounts");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions");
-    expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions/new");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/transactions/[transactionRecordId]/edit",
+      "page",
+    );
   });
 
   it("从支出改为收入后，也跳转到发生月份以刷新收入汇总", async () => {
@@ -224,7 +227,7 @@ describe("updateTransaction", () => {
     await expect(
       updateTransaction(createValidUpdateFormData({ merchantId: "" })),
     ).rejects.toThrow(
-      `NEXT_REDIRECT:/transactions/new?editId=${transactionRecordId}&error=merchant_invalid`,
+      `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit?error=merchant_invalid`,
     );
 
     expect(mocks.rpc).not.toHaveBeenCalled();
@@ -241,7 +244,7 @@ describe("updateTransaction", () => {
     await expect(
       updateTransaction(createValidUpdateFormData()),
     ).rejects.toThrow(
-      `NEXT_REDIRECT:/transactions/new?editId=${transactionRecordId}&error=update_failed`,
+      `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit?error=update_failed`,
     );
 
     expect(mocks.revalidatePath).not.toHaveBeenCalled();

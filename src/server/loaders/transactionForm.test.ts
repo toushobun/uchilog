@@ -23,7 +23,7 @@ vi.mock("lib/supabase/server", () => ({
 import {
   buildCategoryOptions,
   loadEditTransactionView,
-} from "./newTransaction";
+} from "./transactionForm";
 
 const parentId = "00000000-0000-4000-8000-000000005001";
 const childId1 = "00000000-0000-4000-8000-000000005072";

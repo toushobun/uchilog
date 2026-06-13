@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { NewTransactionTemplate } from "./NewTransaction";
+import { NewTransactionTemplate } from "./TransactionFormPage";
 
 const accountOptions = [
   {
@@ -41,7 +41,7 @@ const merchantOptions = [
 ];
 
 const meta = {
-  title: "Templates/Transactions/NewTransactionTemplate",
+  title: "Templates/Transactions/TransactionFormPage",
   component: NewTransactionTemplate,
   args: {
     accountOptions,

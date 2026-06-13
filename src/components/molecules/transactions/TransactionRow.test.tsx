@@ -129,7 +129,7 @@ describe("TransactionRow", () => {
 
     expect(
       screen.getByRole("link", { name: "编辑" }).getAttribute("href"),
-    ).toBe("/transactions/new?editId=00000000-0000-4000-8000-000000009001");
+    ).toBe("/transactions/00000000-0000-4000-8000-000000009001/edit");
   });
 
   it("showEdit 和撤销 action 同时传入时显示两个操作", () => {
