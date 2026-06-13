@@ -40,6 +40,8 @@ where tr.ledger_id = fm.ledger_id
 alter table public.transaction_record
     alter column merchant_id set not null;
 
+drop function if exists public.create_transaction(uuid, text, timestamptz, jsonb, uuid, uuid, text);
+
 create or replace function public.create_transaction(
     p_ledger_id uuid,
     p_type text,
