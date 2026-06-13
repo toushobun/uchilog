@@ -5,9 +5,11 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
 import { serverFallbackTimeZone } from "config/dateTime";
+import { transactionEditHref } from "config/paths";
 import {
   transactionAccentColor,
   transactionAvatarBackgroundColor,
@@ -26,6 +28,7 @@ import {
 export type TransactionRowProps = {
   item: TransactionRowItem;
   showAccount?: boolean;
+  showEdit?: boolean;
   showNote?: boolean;
   showRecorder?: boolean;
   showTime?: boolean;
@@ -36,6 +39,7 @@ export type TransactionRowProps = {
 export function TransactionRow({
   item,
   showAccount = false,
+  showEdit,
   showNote = false,
   showRecorder = false,
   showTime = false,
@@ -53,6 +57,7 @@ export function TransactionRow({
   const time = formatTransactionTime(item.transaction_at, { timeZone });
   const signedAmount = formatTransactionRowAmount(item.type, item.amount);
   const categoryLabel = getCategoryLabel(item.categoryItems);
+  const canEdit = showEdit ?? false;
 
   const accountTimeLine = [
     showAccount ? item.account_name : null,
@@ -128,26 +133,46 @@ export function TransactionRow({
           {signedAmount}
         </Typography>
 
-        {voidAction ? (
-          <form
-            action={voidAction}
-            onSubmit={(event) => {
-              if (!window.confirm("确定要撤销这条记录吗？")) {
-                event.preventDefault();
-              }
-            }}
-          >
-            <input name="transactionRecordId" type="hidden" value={item.id} />
-            <Button
-              color="error"
-              size="small"
-              sx={{ minWidth: 0, px: 0.5, py: 0, typography: "caption" }}
-              type="submit"
-              variant="text"
-            >
-              撤销
-            </Button>
-          </form>
+        {canEdit || voidAction ? (
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+            {canEdit ? (
+              <Button
+                component={Link}
+                href={transactionEditHref(item.id)}
+                size="small"
+                sx={{ minWidth: 0, px: 0.5, py: 0, typography: "caption" }}
+                variant="text"
+              >
+                编辑
+              </Button>
+            ) : null}
+
+            {voidAction ? (
+              <form
+                action={voidAction}
+                onSubmit={(event) => {
+                  if (!window.confirm("确定要撤销这条记录吗？")) {
+                    event.preventDefault();
+                  }
+                }}
+              >
+                <input
+                  name="transactionRecordId"
+                  type="hidden"
+                  value={item.id}
+                />
+                <Button
+                  color="error"
+                  size="small"
+                  sx={{ minWidth: 0, px: 0.5, py: 0, typography: "caption" }}
+                  type="submit"
+                  variant="text"
+                >
+                  撤销
+                </Button>
+              </form>
+            ) : null}
+          </Stack>
         ) : null}
       </Stack>
     </Stack>

@@ -10,7 +10,7 @@ export type CreateTransactionParams = {
   accountId: string;
   items: CreateTransactionItemParams[];
   ledgerId: string;
-  merchantId: string | null;
+  merchantId: string;
   note: string | null;
   transactionAt: string;
   type: TransactionType;
@@ -21,10 +21,21 @@ export type CreateTransactionItemParams = {
   categoryId: string;
 };
 
+export type UpdateTransactionParams = CreateTransactionParams & {
+  transactionRecordId: string;
+};
+
 export type VoidTransactionParams = {
   ledgerId: string;
   transactionRecordId: string;
 };
+
+function mapTransactionItems(items: CreateTransactionItemParams[]) {
+  return items.map((item) => ({
+    amount: item.amount,
+    categoryId: item.categoryId,
+  }));
+}
 
 export async function createTransactionService(
   params: CreateTransactionParams,
@@ -32,10 +43,7 @@ export async function createTransactionService(
   const supabase = await createClient();
   const { error } = await supabase.rpc("create_transaction", {
     p_account_id: params.accountId,
-    p_items: params.items.map((item) => ({
-      amount: item.amount,
-      categoryId: item.categoryId,
-    })),
+    p_items: mapTransactionItems(params.items),
     p_ledger_id: params.ledgerId,
     p_merchant_id: params.merchantId,
     p_note: params.note,
@@ -45,6 +53,28 @@ export async function createTransactionService(
 
   if (error) {
     return { ok: false, error: transactionErrorCodes.createFailed };
+  }
+
+  return { ok: true };
+}
+
+export async function updateTransactionService(
+  params: UpdateTransactionParams,
+): Promise<ServiceResult<TransactionServiceErrorCode>> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_transaction", {
+    p_account_id: params.accountId,
+    p_items: mapTransactionItems(params.items),
+    p_ledger_id: params.ledgerId,
+    p_merchant_id: params.merchantId,
+    p_note: params.note,
+    p_transaction_at: params.transactionAt,
+    p_transaction_record_id: params.transactionRecordId,
+    p_type: params.type,
+  });
+
+  if (error) {
+    return { ok: false, error: transactionErrorCodes.updateFailed };
   }
 
   return { ok: true };

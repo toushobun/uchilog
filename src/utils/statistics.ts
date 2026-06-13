@@ -9,7 +9,7 @@ import {
 
 type StatisticsRecordInput = {
   id: string;
-  merchant_id: string | null;
+  merchant_id: string;
   type: TransactionType;
 };
 
@@ -47,7 +47,6 @@ type RankingAccumulator = {
   transactionIds: Set<string>;
 };
 
-const noMerchantId = "__no_merchant__";
 const noCategoryId = "__no_category__";
 
 export function buildStatisticsViewData({
@@ -81,8 +80,8 @@ export function buildStatisticsViewData({
 
     addRankingAmount(
       merchantRankingById,
-      record.merchant_id ?? noMerchantId,
-      merchantById.get(record.merchant_id ?? "")?.name ?? "未指定商家",
+      record.merchant_id,
+      merchantById.get(record.merchant_id)?.name ?? "未指定商家",
       item.amount,
       record.id,
     );

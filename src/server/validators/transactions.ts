@@ -1,6 +1,7 @@
 import {
   transactionErrorCodes,
   type TransactionValidationErrorCode,
+  type UpdateTransactionValidationErrorCode,
   type VoidTransactionValidationErrorCode,
 } from "server/errors/transactions";
 import {
@@ -31,13 +32,17 @@ export type TransactionFormValues = {
   transactionAt: string;
   accountId: string;
   items: TransactionFormItemValues[];
-  merchantId: string | null;
+  merchantId: string;
   note: string | null;
 };
 
 export type TransactionFormItemValues = {
   amount: number;
   categoryId: string;
+};
+
+export type UpdateTransactionValues = TransactionFormValues & {
+  transactionRecordId: string;
 };
 
 export type VoidTransactionValues = {
@@ -190,8 +195,9 @@ export function validateTransactionForm(
     return itemsResult;
   }
 
-  const merchantIdResult = parseOptionalUuidText(
-    getFormText(formData, "merchantId"),
+  const merchantIdResult = parseRequiredUuidField(
+    formData,
+    "merchantId",
     transactionErrorCodes.merchantInvalid,
   );
 
@@ -217,6 +223,34 @@ export function validateTransactionForm(
     note: noteResult.value,
     transactionAt,
     type: typeResult.value,
+  });
+}
+
+export function validateUpdateTransactionForm(
+  formData: FormData,
+): ValidationResult<
+  UpdateTransactionValues,
+  UpdateTransactionValidationErrorCode
+> {
+  const transactionRecordIdResult = parseRequiredUuidField(
+    formData,
+    "transactionRecordId",
+    transactionErrorCodes.updateInvalid,
+  );
+
+  if (!transactionRecordIdResult.ok) {
+    return transactionRecordIdResult;
+  }
+
+  const transactionResult = validateTransactionForm(formData);
+
+  if (!transactionResult.ok) {
+    return transactionResult;
+  }
+
+  return valid({
+    ...transactionResult.value,
+    transactionRecordId: transactionRecordIdResult.value,
   });
 }
 

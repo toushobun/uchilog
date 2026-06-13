@@ -121,6 +121,13 @@ function addItemViaSheet(categoryName: string, amount: string) {
   fireEvent.click(screen.getByRole("button", { name: "追加" }));
 }
 
+function formatExpectedDateTimeLocalValue(value: string) {
+  const date = new Date(value);
+  const pad = (part: number) => String(part).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.000`;
+}
+
 describe("TransactionForm", () => {
   it("显示移动端记账顶部操作区", () => {
     const { container } = renderForm({ ledgerName: "家庭账本" });
@@ -151,6 +158,30 @@ describe("TransactionForm", () => {
     expect(
       screen.getByText(newTransactionPageErrorMessages.amountInvalid),
     ).toBeTruthy();
+  });
+
+  it("编辑模式下按本地时区回填发生时间", () => {
+    const transactionAt = "2026-06-05T03:20:10.000Z";
+    const { container } = renderForm({
+      initialValues: {
+        accountId: accountOptions[0].id,
+        items: [
+          {
+            amount: "1200",
+            categoryId: categoryOptions[0].id,
+          },
+        ],
+        merchantId: merchantOptions[0].id,
+        note: "",
+        transactionAt,
+        transactionRecordId: "00000000-0000-4000-8000-000000009001",
+        type: "expense",
+      },
+    });
+
+    expect(
+      (within(container).getByLabelText(/发生时间/) as HTMLInputElement).value,
+    ).toBe(formatExpectedDateTimeLocalValue(transactionAt));
   });
 
   it("账户选项中显示币种", () => {

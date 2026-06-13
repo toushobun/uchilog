@@ -8,6 +8,18 @@ export const newTransactionPageErrorMessages = {
   typeInvalid: "记账类型不正确。",
 } as const;
 
+export const editTransactionPageErrorMessages = {
+  accountInvalid: "账户指定不正确。",
+  amountInvalid: "金额不能为负数，且最多两位小数。",
+  categoryInvalid: "分类指定不正确。",
+  dateInvalid: "发生时间不正确。",
+  merchantInvalid: "商家指定不正确。",
+  noteTooLong: "备注不能超过 2000 个字符。",
+  typeInvalid: "记账类型不正确。",
+  updateFailed: "记账更新失败。请稍后重试。",
+  updateInvalid: "编辑对象不正确。",
+} as const;
+
 export const transactionFormValidationMessages = {
   accountRequired: "请选择账户。",
   amountInvalid: "请输入有效金额。",

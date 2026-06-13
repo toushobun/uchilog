@@ -12,10 +12,12 @@ import {
 } from "server/errors/merchants";
 import {
   transactionErrorCodes,
+  type EditTransactionErrorCode,
   type NewTransactionErrorCode,
   type TransactionListErrorCode,
 } from "server/errors/transactions";
 import {
+  editTransactionPageErrorMessages,
   newTransactionPageErrorMessages,
   transactionListPageErrorMessages,
 } from "utils/transactionMessages";
@@ -92,6 +94,29 @@ const newTransactionErrorMessages: Partial<
     newTransactionPageErrorMessages.typeInvalid,
 };
 
+const editTransactionErrorMessages: Partial<
+  Record<EditTransactionErrorCode, string>
+> = {
+  [transactionErrorCodes.accountInvalid]:
+    editTransactionPageErrorMessages.accountInvalid,
+  [transactionErrorCodes.amountInvalid]:
+    editTransactionPageErrorMessages.amountInvalid,
+  [transactionErrorCodes.categoryInvalid]:
+    editTransactionPageErrorMessages.categoryInvalid,
+  [transactionErrorCodes.dateInvalid]:
+    editTransactionPageErrorMessages.dateInvalid,
+  [transactionErrorCodes.merchantInvalid]:
+    editTransactionPageErrorMessages.merchantInvalid,
+  [transactionErrorCodes.noteTooLong]:
+    editTransactionPageErrorMessages.noteTooLong,
+  [transactionErrorCodes.typeInvalid]:
+    editTransactionPageErrorMessages.typeInvalid,
+  [transactionErrorCodes.updateFailed]:
+    editTransactionPageErrorMessages.updateFailed,
+  [transactionErrorCodes.updateInvalid]:
+    editTransactionPageErrorMessages.updateInvalid,
+};
+
 const transactionErrorMessages: Record<TransactionListErrorCode, string> = {
   [transactionErrorCodes.voidFailed]:
     transactionListPageErrorMessages.voidFailed,
@@ -124,6 +149,10 @@ export function getMerchantErrorMessage(error?: string) {
 
 export function getNewTransactionErrorMessage(error?: string) {
   return getPageErrorMessage(newTransactionErrorMessages, error);
+}
+
+export function getEditTransactionErrorMessage(error?: string) {
+  return getPageErrorMessage(editTransactionErrorMessages, error);
 }
 
 export function getTransactionErrorMessage(error?: string) {

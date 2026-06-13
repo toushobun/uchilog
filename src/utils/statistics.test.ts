@@ -15,7 +15,7 @@ const records = [
   },
   {
     id: "expense-3",
-    merchant_id: null,
+    merchant_id: "merchant-missing",
     type: "expense" as const,
   },
   {
@@ -116,7 +116,7 @@ describe("statistics utils", () => {
       },
       {
         amount: "300",
-        id: "__no_merchant__",
+        id: "merchant-missing",
         name: "未指定商家",
         transactionCount: 1,
       },

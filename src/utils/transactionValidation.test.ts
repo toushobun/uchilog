@@ -149,14 +149,10 @@ describe("validateTransactionForm", () => {
     expect(result).toEqual({ ok: false, error: "category_invalid" });
   });
 
-  it("商家为空时校验通过", () => {
+  it("商家为空时校验失败", () => {
     const result = validateTransactionForm(createFormData({ merchantId: "" }));
 
-    expect(result.ok).toBe(true);
-
-    if (result.ok) {
-      expect(result.value.merchantId).toBeNull();
-    }
+    expect(result).toEqual({ ok: false, error: "merchant_invalid" });
   });
 
   it("商家 ID 不合法时校验失败", () => {

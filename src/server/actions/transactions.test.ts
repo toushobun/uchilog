@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createTransaction,
+  updateTransaction,
   voidTransaction,
 } from "server/actions/transactions";
 
@@ -57,6 +58,13 @@ function createValidFormData(overrides: Record<string, string> = {}) {
   return formData;
 }
 
+function createValidUpdateFormData(overrides: Record<string, string> = {}) {
+  return createValidFormData({
+    transactionRecordId,
+    ...overrides,
+  });
+}
+
 function createVoidFormData(value = transactionRecordId) {
   const formData = new FormData();
 
@@ -100,9 +108,9 @@ describe("createTransaction", () => {
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
-  it("输入值合法时通过 RPC 创建记账并跳转到列表页", async () => {
+  it("输入值合法时通过 RPC 创建记账并跳转到发生月份的列表页", async () => {
     await expect(createTransaction(createValidFormData())).rejects.toThrow(
-      /^NEXT_REDIRECT:\/transactions$/,
+      "NEXT_REDIRECT:/transactions?month=2026-06",
     );
 
     expect(mocks.rpc).toHaveBeenCalledWith("create_transaction", {
@@ -120,23 +128,18 @@ describe("createTransaction", () => {
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions/new");
   });
 
-  it("未指定商家时向 RPC 传入 null 并保存", async () => {
+  it("未指定商家时带错误参数跳回新增页面", async () => {
     await expect(
       createTransaction(createValidFormData({ merchantId: "" })),
-    ).rejects.toThrow(/^NEXT_REDIRECT:\/transactions$/);
+    ).rejects.toThrow("NEXT_REDIRECT:/transactions/new?error=merchant_invalid");
 
-    expect(mocks.rpc).toHaveBeenCalledWith(
-      "create_transaction",
-      expect.objectContaining({
-        p_merchant_id: null,
-      }),
-    );
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
   it("0 元明细也可以保存", async () => {
     await expect(
       createTransaction(createValidFormData({ itemAmount: "0" })),
-    ).rejects.toThrow(/^NEXT_REDIRECT:\/transactions$/);
+    ).rejects.toThrow("NEXT_REDIRECT:/transactions?month=2026-06");
 
     expect(mocks.rpc).toHaveBeenCalledWith("create_transaction", {
       p_account_id: accountId,
@@ -159,6 +162,86 @@ describe("createTransaction", () => {
 
     await expect(createTransaction(createValidFormData())).rejects.toThrow(
       "NEXT_REDIRECT:/transactions/new?error=create_failed",
+    );
+
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateTransaction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupActionMocks();
+  });
+
+  it("输入值不合法时带错误参数跳回编辑模式", async () => {
+    await expect(
+      updateTransaction(createValidUpdateFormData({ itemAmount: "-1" })),
+    ).rejects.toThrow(
+      `NEXT_REDIRECT:/transactions/new?editId=${transactionRecordId}&error=amount_invalid`,
+    );
+
+    expect(mocks.getCurrentLedgerContext).toHaveBeenCalledTimes(1);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("输入值合法时通过 RPC 更新记账并跳转到发生月份的列表页", async () => {
+    await expect(
+      updateTransaction(createValidUpdateFormData()),
+    ).rejects.toThrow("NEXT_REDIRECT:/transactions?month=2026-06");
+
+    expect(mocks.rpc).toHaveBeenCalledWith("update_transaction", {
+      p_account_id: accountId,
+      p_items: [{ amount: 1234, categoryId }],
+      p_ledger_id: ledgerId,
+      p_merchant_id: merchantId,
+      p_note: "测试记录",
+      p_transaction_at: "2026-06-04T01:30:05.000Z",
+      p_transaction_record_id: transactionRecordId,
+      p_type: "expense",
+    });
+
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/accounts");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions/new");
+  });
+
+  it("从支出改为收入后，也跳转到发生月份以刷新收入汇总", async () => {
+    await expect(
+      updateTransaction(createValidUpdateFormData({ type: "income" })),
+    ).rejects.toThrow("NEXT_REDIRECT:/transactions?month=2026-06");
+
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "update_transaction",
+      expect.objectContaining({
+        p_type: "income",
+        p_transaction_at: "2026-06-04T01:30:05.000Z",
+      }),
+    );
+  });
+
+  it("未指定商家时带错误参数跳回编辑模式", async () => {
+    await expect(
+      updateTransaction(createValidUpdateFormData({ merchantId: "" })),
+    ).rejects.toThrow(
+      `NEXT_REDIRECT:/transactions/new?editId=${transactionRecordId}&error=merchant_invalid`,
+    );
+
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("RPC 失败时带错误参数跳回编辑模式", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: {
+        message: "update failed",
+      },
+    });
+
+    await expect(
+      updateTransaction(createValidUpdateFormData()),
+    ).rejects.toThrow(
+      `NEXT_REDIRECT:/transactions/new?editId=${transactionRecordId}&error=update_failed`,
     );
 
     expect(mocks.revalidatePath).not.toHaveBeenCalled();

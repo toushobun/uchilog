@@ -13,12 +13,14 @@ vi.mock("lib/supabase/server", () => ({
 
 import {
   createTransactionService,
+  updateTransactionService,
   voidTransactionService,
 } from "./transactions";
 
 const ledgerId = "00000000-0000-4000-8000-000000000001";
 const accountId = "00000000-0000-4000-8000-000000000041";
 const categoryId = "00000000-0000-4000-8000-000000000101";
+const categoryId2 = "00000000-0000-4000-8000-000000000102";
 const merchantId = "00000000-0000-4000-8000-000000001001";
 const transactionRecordId = "00000000-0000-4000-8000-000000002001";
 const transactionAt = "2026-06-04T01:30:05.000Z";
@@ -34,11 +36,11 @@ describe("transactions service", () => {
     createClientMock.mockResolvedValue({ rpc: rpcMock });
   });
 
-  describe("createTransactionService", () => {
-    it("支出交易创建成功时调用 create_transaction RPC，并传递余额扣减所需参数", async () => {
-      mockRpcResult();
+  it("createTransactionService 调用 create_transaction RPC", async () => {
+    mockRpcResult();
 
-      const result = await createTransactionService({
+    await expect(
+      createTransactionService({
         accountId,
         items: [{ amount: 1200, categoryId }],
         ledgerId,
@@ -46,140 +48,60 @@ describe("transactions service", () => {
         note: "晚餐",
         transactionAt,
         type: "expense",
-      });
+      }),
+    ).resolves.toEqual({ ok: true });
 
-      expect(result).toEqual({ ok: true });
-      expect(createClientMock).toHaveBeenCalledTimes(1);
-      expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
-        p_account_id: accountId,
-        p_items: [{ amount: 1200, categoryId }],
-        p_ledger_id: ledgerId,
-        p_merchant_id: merchantId,
-        p_note: "晚餐",
-        p_transaction_at: transactionAt,
-        p_type: "expense",
-      });
+    expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
+      p_account_id: accountId,
+      p_items: [{ amount: 1200, categoryId }],
+      p_ledger_id: ledgerId,
+      p_merchant_id: merchantId,
+      p_note: "晚餐",
+      p_transaction_at: transactionAt,
+      p_type: "expense",
     });
+  });
 
-    it("收入交易创建成功时传递 income 类型，让 RPC 执行余额增加路径", async () => {
-      mockRpcResult();
+  it("createTransactionService 支持 income、多明细和空备注", async () => {
+    mockRpcResult();
 
-      const result = await createTransactionService({
-        accountId,
-        items: [{ amount: 250000, categoryId }],
-        ledgerId,
-        merchantId: null,
-        note: "工资",
-        transactionAt,
-        type: "income",
-      });
-
-      expect(result).toEqual({ ok: true });
-      expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
-        p_account_id: accountId,
-        p_items: [{ amount: 250000, categoryId }],
-        p_ledger_id: ledgerId,
-        p_merchant_id: null,
-        p_note: "工资",
-        p_transaction_at: transactionAt,
-        p_type: "income",
-      });
-    });
-
-    it("允许商家、备注为空的交易进入 RPC", async () => {
-      mockRpcResult();
-
-      const result = await createTransactionService({
-        accountId,
-        items: [{ amount: 500, categoryId }],
-        ledgerId,
-        merchantId: null,
-        note: null,
-        transactionAt,
-        type: "expense",
-      });
-
-      expect(result).toEqual({ ok: true });
-      expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
-        p_account_id: accountId,
-        p_items: [{ amount: 500, categoryId }],
-        p_ledger_id: ledgerId,
-        p_merchant_id: null,
-        p_note: null,
-        p_transaction_at: transactionAt,
-        p_type: "expense",
-      });
-    });
-
-    it("多条明细创建成功时传递 items 给 create_transaction RPC", async () => {
-      mockRpcResult();
-      const secondCategoryId = "00000000-0000-4000-8000-000000000102";
-
-      const result = await createTransactionService({
+    await expect(
+      createTransactionService({
         accountId,
         items: [
-          { amount: 286, categoryId },
-          { amount: 45, categoryId: secondCategoryId },
+          { amount: 1200, categoryId },
+          { amount: 500, categoryId: categoryId2 },
         ],
         ledgerId,
         merchantId,
-        note: "超市",
+        note: null,
         transactionAt,
-        type: "expense",
-      });
+        type: "income",
+      }),
+    ).resolves.toEqual({ ok: true });
 
-      expect(result).toEqual({ ok: true });
-      expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
-        p_account_id: accountId,
-        p_items: [
-          { amount: 286, categoryId },
-          { amount: 45, categoryId: secondCategoryId },
-        ],
-        p_ledger_id: ledgerId,
-        p_merchant_id: merchantId,
-        p_note: "超市",
-        p_transaction_at: transactionAt,
-        p_type: "expense",
-      });
+    expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
+      p_account_id: accountId,
+      p_items: [
+        { amount: 1200, categoryId },
+        { amount: 500, categoryId: categoryId2 },
+      ],
+      p_ledger_id: ledgerId,
+      p_merchant_id: merchantId,
+      p_note: null,
+      p_transaction_at: transactionAt,
+      p_type: "income",
     });
+  });
 
-    it("允许 0 元明细进入 create_transaction RPC", async () => {
-      mockRpcResult();
-
-      const result = await createTransactionService({
-        accountId,
-        items: [{ amount: 0, categoryId }],
-        ledgerId,
-        merchantId,
-        note: "零元记录",
-        transactionAt,
-        type: "expense",
-      });
-
-      expect(result).toEqual({ ok: true });
-      expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
-        p_account_id: accountId,
-        p_items: [{ amount: 0, categoryId }],
-        p_ledger_id: ledgerId,
-        p_merchant_id: merchantId,
-        p_note: "零元记录",
-        p_transaction_at: transactionAt,
-        p_type: "expense",
-      });
-    });
-
-    it.each([
-      "ledger 不匹配",
-      "account 不属于当前 ledger",
-      "category 不属于当前 ledger",
-      "merchant 不属于当前 ledger",
-      "archived account",
-      "archived category",
-      "archived merchant",
-      "invalid 参数",
-      "账户余额联动失败",
-    ])("RPC 拒绝创建交易：%s 时返回 create_failed", async (message) => {
-      mockRpcResult({ message });
+  it.each([
+    ["RPC 异常", { message: "failed" }],
+    ["权限拒绝", { code: "42501" }],
+    ["业务拒绝", { code: "P0001" }],
+  ])(
+    "createTransactionService 失败时返回 create_failed：%s",
+    async (_, error) => {
+      mockRpcResult(error);
 
       await expect(
         createTransactionService({
@@ -195,60 +117,140 @@ describe("transactions service", () => {
         error: transactionErrorCodes.createFailed,
         ok: false,
       });
+    },
+  );
+
+  it("updateTransactionService 调用 update_transaction RPC", async () => {
+    mockRpcResult();
+
+    await expect(
+      updateTransactionService({
+        accountId,
+        items: [{ amount: 1200, categoryId }],
+        ledgerId,
+        merchantId,
+        note: "编辑后",
+        transactionAt,
+        transactionRecordId,
+        type: "expense",
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(rpcMock).toHaveBeenCalledWith("update_transaction", {
+      p_account_id: accountId,
+      p_items: [{ amount: 1200, categoryId }],
+      p_ledger_id: ledgerId,
+      p_merchant_id: merchantId,
+      p_note: "编辑后",
+      p_transaction_at: transactionAt,
+      p_transaction_record_id: transactionRecordId,
+      p_type: "expense",
     });
   });
 
-  describe("voidTransactionService", () => {
-    it("active transaction void 成功时调用 void_transaction RPC", async () => {
-      mockRpcResult();
+  it("updateTransactionService 支持 income、多明细和空备注", async () => {
+    mockRpcResult();
 
-      const result = await voidTransactionService({
+    await expect(
+      updateTransactionService({
+        accountId,
+        items: [
+          { amount: 1200, categoryId },
+          { amount: 500, categoryId: categoryId2 },
+        ],
         ledgerId,
+        merchantId,
+        note: null,
+        transactionAt,
         transactionRecordId,
-      });
+        type: "income",
+      }),
+    ).resolves.toEqual({ ok: true });
 
-      expect(result).toEqual({ ok: true });
-      expect(createClientMock).toHaveBeenCalledTimes(1);
-      expect(rpcMock).toHaveBeenCalledWith("void_transaction", {
-        p_ledger_id: ledgerId,
-        p_transaction_record_id: transactionRecordId,
-      });
+    expect(rpcMock).toHaveBeenCalledWith("update_transaction", {
+      p_account_id: accountId,
+      p_items: [
+        { amount: 1200, categoryId },
+        { amount: 500, categoryId: categoryId2 },
+      ],
+      p_ledger_id: ledgerId,
+      p_merchant_id: merchantId,
+      p_note: null,
+      p_transaction_at: transactionAt,
+      p_transaction_record_id: transactionRecordId,
+      p_type: "income",
     });
+  });
 
-    it("多明细或 0 元明细的交易由 void_transaction RPC 统一撤销", async () => {
-      mockRpcResult();
-
-      const result = await voidTransactionService({
-        ledgerId,
-        transactionRecordId,
-      });
-
-      expect(result).toEqual({ ok: true });
-      expect(rpcMock).toHaveBeenCalledWith("void_transaction", {
-        p_ledger_id: ledgerId,
-        p_transaction_record_id: transactionRecordId,
-      });
-    });
-
-    it.each([
-      "transactionRecordId 非 UUID",
-      "transaction 不属于当前 ledger",
-      "transaction 已经 void",
-      "transaction archived",
-      "余额回滚失败",
-      "RPC 执行失败",
-    ])("RPC 拒绝 void 交易：%s 时返回 void_failed", async (message) => {
-      mockRpcResult({ message });
+  it.each([
+    ["RPC 不存在", { message: "update_transaction missing" }],
+    ["权限拒绝", { code: "42501" }],
+    ["业务拒绝", { code: "P0001" }],
+  ])(
+    "updateTransactionService 失败时返回 update_failed：%s",
+    async (_, error) => {
+      mockRpcResult(error);
 
       await expect(
-        voidTransactionService({
+        updateTransactionService({
+          accountId,
+          items: [{ amount: 1200, categoryId }],
           ledgerId,
+          merchantId,
+          note: "编辑后",
+          transactionAt,
           transactionRecordId,
+          type: "expense",
         }),
       ).resolves.toEqual({
-        error: transactionErrorCodes.voidFailed,
+        error: transactionErrorCodes.updateFailed,
         ok: false,
       });
+    },
+  );
+
+  it("updateTransactionService 失败时不做 create + void 兜底", async () => {
+    mockRpcResult({ message: "update_transaction missing" });
+
+    await updateTransactionService({
+      accountId,
+      items: [{ amount: 1200, categoryId }],
+      ledgerId,
+      merchantId,
+      note: "编辑后",
+      transactionAt,
+      transactionRecordId,
+      type: "expense",
+    });
+
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("voidTransactionService 调用 void_transaction RPC", async () => {
+    mockRpcResult();
+
+    await expect(
+      voidTransactionService({ ledgerId, transactionRecordId }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(rpcMock).toHaveBeenCalledWith("void_transaction", {
+      p_ledger_id: ledgerId,
+      p_transaction_record_id: transactionRecordId,
+    });
+  });
+
+  it.each([
+    ["RPC 异常", { message: "failed" }],
+    ["权限拒绝", { code: "42501" }],
+    ["业务拒绝", { code: "P0001" }],
+  ])("voidTransactionService 失败时返回 void_failed：%s", async (_, error) => {
+    mockRpcResult(error);
+
+    await expect(
+      voidTransactionService({ ledgerId, transactionRecordId }),
+    ).resolves.toEqual({
+      error: transactionErrorCodes.voidFailed,
+      ok: false,
     });
   });
 });

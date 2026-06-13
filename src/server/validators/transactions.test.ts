@@ -120,14 +120,20 @@ describe("transaction validators", () => {
     });
   });
 
-  it("允许商家和备注为空", () => {
-    const result = validateTransactionForm(
-      createFormData({ merchantId: "", note: "" }),
+  it("拒绝未指定商家", () => {
+    expect(validateTransactionForm(createFormData({ merchantId: "" }))).toEqual(
+      {
+        error: "merchant_invalid",
+        ok: false,
+      },
     );
+  });
+
+  it("允许备注为空", () => {
+    const result = validateTransactionForm(createFormData({ note: "" }));
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.value.merchantId).toBeNull();
       expect(result.value.note).toBeNull();
     }
   });

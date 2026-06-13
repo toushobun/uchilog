@@ -40,7 +40,6 @@ export function routeWithQuery(
   }
 
   const query = searchParams.toString();
-
   return query ? `${path}?${query}` : path;
 }
 
@@ -52,12 +51,28 @@ export function transactionsMonthHref(month: string) {
   return routeWithQuery(routePaths.transactions, { month });
 }
 
+export function transactionEditHref(transactionRecordId: string) {
+  return routeWithQuery(routePaths.transactionsNew, {
+    editId: transactionRecordId,
+  });
+}
+
 export function transactionsErrorHref(error: string) {
   return routeWithQuery(routePaths.transactions, { error });
 }
 
 export function newTransactionErrorHref(error: string) {
   return routeWithQuery(routePaths.transactionsNew, { error });
+}
+
+export function editTransactionErrorHref(
+  transactionRecordId: string,
+  error: string,
+) {
+  return routeWithQuery(routePaths.transactionsNew, {
+    editId: transactionRecordId,
+    error,
+  });
 }
 
 export function accountsErrorHref(error: string) {

@@ -1,6 +1,12 @@
+import { notFound } from "next/navigation";
+
 import { getCurrentLedgerOrRedirect } from "lib/ledger/current-ledger";
 import { createClient } from "lib/supabase/server";
-import type { CategoryOptionDbRow } from "server/db-types";
+import type {
+  CategoryOptionDbRow,
+  TransactionItemDbRow,
+  TransactionRecordDbRow,
+} from "server/db-types";
 import type {
   TransactionAccountOption,
   TransactionMerchantOption,
@@ -9,12 +15,81 @@ import type {
 export async function loadNewTransactionView() {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const supabase = await createClient();
+  const options = await loadTransactionFormOptions(supabase, currentLedger.id);
 
+  return {
+    ...options,
+    ledgerName: currentLedger.name,
+  };
+}
+
+export async function loadEditTransactionView(transactionRecordId: string) {
+  const currentLedger = await getCurrentLedgerOrRedirect();
+  const supabase = await createClient();
+  const [options, recordResult, itemResult] = await Promise.all([
+    loadTransactionFormOptions(supabase, currentLedger.id),
+    supabase
+      .from("transaction_record")
+      .select("id, type, transaction_at, merchant_id, note, created_at")
+      .eq("ledger_id", currentLedger.id)
+      .eq("id", transactionRecordId)
+      .eq("status", "active")
+      .in("type", ["expense", "income"])
+      .limit(1),
+    supabase
+      .from("transaction_item")
+      .select("transaction_record_id, account_id, category_id, amount, note")
+      .eq("ledger_id", currentLedger.id)
+      .eq("transaction_record_id", transactionRecordId)
+      .in("stat_type", ["expense", "income"])
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true }),
+  ]);
+
+  if (recordResult.error) {
+    throw new Error("Failed to load transaction record for edit");
+  }
+
+  if (itemResult.error) {
+    throw new Error("Failed to load transaction items for edit");
+  }
+
+  const record = ((recordResult.data ?? []) as TransactionRecordDbRow[])[0];
+  const items = (itemResult.data ?? []) as TransactionItemDbRow[];
+
+  if (!record || items.length === 0) {
+    notFound();
+  }
+
+  const accountId = items[0]?.account_id ?? "";
+
+  return {
+    ...options,
+    initialValues: {
+      accountId,
+      items: items.map((item) => ({
+        amount: formatEditableAmount(item.amount),
+        categoryId: item.category_id ?? "",
+      })),
+      merchantId: record.merchant_id,
+      note: record.note ?? "",
+      transactionAt: record.transaction_at,
+      transactionRecordId: record.id,
+      type: record.type,
+    },
+    ledgerName: currentLedger.name,
+  };
+}
+
+async function loadTransactionFormOptions(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ledgerId: string,
+) {
   const [accountResult, categoryResult, merchantResult] = await Promise.all([
     supabase
       .from("account")
       .select("id, name, currency")
-      .eq("ledger_id", currentLedger.id)
+      .eq("ledger_id", ledgerId)
       .eq("is_archived", false)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
@@ -22,7 +97,7 @@ export async function loadNewTransactionView() {
     supabase
       .from("category")
       .select("id, name, type, parent_id")
-      .eq("ledger_id", currentLedger.id)
+      .eq("ledger_id", ledgerId)
       .eq("is_archived", false)
       .order("type", { ascending: true })
       .order("sort_order", { ascending: true })
@@ -31,7 +106,7 @@ export async function loadNewTransactionView() {
     supabase
       .from("merchant")
       .select("id, name, icon_url")
-      .eq("ledger_id", currentLedger.id)
+      .eq("ledger_id", ledgerId)
       .eq("is_archived", false)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
@@ -59,7 +134,6 @@ export async function loadNewTransactionView() {
   return {
     accountOptions,
     categoryOptions,
-    ledgerName: currentLedger.name,
     merchantOptions,
   };
 }
@@ -79,4 +153,15 @@ export function buildCategoryOptions(rows: CategoryOptionDbRow[]) {
       parentName: parentNameById.get(row.parent_id!) ?? null,
       type: row.type,
     }));
+}
+
+function formatEditableAmount(amount: string) {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value)) return amount;
+
+  return value
+    .toFixed(2)
+    .replace(/\.00$/, "")
+    .replace(/(\.\d)0$/, "$1");
 }

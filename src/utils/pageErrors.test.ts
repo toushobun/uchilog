@@ -8,6 +8,7 @@ import { transactionErrorCodes } from "server/errors/transactions";
 import {
   getAccountErrorMessage,
   getCategoryErrorMessage,
+  getEditTransactionErrorMessage,
   getLedgerSetupErrorMessage,
   getMerchantErrorMessage,
   getNewTransactionErrorMessage,
@@ -15,6 +16,7 @@ import {
 } from "./pageErrors";
 import {
   newTransactionPageErrorMessages,
+  editTransactionPageErrorMessages,
   transactionListPageErrorMessages,
 } from "./transactionMessages";
 
@@ -65,6 +67,12 @@ describe("pageErrors", () => {
     expect(getTransactionErrorMessage(transactionErrorCodes.voidInvalid)).toBe(
       transactionListPageErrorMessages.voidInvalid,
     );
+    expect(
+      getEditTransactionErrorMessage(transactionErrorCodes.updateInvalid),
+    ).toBe(editTransactionPageErrorMessages.updateInvalid);
+    expect(
+      getTransactionErrorMessage(transactionErrorCodes.updateInvalid),
+    ).toBeNull();
   });
 
   it("空值或未知错误码返回 null", () => {

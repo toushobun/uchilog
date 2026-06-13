@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
+import CloseIcon from "@mui/icons-material/Close";
 import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
-import CloseIcon from "@mui/icons-material/Close";
 import Divider from "@mui/material/Divider";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
@@ -33,13 +33,33 @@ import { getMerchantInitial } from "utils/merchants";
 import { transactionFormValidationMessages } from "utils/transactionMessages";
 import { getNowDateTimeLocalValue } from "utils/transactions";
 
+export type TransactionFormInitialValues = {
+  accountId: string;
+  items: TransactionFormInitialItem[];
+  merchantId: string;
+  note: string;
+  transactionAt: string;
+  transactionRecordId?: string;
+  type: TransactionType;
+};
+
+type TransactionFormInitialItem = {
+  amount: string;
+  categoryId: string;
+};
+
 type TransactionFormProps = {
   action: (formData: FormData) => Promise<void>;
   accountOptions: TransactionAccountOption[];
   categoryOptions: TransactionCategoryOption[];
+  closeHref?: string;
   errorMessage?: string | null;
+  formId?: string;
+  initialValues?: TransactionFormInitialValues;
   ledgerName?: string;
   merchantOptions: TransactionMerchantOption[];
+  submitLabel?: string;
+  title?: string;
 };
 
 type TransactionFormItem = {
@@ -52,6 +72,11 @@ type CategoryPickerGroup = {
   categories: TransactionCategoryOption[];
   id: string;
   name: string;
+};
+
+const emptyItemsByType: Record<TransactionType, TransactionFormItem[]> = {
+  expense: [],
+  income: [],
 };
 
 // 后续标签维护功能落地后，这里会替换为可选择且可保存的标签数据。
@@ -70,25 +95,38 @@ export function TransactionForm({
   action,
   accountOptions,
   categoryOptions,
+  closeHref = routePaths.transactions,
   errorMessage,
+  formId = "new-transaction-form",
+  initialValues,
   ledgerName,
   merchantOptions,
+  submitLabel = "保存记账",
+  title = "新增记账",
 }: TransactionFormProps) {
   const transactionAtInputRef = useRef<HTMLInputElement>(null);
   const timeZoneOffsetInputRef = useRef<HTMLInputElement>(null);
-  const nextItemIdRef = useRef(1);
+  const nextItemIdRef = useRef((initialValues?.items.length ?? 0) + 1);
   const merchantFieldRef = useRef<HTMLDivElement>(null);
   const accountFieldRef = useRef<HTMLDivElement>(null);
   const itemsFieldRef = useRef<HTMLDivElement>(null);
-  const [selectedType, setSelectedType] = useState<TransactionType>("expense");
-  const [selectedAccountId, setSelectedAccountId] = useState("");
-  const [selectedMerchantId, setSelectedMerchantId] = useState("");
+  const [selectedType, setSelectedType] = useState<TransactionType>(
+    initialValues?.type ?? "expense",
+  );
+  const [selectedAccountId, setSelectedAccountId] = useState(
+    initialValues?.accountId ?? "",
+  );
+  const [selectedMerchantId, setSelectedMerchantId] = useState(
+    initialValues?.merchantId ?? "",
+  );
   const [fieldErrors, setFieldErrors] = useState<{
-    merchant?: string;
     account?: string;
     items?: string;
+    merchant?: string;
   }>({});
-  const [items, setItems] = useState<TransactionFormItem[]>([]);
+  const [itemsByType, setItemsByType] = useState<
+    Record<TransactionType, TransactionFormItem[]>
+  >(() => createInitialItemsByType(initialValues));
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCategoryGroupId, setSelectedCategoryGroupId] = useState("");
   const [pickerCategoryId, setPickerCategoryId] = useState("");
@@ -98,9 +136,13 @@ export function TransactionForm({
     amount?: string;
   }>({});
 
+  const items = itemsByType[selectedType];
+
   useEffect(() => {
     if (transactionAtInputRef.current) {
-      transactionAtInputRef.current.value = getNowDateTimeLocalValue();
+      transactionAtInputRef.current.value = initialValues?.transactionAt
+        ? formatDateTimeLocalInputValue(initialValues.transactionAt)
+        : getNowDateTimeLocalValue();
     }
 
     if (timeZoneOffsetInputRef.current) {
@@ -108,7 +150,7 @@ export function TransactionForm({
         new Date().getTimezoneOffset(),
       );
     }
-  }, []);
+  }, [initialValues?.transactionAt]);
 
   const filteredCategoryOptions = useMemo(
     () => categoryOptions.filter((category) => category.type === selectedType),
@@ -124,7 +166,6 @@ export function TransactionForm({
   )
     ? selectedCategoryGroupId
     : (categoryGroups[0]?.id ?? "");
-
   const selectedCategoryGroup =
     categoryGroups.find((group) => group.id === effectiveCategoryGroupId) ??
     categoryGroups[0];
@@ -150,20 +191,44 @@ export function TransactionForm({
   }, 0);
   const hasValidItems =
     items.length > 0 &&
-    items.every(
-      (item) => item.categoryId.length > 0 && isValidMoneyText(item.amount),
-    );
+    items.every((item) => {
+      const category = categoryById.get(item.categoryId);
+      return (
+        category?.type === selectedType &&
+        item.categoryId.length > 0 &&
+        isValidMoneyText(item.amount)
+      );
+    });
   const isSubmitDisabled =
-    accountOptions.length === 0 || filteredCategoryOptions.length === 0;
+    accountOptions.length === 0 ||
+    merchantOptions.length === 0 ||
+    filteredCategoryOptions.length === 0;
   const signedTotalAmount =
     items.length > 0
       ? formatSignedAmount(selectedType, totalAmount)
       : "未填写金额";
 
+  function setCurrentItems(
+    updater:
+      | TransactionFormItem[]
+      | ((currentItems: TransactionFormItem[]) => TransactionFormItem[]),
+  ) {
+    setItemsByType((currentItemsByType) => {
+      const currentItems = currentItemsByType[selectedType];
+      const nextItems =
+        typeof updater === "function" ? updater(currentItems) : updater;
+
+      return {
+        ...currentItemsByType,
+        [selectedType]: nextItems,
+      };
+    });
+  }
+
   function addItem(categoryId: string, amount: string) {
     const itemId = nextItemIdRef.current;
     nextItemIdRef.current += 1;
-    setItems((currentItems) => [
+    setCurrentItems((currentItems) => [
       ...currentItems,
       { amount, categoryId, id: itemId },
     ]);
@@ -175,7 +240,7 @@ export function TransactionForm({
     itemId: number,
     values: Partial<Omit<TransactionFormItem, "id">>,
   ) {
-    setItems((currentItems) =>
+    setCurrentItems((currentItems) =>
       currentItems.map((item) =>
         item.id === itemId ? { ...item, ...values } : item,
       ),
@@ -183,7 +248,7 @@ export function TransactionForm({
   }
 
   function removeItem(itemId: number) {
-    setItems((currentItems) =>
+    setCurrentItems((currentItems) =>
       currentItems.filter((item) => item.id !== itemId),
     );
   }
@@ -198,6 +263,18 @@ export function TransactionForm({
 
   function closeSheet() {
     setIsSheetOpen(false);
+  }
+
+  function handleTypeChange(value: TransactionType | null) {
+    if (!value || value === selectedType) return;
+
+    setSelectedType(value);
+    setIsSheetOpen(false);
+    setPickerCategoryId("");
+    setPickerAmount("0");
+    setPickerErrors({});
+    setSelectedCategoryGroupId("");
+    setFieldErrors((prev) => ({ ...prev, items: undefined }));
   }
 
   function handlePickerGroupSelect(groupId: string) {
@@ -260,7 +337,7 @@ export function TransactionForm({
   }
 
   return (
-    <form id="new-transaction-form" action={action} onSubmit={handleSubmit}>
+    <form id={formId} action={action} onSubmit={handleSubmit}>
       <Stack spacing={2.5}>
         <Stack spacing={1}>
           <Stack
@@ -270,14 +347,14 @@ export function TransactionForm({
           >
             <Button
               component={Link}
-              href={routePaths.transactions}
+              href={closeHref}
               variant="text"
               sx={{ color: "var(--user-theme-action-text)" }}
             >
               关闭
             </Button>
             <Typography component="h1" variant="h5" sx={{ fontWeight: 700 }}>
-              新增记账
+              {title}
             </Typography>
             <Button
               disabled={isSubmitDisabled}
@@ -311,19 +388,22 @@ export function TransactionForm({
           name="timeZoneOffsetMinutes"
           type="hidden"
         />
+        {initialValues?.transactionRecordId ? (
+          <input
+            name="transactionRecordId"
+            type="hidden"
+            value={initialValues.transactionRecordId}
+          />
+        ) : null}
         <input name="type" type="hidden" value={selectedType} />
 
         <ToggleButtonGroup
           aria-label="类型"
           exclusive
           fullWidth
-          onChange={(_, value: TransactionType | null) => {
-            if (value) {
-              setSelectedType(value);
-              setIsSheetOpen(false);
-              setItems([]);
-            }
-          }}
+          onChange={(_, value: TransactionType | null) =>
+            handleTypeChange(value)
+          }
           value={selectedType}
           sx={{
             "& .MuiToggleButton-root.Mui-selected": {
@@ -349,7 +429,9 @@ export function TransactionForm({
           fullWidth
           helperText={
             fieldErrors.merchant ??
-            (merchantOptions.length === 0 ? "请先新增商家。" : undefined)
+            (merchantOptions.length === 0
+              ? "请先新增商家。"
+              : "选择这笔记录的商家。")
           }
           label="商家"
           name="merchantId"
@@ -470,6 +552,7 @@ export function TransactionForm({
                         size="small"
                         slotProps={{
                           htmlInput: {
+                            "aria-label": `明细 ${index + 1} 金额`,
                             "data-amount-currency":
                               selectedAccount?.currency ?? "",
                             "data-amount-input": "true",
@@ -526,7 +609,7 @@ export function TransactionForm({
               + 添加一项明细
             </Button>
 
-            {items.length > 0 && (
+            {items.length > 0 ? (
               <Box
                 sx={{
                   bgcolor: designTokens.color.background.subtle,
@@ -549,7 +632,7 @@ export function TransactionForm({
                   合计 {signedTotalAmount}
                 </Typography>
               </Box>
-            )}
+            ) : null}
           </Stack>
         </Paper>
 
@@ -574,6 +657,7 @@ export function TransactionForm({
         </Stack>
 
         <TextField
+          defaultValue={initialValues?.note ?? ""}
           fullWidth
           label="备注"
           minRows={3}
@@ -640,7 +724,7 @@ export function TransactionForm({
             },
           }}
         >
-          保存记账
+          {submitLabel}
         </Button>
       </Stack>
 
@@ -681,7 +765,7 @@ export function TransactionForm({
         </Typography>
 
         <Box sx={{ flex: 1, overflowY: "auto", px: 2 }}>
-          {itemSummaries.length > 0 && (
+          {itemSummaries.length > 0 ? (
             <>
               <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
                 已选明细
@@ -725,7 +809,7 @@ export function TransactionForm({
               </Stack>
               <Divider sx={{ mb: 2 }} />
             </>
-          )}
+          ) : null}
 
           <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5 }}>
             选择分类
@@ -802,11 +886,11 @@ export function TransactionForm({
                       );
                     })}
                   </Stack>
-                  {pickerErrors.category && (
+                  {pickerErrors.category ? (
                     <Typography color="error" variant="caption">
                       {pickerErrors.category}
                     </Typography>
-                  )}
+                  ) : null}
                 </Stack>
 
                 <Stack
@@ -901,6 +985,21 @@ export function TransactionForm({
   );
 }
 
+function createInitialItemsByType(
+  initialValues?: TransactionFormInitialValues,
+) {
+  const itemsByType = { ...emptyItemsByType };
+
+  if (!initialValues) return itemsByType;
+
+  itemsByType[initialValues.type] = initialValues.items.map((item, index) => ({
+    ...item,
+    id: index + 1,
+  }));
+
+  return itemsByType;
+}
+
 function buildCategoryPickerGroups(categories: TransactionCategoryOption[]) {
   return categories.reduce<CategoryPickerGroup[]>((groups, category) => {
     const groupId = category.parentId ?? "";
@@ -923,6 +1022,26 @@ function formatCategoryName(category: TransactionCategoryOption) {
     : category.name;
 }
 
+function formatDateTimeLocalInputValue(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return [
+    date.getFullYear(),
+    "-",
+    padDatePart(date.getMonth() + 1),
+    "-",
+    padDatePart(date.getDate()),
+    "T",
+    padDatePart(date.getHours()),
+    ":",
+    padDatePart(date.getMinutes()),
+    ":",
+    padDatePart(date.getSeconds()),
+  ].join("");
+}
+
 function formatSignedAmount(type: TransactionType, amount: number) {
   const normalizedAmount = parseFloat(amount.toFixed(2));
 
@@ -937,6 +1056,10 @@ function isValidMoneyText(value: string) {
   const amount = Number(value);
 
   return Number.isFinite(amount) && amount >= 0;
+}
+
+function padDatePart(value: number) {
+  return String(value).padStart(2, "0");
 }
 
 function SummaryRow({

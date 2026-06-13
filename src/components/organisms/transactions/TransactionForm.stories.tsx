@@ -72,6 +72,32 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const EditMode: Story = {
+  args: {
+    formId: "edit-transaction-form",
+    initialValues: {
+      accountId: "00000000-0000-4000-8000-000000000045",
+      items: [
+        {
+          amount: "1200",
+          categoryId: "00000000-0000-4000-8000-000000005072",
+        },
+        {
+          amount: "0",
+          categoryId: "00000000-0000-4000-8000-000000005073",
+        },
+      ],
+      merchantId: "00000000-0000-4000-8000-000000001001",
+      note: "编辑前已有备注",
+      transactionAt: "2026-06-05T03:20:10.000Z",
+      transactionRecordId: "00000000-0000-4000-8000-000000009001",
+      type: "expense",
+    },
+    submitLabel: "保存修改",
+    title: "编辑记账",
+  },
+};
+
 export const WithError: Story = {
   args: {
     errorMessage: "新增记账失败。请稍后重试。",
