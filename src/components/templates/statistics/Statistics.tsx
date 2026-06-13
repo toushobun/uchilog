@@ -1,9 +1,8 @@
-import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import NextLink from "next/link";
 
 import { statisticsMonthHref } from "config/paths";
+import { MonthNavButton } from "molecules/navigation/MonthNavButton";
 import { EmptyState } from "molecules/ui/EmptyState";
 import { SectionCard } from "molecules/ui/SectionCard";
 import { PageHeader } from "templates/layout/PageHeader";
@@ -35,21 +34,13 @@ export function StatisticsTemplate({
           direction="row"
           sx={{ alignItems: "center", justifyContent: "space-between" }}
         >
-          <Button
-            component={NextLink}
-            href={statisticsMonthHref(previousMonth)}
-            size="small"
-          >
+          <MonthNavButton href={statisticsMonthHref(previousMonth)}>
             ‹ 上个月
-          </Button>
+          </MonthNavButton>
           <Typography sx={{ fontWeight: 800 }}>{monthLabel}</Typography>
-          <Button
-            component={NextLink}
-            href={statisticsMonthHref(nextMonth)}
-            size="small"
-          >
+          <MonthNavButton href={statisticsMonthHref(nextMonth)}>
             下个月 ›
-          </Button>
+          </MonthNavButton>
         </Stack>
 
         <Stack
