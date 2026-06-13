@@ -28,7 +28,7 @@ describe("void_transaction RPC migration", () => {
 
     expect(loopMatch![1]).toContain("from public.transaction_item ti");
     expect(loopMatch![2]).toMatch(
-      /perform\s+public\.apply_account_balance_delta\([\s\S]*v_item\.account_id,[\s\S]*-v_item\.balance_delta/,
+      /perform\s+public\.apply_account_balance_delta\([\s\S]*v_item\.account_id,[\s\S]*-v_item\.balance_delta/i,
     );
   });
 });
