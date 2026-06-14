@@ -8,7 +8,7 @@ import {
   getUserThemeCssVariables,
 } from "theme/userThemeCssVariables";
 import { userThemeCookieName } from "theme/userThemeStorage";
-import { isUserThemeKey } from "theme/userThemeTokens";
+import { defaultUserThemeKey, isUserThemeKey } from "theme/userThemeTokens";
 
 type RootLayoutShellProps = {
   children: ReactNode;
@@ -26,7 +26,12 @@ export async function RootLayoutShell({ children }: RootLayoutShellProps) {
     : defaultUserThemeCssVariables;
 
   return (
-    <html lang="zh-CN" style={cssVariables as CSSProperties}>
+    <html
+      lang="zh-CN"
+      data-user-theme={themeKey ?? defaultUserThemeKey}
+      style={cssVariables as CSSProperties}
+      suppressHydrationWarning
+    >
       <body>
         <AppRouterCacheProvider>
           <AppProviders>{children}</AppProviders>
