@@ -23,6 +23,7 @@ import {
   lastUserThemeStorageKey,
   legacyUserThemeStorageKey,
   userThemeChangeEventName,
+  userThemeCookieName,
 } from "theme/userThemeStorage";
 
 type UserThemeContextValue = {
@@ -75,6 +76,7 @@ export function UserThemeProvider({
     const storedThemeKey = getStoredUserThemeKey(storageKey);
 
     applyUserTheme(storedThemeKey);
+    syncThemeCookie(storedThemeKey);
     window.dispatchEvent(new Event(userThemeChangeEventName));
   }, [storageKey, themeKey]);
 
@@ -83,6 +85,7 @@ export function UserThemeProvider({
       window.localStorage.setItem(storageKey, nextThemeKey);
       window.localStorage.setItem(lastUserThemeStorageKey, nextThemeKey);
       applyUserTheme(nextThemeKey);
+      syncThemeCookie(nextThemeKey);
       window.dispatchEvent(new Event(userThemeChangeEventName));
     },
     [storageKey],
@@ -116,6 +119,15 @@ export function useUserTheme() {
   return context;
 }
 
+function syncThemeCookie(themeKey: UserThemeKey) {
+  const maxAge = 365 * 24 * 60 * 60;
+  document.cookie = `${userThemeCookieName}=${themeKey}; path=/; max-age=${maxAge}; samesite=lax`;
+}
+
+function clearThemeCookie() {
+  document.cookie = `${userThemeCookieName}=; path=/; max-age=0; samesite=lax`;
+}
+
 function applyUserTheme(themeKey: UserThemeKey) {
   const root = document.documentElement;
   const cssVariables = getUserThemeCssVariables(themeKey);
@@ -144,6 +156,7 @@ function scheduleDefaultUserThemeReset() {
   pendingDefaultThemeResetId = window.setTimeout(() => {
     pendingDefaultThemeResetId = null;
     applyUserTheme(defaultUserThemeKey);
+    clearThemeCookie();
   }, 0);
 }
 

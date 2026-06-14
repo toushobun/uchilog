@@ -1,28 +1,32 @@
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
+import { cookies } from "next/headers";
 import type { CSSProperties, ReactNode } from "react";
 
 import { AppProviders } from "providers/AppProviders";
-import { createUserThemeBootstrapScript } from "theme/userThemeBootstrapScript";
-import { defaultUserThemeCssVariables } from "theme/userThemeCssVariables";
+import {
+  defaultUserThemeCssVariables,
+  getUserThemeCssVariables,
+} from "theme/userThemeCssVariables";
+import { userThemeCookieName } from "theme/userThemeStorage";
+import { isUserThemeKey } from "theme/userThemeTokens";
 
 type RootLayoutShellProps = {
   children: ReactNode;
 };
 
-export function RootLayoutShell({ children }: RootLayoutShellProps) {
+export async function RootLayoutShell({ children }: RootLayoutShellProps) {
+  const cookieStore = await cookies();
+  const themeCookieValue = cookieStore.get(userThemeCookieName)?.value;
+  const themeKey =
+    themeCookieValue && isUserThemeKey(themeCookieValue)
+      ? themeCookieValue
+      : null;
+  const cssVariables = themeKey
+    ? getUserThemeCssVariables(themeKey)
+    : defaultUserThemeCssVariables;
+
   return (
-    <html
-      lang="zh-CN"
-      style={defaultUserThemeCssVariables as CSSProperties}
-      suppressHydrationWarning
-    >
-      {/* 根布局允许使用原生 head；这个 bootstrap 必须在 body 绘制前执行。 */}
-      {/* eslint-disable-next-line @next/next/no-head-element */}
-      <head>
-        <script
-          dangerouslySetInnerHTML={{ __html: createUserThemeBootstrapScript() }}
-        />
-      </head>
+    <html lang="zh-CN" style={cssVariables as CSSProperties}>
       <body>
         <AppRouterCacheProvider>
           <AppProviders>{children}</AppProviders>
