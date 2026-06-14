@@ -35,6 +35,10 @@ type UserThemeContextValue = {
 
 const UserThemeContext = createContext<UserThemeContextValue | null>(null);
 
+// AppShell 同一时刻只会挂载一个用户主题 provider；这个共享槽只用于跨过同一次 React flush 内的卸载/重挂载间隙。
+// 如果新路由异步加载到下一轮任务，延迟重置仍会执行，之后再由新 provider 应用已保存的主题。
+let pendingDefaultThemeResetId: number | null = null;
+
 type UserThemeProviderProps = {
   children: ReactNode;
   storageScope?: string;
@@ -60,17 +64,19 @@ export function UserThemeProvider({
     isThemeReady && appliedThemeKey ? appliedThemeKey : themeKey;
 
   useEffect(() => {
+    cancelDefaultUserThemeReset();
+
+    return () => {
+      scheduleDefaultUserThemeReset();
+    };
+  }, []);
+
+  useEffect(() => {
     const storedThemeKey = getStoredUserThemeKey(storageKey);
 
     applyUserTheme(storedThemeKey);
     window.dispatchEvent(new Event(userThemeChangeEventName));
   }, [storageKey, themeKey]);
-
-  useEffect(() => {
-    return () => {
-      applyUserTheme(defaultUserThemeKey);
-    };
-  }, []);
 
   const setThemeKey = useCallback(
     (nextThemeKey: UserThemeKey) => {
@@ -119,6 +125,26 @@ function applyUserTheme(themeKey: UserThemeKey) {
   Object.entries(cssVariables).forEach(([name, value]) => {
     root.style.setProperty(name, value);
   });
+}
+
+function cancelDefaultUserThemeReset() {
+  if (pendingDefaultThemeResetId === null) {
+    return;
+  }
+
+  window.clearTimeout(pendingDefaultThemeResetId);
+  pendingDefaultThemeResetId = null;
+}
+
+function scheduleDefaultUserThemeReset() {
+  if (pendingDefaultThemeResetId !== null) {
+    return;
+  }
+
+  pendingDefaultThemeResetId = window.setTimeout(() => {
+    pendingDefaultThemeResetId = null;
+    applyUserTheme(defaultUserThemeKey);
+  }, 0);
 }
 
 function subscribeToUserTheme(onStoreChange: () => void) {

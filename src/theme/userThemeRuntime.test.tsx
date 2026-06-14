@@ -1,5 +1,5 @@
-import { render } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { act, cleanup, render } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToString } from "react-dom/server";
 
 import { UserThemePicker } from "molecules/theme/UserThemePicker";
@@ -13,7 +13,13 @@ describe("user theme runtime", () => {
     document.documentElement.removeAttribute("style");
   });
 
-  it("退出登录卸载 protected provider 时会恢复默认主题背景", async () => {
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it("退出登录卸载 protected provider 时会恢复默认主题背景", () => {
+    vi.useFakeTimers();
     window.localStorage.setItem(
       getUserThemeStorageKey("a@example.com"),
       "jade_morning_dew",
@@ -31,10 +37,53 @@ describe("user theme runtime", () => {
 
     unmount();
 
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
     expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
     expect(
       document.documentElement.style.getPropertyValue("--user-theme-page-bg"),
     ).toContain("#b8f0e0");
+  });
+
+  it("protected provider 重新挂载时不会短暂恢复默认主题", () => {
+    vi.useFakeTimers();
+    window.localStorage.setItem(
+      getUserThemeStorageKey("a@example.com"),
+      "jade_morning_dew",
+    );
+
+    document.documentElement.dataset.userTheme = "jade_morning_dew";
+
+    const firstRender = render(
+      <UserThemeProvider storageScope="a@example.com">
+        <div />
+      </UserThemeProvider>,
+    );
+
+    firstRender.unmount();
+
+    const secondRender = render(
+      <UserThemeProvider storageScope="a@example.com">
+        <div />
+      </UserThemeProvider>,
+    );
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
+
+    // 清理第二次挂载，并触发延迟的默认主题重置。
+    secondRender.unmount();
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
   });
 
   it("主题选择器刷新后选中当前用户保存的主题，而不是先显示默认主题", async () => {
@@ -53,7 +102,7 @@ describe("user theme runtime", () => {
 
     expect(initialMarkup).toContain('aria-hidden="true"');
 
-    const { findByRole, getByRole } = render(
+    const { findByRole, getByRole, unmount } = render(
       <UserThemeProvider storageScope="a@example.com">
         <UserThemePicker />
       </UserThemeProvider>,
@@ -69,5 +118,14 @@ describe("user theme runtime", () => {
         "aria-selected",
       ),
     ).toBe("false");
+
+    vi.useFakeTimers();
+    unmount();
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
   });
 });
