@@ -19,7 +19,6 @@
 - MCP 工具可用时，优先使用 `codegraph_explore` 获取相关符号源码、调用路径和影响范围。工具名称可能以 `mcp__codegraph__` 为前缀，用 ToolSearch 加载。
 - 需要读取单个符号或文件时，使用 `codegraph_node`。
 - 如果 MCP 工具不可用，可以使用 shell 命令 `codegraph explore "<query>"` 或 `codegraph node <symbol-or-file>`。
-- 如果没有 `.codegraph/`，不要主动初始化索引。
 
 ## GitHub Issue 规则
 

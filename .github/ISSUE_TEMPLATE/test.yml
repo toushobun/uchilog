@@ -6,7 +6,7 @@ body:
   - type: textarea
     id: summary
     attributes:
-      label: 概述
+      label: 概要
       description: 请用中文说明本 Issue 要追加或整理哪些测试。
       placeholder: 例如：统一 Testing Library 存在性断言写法。
     validations:
