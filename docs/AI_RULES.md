@@ -48,7 +48,7 @@
 
 ## PR 正文规则
 
-创建 PR 时，正文必须遵循 `.github/PULL_REQUEST_TEMPLATE/pull_request_template.md`。
+创建 PR 时，正文必须遵循 `.github/pull_request_template.md`。
 
 PR merge 后需要回收相关状态：
 
