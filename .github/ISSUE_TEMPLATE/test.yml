@@ -19,7 +19,7 @@ body:
       value: |
         - 
         - 
-        - 
+        -
     validations:
       required: false
   - type: textarea
@@ -37,7 +37,7 @@ body:
       value: |
         - 
         - 
-        - 
+        -
     validations:
       required: false
   - type: textarea
