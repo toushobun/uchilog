@@ -13,19 +13,6 @@ const sharedUserThemeCssVariables = {
   "--user-theme-nav-border": "rgba(255, 255, 255, 0.82)",
 } as const;
 
-const userThemeFabTextColors: Record<UserThemeKey, string> = {
-  lavender_dream: "#ffffff",
-  jade_morning_dew: "#ffffff",
-  sakura_story: "#ffffff",
-  deep_sea_starlight: "#ffffff",
-  amber_sun: "#78350f",
-  rose_velvet_night: "#ffffff",
-  flame_red: "#ffffff",
-  lemon_gold: "#713f12",
-  indigo_ocean: "#ffffff",
-  white_porcelain: "#1e293b",
-};
-
 export function getUserThemeCssVariables(themeKey: UserThemeKey) {
   const tokens = userThemeTokens[themeKey];
   const transactionTokens = userTransactionThemeTokens[themeKey];
@@ -57,7 +44,7 @@ export function getUserThemeCssVariables(themeKey: UserThemeKey) {
     "--user-theme-bottom-nav-inactive": tokens.bottomNavigation.inactiveColor,
     "--user-theme-fab-bg": tokens.floatingActionButton.background,
     "--user-theme-fab-shadow": tokens.floatingActionButton.shadowColor,
-    "--user-theme-fab-text": userThemeFabTextColors[themeKey],
+    "--user-theme-fab-text": tokens.floatingActionButton.textColor,
     "--user-theme-tx-name": tokens.transactionText.nameColor,
     "--user-theme-tx-meta": tokens.transactionText.metaColor,
     "--user-theme-tx-summary-bg": transactionTokens.summaryBackground,
