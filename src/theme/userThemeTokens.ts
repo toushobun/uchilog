@@ -46,6 +46,7 @@ type UserThemeTokens = {
   floatingActionButton: {
     background: string;
     shadowColor: string;
+    textColor: string;
   };
   transactionText: {
     nameColor: string;
@@ -92,6 +93,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #a78bfa, #ec4899)",
       shadowColor: "rgba(167, 139, 250, 0.45)",
+      textColor: "#ffffff",
     },
     transactionText: {
       nameColor: "#3d2260",
@@ -134,6 +136,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #34d399, #22d3ee)",
       shadowColor: "rgba(52, 211, 153, 0.45)",
+      textColor: "#ffffff",
     },
     transactionText: {
       nameColor: "#064e3b",
@@ -176,6 +179,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #fb7185, #f472b6)",
       shadowColor: "rgba(251, 113, 133, 0.45)",
+      textColor: "#ffffff",
     },
     transactionText: {
       nameColor: "#881337",
@@ -218,6 +222,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #6366f1, #0ea5e9)",
       shadowColor: "rgba(99, 102, 241, 0.45)",
+      textColor: "#ffffff",
     },
     transactionText: {
       nameColor: "#1e1b4b",
@@ -260,6 +265,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #fbbf24, #fb923c)",
       shadowColor: "rgba(251, 191, 36, 0.5)",
+      textColor: "#78350f",
     },
     transactionText: {
       nameColor: "#78350f",
@@ -302,6 +308,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #e879f9, #db2777)",
       shadowColor: "rgba(232, 121, 249, 0.45)",
+      textColor: "#ffffff",
     },
     transactionText: {
       nameColor: "#3b0764",
@@ -344,6 +351,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #ef4444, #f97316)",
       shadowColor: "rgba(239, 68, 68, 0.45)",
+      textColor: "#ffffff",
     },
     transactionText: {
       nameColor: "#7f1d1d",
@@ -386,6 +394,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #facc15, #84cc16)",
       shadowColor: "rgba(250, 204, 21, 0.5)",
+      textColor: "#713f12",
     },
     transactionText: {
       nameColor: "#713f12",
@@ -428,6 +437,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #2563eb, #0284c7)",
       shadowColor: "rgba(37, 99, 235, 0.45)",
+      textColor: "#ffffff",
     },
     transactionText: {
       nameColor: "#1e3a8a",
@@ -470,6 +480,7 @@ export const userThemeTokens: Record<UserThemeKey, UserThemeTokens> = {
     floatingActionButton: {
       background: "linear-gradient(135deg, #94a3b8, #64748b)",
       shadowColor: "rgba(148, 163, 184, 0.4)",
+      textColor: "#1e293b",
     },
     transactionText: {
       nameColor: "#1e293b",
