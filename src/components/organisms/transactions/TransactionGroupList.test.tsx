@@ -9,10 +9,15 @@ import { TransactionGroupList } from "./TransactionGroupList";
 vi.mock("molecules/transactions/TransactionRow", () => ({
   TransactionRow: ({
     item,
+    showEdit,
   }: {
     item: { id: string; merchant_name: string | null };
+    showEdit?: boolean;
   }): ReactNode => (
-    <div data-testid={`row-${item.id}`}>
+    <div
+      data-show-edit={showEdit ? "true" : "false"}
+      data-testid={`row-${item.id}`}
+    >
       {item.merchant_name ?? "未指定商家"}
     </div>
   ),
@@ -44,6 +49,18 @@ describe("TransactionGroupList", () => {
     expect(
       within(container).getByTestId("row-00000000-0000-4000-8000-000000009001"),
     ).toBeTruthy();
+  });
+
+  it("分组内的记账记录显示编辑入口", () => {
+    const { container } = render(
+      <TransactionGroupList groups={[defaultGroup]} />,
+    );
+
+    expect(
+      within(container)
+        .getByTestId("row-00000000-0000-4000-8000-000000009001")
+        .getAttribute("data-show-edit"),
+    ).toBe("true");
   });
 
   it("显示多个分组", () => {

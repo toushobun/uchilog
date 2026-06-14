@@ -78,6 +78,7 @@ export function TransactionGroupList({
                 item={item}
                 key={item.id}
                 showAccount
+                showEdit
                 showTime
                 showNote
                 showRecorder
