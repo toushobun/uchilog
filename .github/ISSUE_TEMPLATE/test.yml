@@ -1,0 +1,68 @@
+name: Test
+description: 测试追加・测试整理相关 Issue
+title: "test: "
+labels: ["test"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概述
+      description: 请用中文说明本 Issue 要追加或整理哪些测试。
+      placeholder: 例如：统一 Testing Library 存在性断言写法。
+    validations:
+      required: true
+  - type: textarea
+    id: target
+    attributes:
+      label: 目标
+      description: 说明测试要达到什么状态。
+      value: |
+        - 
+        - 
+        - 
+    validations:
+      required: false
+  - type: textarea
+    id: scope
+    attributes:
+      label: 范围
+      description: 说明优先处理的测试范围或文件范围。
+    validations:
+      required: false
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: 非目标
+      description: 说明本 Issue 不处理的内容，避免范围扩大。
+      value: |
+        - 
+        - 
+        - 
+    validations:
+      required: false
+  - type: textarea
+    id: branch
+    attributes:
+      label: Branch 命名
+      description: 创建分支时请使用 test/issue_number_xxx 格式。
+      placeholder: test/302_testing_library_assertions
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      description: 说明完成后需要满足的检查项。
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: 备注
+      description: 其他补充信息。
+    validations:
+      required: false

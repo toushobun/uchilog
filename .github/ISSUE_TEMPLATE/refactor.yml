@@ -1,0 +1,54 @@
+name: Refactor
+description: 重构・结构整理相关 Issue
+title: "refactor: "
+labels: ["refactor"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 请用中文说明本 Issue 要重构或整理什么。
+      placeholder: 例如：整理记账表单组件结构，保持行为不变。
+    validations:
+      required: true
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景 / 目的
+      description: 为什么需要重构？当前结构有什么维护成本？
+    validations:
+      required: false
+  - type: textarea
+    id: scope
+    attributes:
+      label: 范围
+      description: 说明本次重构包含和不包含的范围。
+      placeholder: 例如：只调整组件拆分，不改变 UI 和业务行为。
+    validations:
+      required: false
+  - type: textarea
+    id: branch
+    attributes:
+      label: Branch 命名
+      description: 创建分支时请使用 refactor/issue_number_xxx 格式。
+      placeholder: refactor/302_transaction_form_structure
+    validations:
+      required: false
+  - type: textarea
+    id: tasks
+    attributes:
+      label: TODO
+      description: 拆分需要完成的重构事项。
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: false
+  - type: textarea
+    id: notes
+    attributes:
+      label: 备注
+      description: 其他补充信息。
+    validations:
+      required: false
