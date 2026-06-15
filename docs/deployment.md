@@ -120,7 +120,7 @@ npx supabase db push
 
 ## Supabase migration 应用方式
 
-migration 通过 GitHub Actions 的 `deploy.yml` 在 push to main 时自动执行，无需手动触发。
+migration 通过 GitHub Actions 的 `deploy.yml` 在 CI 全部通过后自动执行，无需手动触发。
 
 workflow 文件：
 
@@ -130,15 +130,19 @@ workflow 文件：
 
 执行顺序：
 
-1. Supabase migration（`supabase db push`）
-2. migration 成功后，Vercel 生产部署
+1. CI（`ci.yml`）全部通过
+2. `deploy.yml` 启动（由 `workflow_run` 触发）
+3. 检测本次提交是否包含 `supabase/migrations/` 变更
+   - 有变更：执行 `supabase db push`，成功后进行 Vercel 生产部署
+   - 无变更：跳过 migration，直接进行 Vercel 生产部署
 
 原则：
 
-- migration 原则上只在相关 PR merge 后自动执行。
-- 执行前确认本次是否包含 `supabase/migrations/` 变更，以及这些变更对现有数据是否安全。
+- deploy.yml 只在 CI 全部通过后启动，CI 失败时不触发部署。
+- migration 只在 `supabase/migrations/` 有实际变更时执行，无变更时跳过。
+- 执行前确认 migration 变更对现有数据是否安全。
 - 执行后在 Supabase Dashboard 确认 migration 状态。
-- migration 失败时 Vercel 部署不会触发，需要修复后重新 merge 或手动触发 `deploy.yml`。
+- migration 失败时 Vercel 部署不会触发，需要修复后手动触发 `deploy.yml`。
 
 ## 推荐验证顺序
 
@@ -146,7 +150,7 @@ workflow 文件：
 
 1. 开发中持续 push，CI 自动运行（Stage 1: format-check / type-check / lint 并行 → Stage 2: test → Stage 3: build / storybook-build 并行）。
 2. CI 全部通过后发起 Review，确认无问题后 merge。
-3. merge 后等待 `deploy.yml` 完成（migrate → Vercel 生产部署）。
+3. merge 后 CI 在 main 上再次运行，通过后 `deploy.yml` 自动启动（跳过 migration，直接 Vercel 部署）。
 4. 打开 Vercel Production URL，验证登录、Dashboard、记账相关页面。
 
 ### 包含 migration 的 PR
@@ -154,7 +158,7 @@ workflow 文件：
 1. 开发中持续 push，CI 自动运行。
 2. Review `supabase/migrations/` 变更，确认对现有数据安全。
 3. CI 全部通过后 merge。
-4. merge 后等待 `deploy.yml` 完成（migration 先于 Vercel 部署执行）。
+4. merge 后 CI 在 main 上通过后，`deploy.yml` 自动启动，执行 migration → Vercel 部署。
 5. 在 Supabase Dashboard 确认 migration 状态。
 6. 打开 Vercel Production URL，验证主要页面。
 
