@@ -1,6 +1,6 @@
 export type BaseActionState = {
-  success?: string;
   error?: string;
+  success?: string;
 };
 
 export type LoginActionState = Pick<BaseActionState, "error">;
