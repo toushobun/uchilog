@@ -4,14 +4,16 @@ on:
   pull_request:
     branches:
       - main
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches:
       - main
 
 env:
   RUN_CODE_CI: &run_code_ci >-
-    github.event_name != 'pull_request' ||
-    startsWith(github.head_ref, 'docs/') == false
+    (github.event_name != 'pull_request' ||
+    startsWith(github.head_ref, 'docs/') == false) &&
+    github.event.pull_request.draft == false
 
 jobs:
   type-check:
