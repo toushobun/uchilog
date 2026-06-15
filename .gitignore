@@ -36,3 +36,4 @@ storybook-static
 # Next.js generated type entry
 next-env.d.ts
 tsconfig.tsbuildinfo
+.vercel
