@@ -12,6 +12,8 @@ import {
 describe("user theme runtime", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    window.history.pushState(null, "", "/");
+    document.cookie = `${userThemeCookieName}=; path=/; max-age=0; samesite=lax`;
     document.documentElement.removeAttribute("data-user-theme");
     document.documentElement.removeAttribute("style");
   });
@@ -91,6 +93,52 @@ describe("user theme runtime", () => {
     });
 
     expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
+  });
+
+  it("Suspense 延迟重挂载到下一轮任务时不会恢复默认主题", () => {
+    vi.useFakeTimers();
+    window.history.pushState(null, "", "/statistics?month=2026-06");
+    window.localStorage.setItem(
+      getUserThemeStorageKey("a@example.com"),
+      "jade_morning_dew",
+    );
+
+    document.documentElement.dataset.userTheme = "jade_morning_dew";
+
+    const firstRender = render(
+      <UserThemeProvider storageScope="a@example.com">
+        <div />
+      </UserThemeProvider>,
+    );
+
+    firstRender.unmount();
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
+    expect(document.cookie).toContain(
+      `${userThemeCookieName}=jade_morning_dew`,
+    );
+
+    const secondRender = render(
+      <UserThemeProvider storageScope="a@example.com">
+        <div />
+      </UserThemeProvider>,
+    );
+
+    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
+
+    secondRender.unmount();
+    window.history.pushState(null, "", "/login");
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
+    expect(document.cookie).not.toContain(userThemeCookieName);
   });
 
   it("主题选择器刷新后选中当前用户保存的主题，而不是先显示默认主题", async () => {

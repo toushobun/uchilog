@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { routePaths } from "config/paths";
 import { getUserThemeCssVariables } from "theme/userThemeCssVariables";
 import {
   defaultUserThemeKey,
@@ -36,8 +37,21 @@ type UserThemeContextValue = {
 
 const UserThemeContext = createContext<UserThemeContextValue | null>(null);
 
-// AppShell 同一时刻只会挂载一个用户主题 provider；这个共享槽只用于跨过同一次 React flush 内的卸载/重挂载间隙。
-// 如果新路由异步加载到下一轮任务，延迟重置仍会执行，之后再由新 provider 应用已保存的主题。
+// 仅列出 protected layout 下的入口路由；home("/") / login("/login") 等公开路由有意排除。
+const protectedRoutePrefixes = [
+  routePaths.accounts,
+  routePaths.categories,
+  routePaths.dashboard,
+  routePaths.ledgerSetup,
+  routePaths.ledgers,
+  routePaths.merchants,
+  routePaths.settings,
+  routePaths.statistics,
+  routePaths.transactions,
+] as const;
+
+// AppShell 同一时刻只会挂载一个用户主题 provider；这个共享槽用于跨过 React 卸载/重挂载间隙。
+// Suspense 或懒加载可能让新 provider 晚于下一轮任务挂载，所以执行重置前还要确认当前路径已经离开 protected 区域。
 let pendingDefaultThemeResetId: number | null = null;
 
 type UserThemeProviderProps = {
@@ -155,9 +169,22 @@ function scheduleDefaultUserThemeReset() {
 
   pendingDefaultThemeResetId = window.setTimeout(() => {
     pendingDefaultThemeResetId = null;
+
+    if (isCurrentPathProtectedRoute()) {
+      return;
+    }
+
     applyUserTheme(defaultUserThemeKey);
     clearThemeCookie();
   }, 0);
+}
+
+function isCurrentPathProtectedRoute() {
+  const { pathname } = window.location;
+
+  return protectedRoutePrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 function subscribeToUserTheme(onStoreChange: () => void) {
