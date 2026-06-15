@@ -13,12 +13,12 @@ describe("HomeTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "UchiLog" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示开发中提示文字", () => {
     const { container } = render(<HomeTemplate />);
 
-    expect(within(container).getByText("记账应用开发中")).toBeTruthy();
+    expect(within(container).getByText("记账应用开发中")).toBeInTheDocument();
   });
 });

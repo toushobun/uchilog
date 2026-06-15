@@ -17,8 +17,8 @@ describe("PageShell", () => {
       </PageShell>,
     );
 
-    expect(within(container).getByRole("main")).toBeTruthy();
-    expect(within(container).getByText("页面内容")).toBeTruthy();
+    expect(within(container).getByRole("main")).toBeInTheDocument();
+    expect(within(container).getByText("页面内容")).toBeInTheDocument();
   });
 });
 
@@ -28,7 +28,7 @@ describe("PageHeader", () => {
 
     expect(
       within(container).getByRole("heading", { name: "账户" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示副标题和操作区域", () => {
@@ -40,9 +40,9 @@ describe("PageHeader", () => {
       />,
     );
 
-    expect(within(container).getByText("账户说明")).toBeTruthy();
+    expect(within(container).getByText("账户说明")).toBeInTheDocument();
     expect(
       within(container).getByRole("button", { name: "新增账户" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

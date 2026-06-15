@@ -134,7 +134,7 @@ describe("TransactionForm", () => {
 
     expect(
       within(container).getByRole("heading", { name: "新增记账" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(
       within(container)
         .getByRole("link", { name: "关闭" })
@@ -142,8 +142,10 @@ describe("TransactionForm", () => {
     ).toBe(routePaths.transactions);
     expect(
       within(container).getByRole("button", { name: "保存" }),
-    ).toBeTruthy();
-    expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByText("当前账本：家庭账本"),
+    ).toBeInTheDocument();
   });
 
   it("未传入账本名时不显示当前账本", () => {
@@ -157,7 +159,7 @@ describe("TransactionForm", () => {
 
     expect(
       screen.getByText(newTransactionPageErrorMessages.amountInvalid),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("编辑模式下按本地时区回填发生时间", () => {
@@ -189,7 +191,7 @@ describe("TransactionForm", () => {
 
     fireEvent.mouseDown(getCombobox(container, "账户"));
 
-    expect(screen.getByText("日元现金（JPY）")).toBeTruthy();
+    expect(screen.getByText("日元现金（JPY）")).toBeInTheDocument();
   });
 
   it("打开弹框时只显示当前类型的大分类和小分类（支出）", () => {
@@ -197,11 +199,17 @@ describe("TransactionForm", () => {
 
     openSheet(container);
 
-    expect(screen.getByRole("heading", { name: "添加明细" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "食材/调料" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "交通出行" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "餐饮" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "日用品" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "添加明细" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "食材/调料" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "交通出行" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "餐饮" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "日用品" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "固定收入" })).toBeNull();
     expect(screen.queryByRole("button", { name: "工资" })).toBeNull();
   });
@@ -212,8 +220,10 @@ describe("TransactionForm", () => {
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
     openSheet(container);
 
-    expect(screen.getByRole("button", { name: "固定收入" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "工资" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "固定收入" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "工资" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "食材/调料" })).toBeNull();
     expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
   });
@@ -225,7 +235,7 @@ describe("TransactionForm", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "交通出行" }));
 
-    expect(screen.getByRole("button", { name: "电车" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "电车" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
   });
 
@@ -251,7 +261,7 @@ describe("TransactionForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "追加" }));
     expect(
       screen.getByText(transactionFormValidationMessages.categoryRequired),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("未选小分类时点击追加显示错误提示", () => {
@@ -265,7 +275,7 @@ describe("TransactionForm", () => {
 
     expect(
       screen.getByText(transactionFormValidationMessages.categoryRequired),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("打开添加明细时金额默认是 0，并可直接追加 0 元明细", () => {
@@ -283,7 +293,7 @@ describe("TransactionForm", () => {
     expect(
       screen.queryByText(transactionFormValidationMessages.amountInvalid),
     ).toBeNull();
-    expect(screen.getByText("已选明细")).toBeTruthy();
+    expect(screen.getByText("已选明细")).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
       "value",
       "0",
@@ -296,7 +306,7 @@ describe("TransactionForm", () => {
     openSheet(container);
     addItemViaSheet("餐饮", "500");
 
-    expect(screen.getByText("已选明细")).toBeTruthy();
+    expect(screen.getByText("已选明细")).toBeInTheDocument();
     // 追加后同时出现在 Drawer 已选区和主表单，各一条
     expect(screen.getAllByText("食材/调料 / 餐饮")).toHaveLength(2);
     expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
@@ -313,8 +323,8 @@ describe("TransactionForm", () => {
     addItemViaSheet("日用品", "45");
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
-    expect(within(container).getByText("共 2 项")).toBeTruthy();
-    expect(within(container).getByText("合计 -331")).toBeTruthy();
+    expect(within(container).getByText("共 2 项")).toBeInTheDocument();
+    expect(within(container).getByText("合计 -331")).toBeInTheDocument();
   });
 
   it("小数明细合计正确舍入显示，不出现浮点精度问题", () => {
@@ -325,7 +335,7 @@ describe("TransactionForm", () => {
     addItemViaSheet("日用品", "0.20");
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
-    expect(within(container).getByText("合计 -0.3")).toBeTruthy();
+    expect(within(container).getByText("合计 -0.3")).toBeInTheDocument();
   });
 
   it("允许追加 0 元明细，并显示 0 合计", () => {
@@ -335,8 +345,8 @@ describe("TransactionForm", () => {
     addItemViaSheet("餐饮", "0");
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
-    expect(within(container).getByText("食材/调料 / 餐饮")).toBeTruthy();
-    expect(within(container).getByText("合计 0")).toBeTruthy();
+    expect(within(container).getByText("食材/调料 / 餐饮")).toBeInTheDocument();
+    expect(within(container).getByText("合计 0")).toBeInTheDocument();
   });
 
   it("允许同一个小分类重复追加为多条明细", () => {
@@ -351,7 +361,7 @@ describe("TransactionForm", () => {
       screen.getAllByRole("button", { name: /从已选中删除/ }),
     ).toHaveLength(2);
     // 主表单（getByText 不受 aria-hidden 限制）显示 2 项
-    expect(within(container).getByText("共 2 项")).toBeTruthy();
+    expect(within(container).getByText("共 2 项")).toBeInTheDocument();
   });
 
   it("已有多条明细时可删除，删到最后一条仍可继续删除", () => {
@@ -366,7 +376,7 @@ describe("TransactionForm", () => {
       screen.getByRole("button", { name: "从已选中删除 日用品" }),
     );
 
-    expect(within(container).getByText("共 1 项")).toBeTruthy();
+    expect(within(container).getByText("共 1 项")).toBeInTheDocument();
     // 只剩一条时删除按钮仍然可用
     expect(
       screen.getByRole("button", { name: "从已选中删除 餐饮" }),
@@ -389,7 +399,7 @@ describe("TransactionForm", () => {
     );
 
     expect(screen.queryByText("食材/调料 / 日用品")).toBeNull();
-    expect(within(container).getByText("共 1 项")).toBeTruthy();
+    expect(within(container).getByText("共 1 项")).toBeInTheDocument();
   });
 
   it("保存前汇总显示商家、账户和各条明细", () => {
@@ -405,25 +415,27 @@ describe("TransactionForm", () => {
     addItemViaSheet("餐饮", "1200");
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
-    expect(within(container).getByText("保存前汇总")).toBeTruthy();
+    expect(within(container).getByText("保存前汇总")).toBeInTheDocument();
     expect(within(container).getAllByText("便利店")).toHaveLength(2);
     expect(within(container).getAllByText("日元现金（JPY）")).toHaveLength(2);
-    expect(within(container).getByText("食材/调料 / 餐饮 / 1200")).toBeTruthy();
-    expect(within(container).getByText("合计金额")).toBeTruthy();
+    expect(
+      within(container).getByText("食材/调料 / 餐饮 / 1200"),
+    ).toBeInTheDocument();
+    expect(within(container).getByText("合计金额")).toBeInTheDocument();
   });
 
   it("显示设计图中的标签区但不提供未保存的交互", () => {
     const { container } = renderForm();
 
-    expect(within(container).getByText("标签（选填）")).toBeTruthy();
-    expect(within(container).getByText("日常")).toBeTruthy();
-    expect(within(container).getByText("腐败")).toBeTruthy();
-    expect(within(container).getByText("公司")).toBeTruthy();
-    expect(within(container).getByText("人情")).toBeTruthy();
-    expect(within(container).getByText("孩子")).toBeTruthy();
-    expect(within(container).getByText("旅游")).toBeTruthy();
-    expect(within(container).getByText("装修")).toBeTruthy();
-    expect(within(container).getByText("结婚")).toBeTruthy();
+    expect(within(container).getByText("标签（选填）")).toBeInTheDocument();
+    expect(within(container).getByText("日常")).toBeInTheDocument();
+    expect(within(container).getByText("腐败")).toBeInTheDocument();
+    expect(within(container).getByText("公司")).toBeInTheDocument();
+    expect(within(container).getByText("人情")).toBeInTheDocument();
+    expect(within(container).getByText("孩子")).toBeInTheDocument();
+    expect(within(container).getByText("旅游")).toBeInTheDocument();
+    expect(within(container).getByText("装修")).toBeInTheDocument();
+    expect(within(container).getByText("结婚")).toBeInTheDocument();
     expect(
       within(container).queryByRole("button", { name: "日常" }),
     ).toBeNull();
@@ -470,7 +482,7 @@ describe("TransactionForm", () => {
 
     fireEvent.mouseDown(getCombobox(container, "商家"));
 
-    expect(screen.getByText("请选择商家")).toBeTruthy();
-    expect(screen.getByText("便利店")).toBeTruthy();
+    expect(screen.getByText("请选择商家")).toBeInTheDocument();
+    expect(screen.getByText("便利店")).toBeInTheDocument();
   });
 });

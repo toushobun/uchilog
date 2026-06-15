@@ -20,9 +20,9 @@ describe("DashboardPeriodExpenses", () => {
       />,
     );
 
-    expect(screen.getByText("今日支出")).toBeTruthy();
-    expect(screen.getByText("本周支出")).toBeTruthy();
-    expect(screen.getByText("-1,000")).toBeTruthy();
-    expect(screen.getByText("-5,000")).toBeTruthy();
+    expect(screen.getByText("今日支出")).toBeInTheDocument();
+    expect(screen.getByText("本周支出")).toBeInTheDocument();
+    expect(screen.getByText("-1,000")).toBeInTheDocument();
+    expect(screen.getByText("-5,000")).toBeInTheDocument();
   });
 });

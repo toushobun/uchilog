@@ -15,6 +15,6 @@ describe("PageCard", () => {
       </PageCard>,
     );
 
-    expect(within(container).getByText("页面内容")).toBeTruthy();
+    expect(within(container).getByText("页面内容")).toBeInTheDocument();
   });
 });

@@ -69,7 +69,7 @@ describe("TransactionList", () => {
       />,
     );
 
-    expect(screen.getByText("还没有记账记录。")).toBeTruthy();
+    expect(screen.getByText("还没有记账记录。")).toBeInTheDocument();
   });
 
   it("显示初始记录内容", () => {
@@ -80,13 +80,13 @@ describe("TransactionList", () => {
       />,
     );
 
-    expect(screen.getByText("支出")).toBeTruthy();
-    expect(screen.getByText("饮食·餐饮")).toBeTruthy();
-    expect(screen.getByText("便利店")).toBeTruthy();
-    expect(screen.getByText("账户：日元现金")).toBeTruthy();
-    expect(screen.getByText("-1,234 JPY")).toBeTruthy();
-    expect(screen.getByText("测试备注")).toBeTruthy();
-    expect(screen.getByText("已显示全部记录。")).toBeTruthy();
+    expect(screen.getByText("支出")).toBeInTheDocument();
+    expect(screen.getByText("饮食·餐饮")).toBeInTheDocument();
+    expect(screen.getByText("便利店")).toBeInTheDocument();
+    expect(screen.getByText("账户：日元现金")).toBeInTheDocument();
+    expect(screen.getByText("-1,234 JPY")).toBeInTheDocument();
+    expect(screen.getByText("测试备注")).toBeInTheDocument();
+    expect(screen.getByText("已显示全部记录。")).toBeInTheDocument();
   });
 
   it("未传入撤销 action 时不显示撤销按钮", () => {
@@ -170,8 +170,8 @@ describe("TransactionList", () => {
 
     await waitFor(() => {
       expect(loadMoreAction).toHaveBeenCalledWith(20);
-      expect(screen.getByText("第二页记录")).toBeTruthy();
-      expect(screen.getByText("+5,678 JPY")).toBeTruthy();
+      expect(screen.getByText("第二页记录")).toBeInTheDocument();
+      expect(screen.getByText("+5,678 JPY")).toBeInTheDocument();
     });
   });
 
@@ -196,8 +196,12 @@ describe("TransactionList", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText("追加读取失败。请稍后重试。")).toBeTruthy();
-      expect(screen.getByRole("button", { name: "重新读取" })).toBeTruthy();
+      expect(
+        screen.getByText("追加读取失败。请稍后重试。"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "重新读取" }),
+      ).toBeInTheDocument();
     });
   });
 });

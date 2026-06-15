@@ -51,13 +51,13 @@ describe("CategoryList", () => {
 
     expect(
       within(container).getByRole("heading", { name: "支出分类" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(
       within(container).getByRole("heading", { name: "收入分类" }),
-    ).toBeTruthy();
-    expect(within(container).getByDisplayValue("餐饮")).toBeTruthy();
-    expect(within(container).getByDisplayValue("外食")).toBeTruthy();
-    expect(within(container).getByDisplayValue("工资")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(within(container).getByDisplayValue("餐饮")).toBeInTheDocument();
+    expect(within(container).getByDisplayValue("外食")).toBeInTheDocument();
+    expect(within(container).getByDisplayValue("工资")).toBeInTheDocument();
   });
 
   it("没有分类时显示空状态", () => {
@@ -71,10 +71,10 @@ describe("CategoryList", () => {
       />,
     );
 
-    expect(within(container).getByText("还没有分类")).toBeTruthy();
+    expect(within(container).getByText("还没有分类")).toBeInTheDocument();
     expect(
       within(container).getByText("先新增一个大分类，再在它下面新增小分类。"),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示指定分类的错误信息", () => {

@@ -34,7 +34,7 @@ describe("TransactionAmountKeypadLauncher", () => {
     const input = screen.getByRole("textbox");
     fireEvent.focusIn(input);
 
-    expect(screen.getByLabelText("金额计算器")).toBeTruthy();
+    expect(screen.getByLabelText("金额计算器")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "1" }));
     fireEvent.click(screen.getByRole("button", { name: "2" }));

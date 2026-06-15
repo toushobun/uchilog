@@ -33,7 +33,7 @@ describe("LedgersTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "账本" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示账本列表中的账本名称", () => {
@@ -44,8 +44,8 @@ describe("LedgersTemplate", () => {
       />,
     );
 
-    expect(within(container).getByText("家庭账本")).toBeTruthy();
-    expect(within(container).getByText("个人账本")).toBeTruthy();
+    expect(within(container).getByText("家庭账本")).toBeInTheDocument();
+    expect(within(container).getByText("个人账本")).toBeInTheDocument();
   });
 
   it("当前账本显示「当前」标签", () => {
@@ -56,7 +56,7 @@ describe("LedgersTemplate", () => {
       />,
     );
 
-    expect(within(container).getByText("当前")).toBeTruthy();
+    expect(within(container).getByText("当前")).toBeInTheDocument();
   });
 
   it("非当前账本不显示「当前」标签", () => {
@@ -81,6 +81,6 @@ describe("LedgersTemplate", () => {
       />,
     );
 
-    expect(within(container).getByText("基础货币：JPY")).toBeTruthy();
+    expect(within(container).getByText("基础货币：JPY")).toBeInTheDocument();
   });
 });

@@ -31,23 +31,23 @@ describe("TransactionMonthList", () => {
   it("显示月度汇总和日期分组", () => {
     render(<TransactionMonthList monthView={createTransactionMonthView()} />);
 
-    expect(screen.getByText("收入")).toBeTruthy();
-    expect(screen.getByText("100,000")).toBeTruthy();
-    expect(screen.getByText("支出")).toBeTruthy();
-    expect(screen.getByText("1,234")).toBeTruthy();
-    expect(screen.getByText("结余")).toBeTruthy();
-    expect(screen.getByText("98,766")).toBeTruthy();
-    expect(screen.getByText("05/29 周五")).toBeTruthy();
-    expect(screen.getAllByText("-1,234")[0]).toBeTruthy();
+    expect(screen.getByText("收入")).toBeInTheDocument();
+    expect(screen.getByText("100,000")).toBeInTheDocument();
+    expect(screen.getByText("支出")).toBeInTheDocument();
+    expect(screen.getByText("1,234")).toBeInTheDocument();
+    expect(screen.getByText("结余")).toBeInTheDocument();
+    expect(screen.getByText("98,766")).toBeInTheDocument();
+    expect(screen.getByText("05/29 周五")).toBeInTheDocument();
+    expect(screen.getAllByText("-1,234")[0]).toBeInTheDocument();
   });
 
   it("显示交易行内容", () => {
     render(<TransactionMonthList monthView={createTransactionMonthView()} />);
 
-    expect(screen.getByText("便利店")).toBeTruthy();
-    expect(screen.getByText("饮食·餐饮 · 测试备注")).toBeTruthy();
-    expect(screen.getByText(/日元现金/)).toBeTruthy();
-    expect(screen.getAllByText("-1,234")[0]).toBeTruthy();
+    expect(screen.getByText("便利店")).toBeInTheDocument();
+    expect(screen.getByText("饮食·餐饮 · 测试备注")).toBeInTheDocument();
+    expect(screen.getByText(/日元现金/)).toBeInTheDocument();
+    expect(screen.getAllByText("-1,234")[0]).toBeInTheDocument();
   });
 
   it("没有记录时显示空状态", () => {
@@ -65,7 +65,7 @@ describe("TransactionMonthList", () => {
       />,
     );
 
-    expect(screen.getByText("这个月还没有记账记录。")).toBeTruthy();
+    expect(screen.getByText("这个月还没有记账记录。")).toBeInTheDocument();
   });
 
   it("传入撤销 action 时显示撤销按钮并提交表单", () => {
@@ -132,12 +132,14 @@ describe("TransactionMonthList", () => {
       />,
     );
 
-    await waitFor(() => expect(screen.getByText("超市")).toBeTruthy());
+    await waitFor(() => {
+      expect(screen.getByText("超市")).toBeInTheDocument();
+    });
 
     expect(loadMoreAction).toHaveBeenCalledWith(20);
     expect(loadMoreAction).toHaveBeenCalledTimes(1);
     expect(screen.getAllByText("05/29 周五")).toHaveLength(1);
     expect(screen.getAllByText("便利店")).toHaveLength(1);
-    expect(screen.getByText("-3,234")).toBeTruthy();
+    expect(screen.getByText("-3,234")).toBeInTheDocument();
   });
 });

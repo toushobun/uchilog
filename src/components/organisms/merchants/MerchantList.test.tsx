@@ -37,7 +37,7 @@ describe("MerchantList", () => {
   it("没有商家时显示空状态提示", () => {
     const { container } = render(<MerchantList {...baseProps} />);
 
-    expect(within(container).getByText("还没有商家")).toBeTruthy();
+    expect(within(container).getByText("还没有商家")).toBeInTheDocument();
   });
 
   it("有商家时显示商家名称", () => {
@@ -45,7 +45,7 @@ describe("MerchantList", () => {
       <MerchantList {...baseProps} merchants={[baseMerchant]} />,
     );
 
-    expect(within(container).getByText("LIFE超市")).toBeTruthy();
+    expect(within(container).getByText("LIFE超市")).toBeInTheDocument();
   });
 
   it("有网址时显示网址链接", () => {
@@ -55,7 +55,7 @@ describe("MerchantList", () => {
 
     expect(
       within(container).getByRole("link", { name: "https://www.lifecorp.jp" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("无网址时显示网址未设置提示", () => {
@@ -66,7 +66,7 @@ describe("MerchantList", () => {
       />,
     );
 
-    expect(within(container).getByText("网址未设置")).toBeTruthy();
+    expect(within(container).getByText("网址未设置")).toBeInTheDocument();
   });
 
   it("指定 errorMerchantId 的商家显示错误提示", () => {
@@ -79,8 +79,8 @@ describe("MerchantList", () => {
       />,
     );
 
-    expect(within(container).getByRole("alert")).toBeTruthy();
-    expect(within(container).getByText("商家归档失败。")).toBeTruthy();
+    expect(within(container).getByRole("alert")).toBeInTheDocument();
+    expect(within(container).getByText("商家归档失败。")).toBeInTheDocument();
   });
 
   it("errorMerchantId 不匹配时不显示错误提示", () => {
@@ -104,7 +104,7 @@ describe("MerchantList", () => {
       <MerchantList {...baseProps} merchants={[merchantWithAlias]} />,
     );
 
-    expect(within(container).getByText("来福")).toBeTruthy();
+    expect(within(container).getByText("来福")).toBeInTheDocument();
   });
 
   it("没有别名时显示暂无别名提示", () => {
@@ -112,6 +112,6 @@ describe("MerchantList", () => {
       <MerchantList {...baseProps} merchants={[baseMerchant]} />,
     );
 
-    expect(within(container).getByText("还没有别名。")).toBeTruthy();
+    expect(within(container).getByText("还没有别名。")).toBeInTheDocument();
   });
 });

@@ -39,19 +39,23 @@ describe("NewTransactionTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "新增记账" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示当前账本名称", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
-    expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
+    expect(
+      within(container).getByText("当前账本：家庭账本"),
+    ).toBeInTheDocument();
   });
 
   it("渲染记账表单", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
-    expect(within(container).getByTestId("transaction-form")).toBeTruthy();
+    expect(
+      within(container).getByTestId("transaction-form"),
+    ).toBeInTheDocument();
   });
 
   it("传入错误信息时表单内显示错误提示", () => {
@@ -62,9 +66,9 @@ describe("NewTransactionTemplate", () => {
       />,
     );
 
-    expect(within(container).getByRole("alert")).toBeTruthy();
+    expect(within(container).getByRole("alert")).toBeInTheDocument();
     expect(
       within(container).getByText("新增记账失败。请稍后重试。"),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

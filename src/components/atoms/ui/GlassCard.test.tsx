@@ -15,7 +15,7 @@ describe("GlassCard", () => {
       </GlassCard>,
     );
 
-    expect(within(container).getByText("卡片内容")).toBeTruthy();
+    expect(within(container).getByText("卡片内容")).toBeInTheDocument();
   });
 
   it("透传额外的 sx 属性", () => {

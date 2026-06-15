@@ -19,14 +19,14 @@ describe("TransactionEditErrorPage", () => {
 
     expect(
       within(container).getByRole("heading", { name: "编辑记账" }),
-    ).toBeTruthy();
-    expect(within(container).getByRole("alert")).toBeTruthy();
-    expect(within(container).getByText("编辑记账读取失败")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(within(container).getByRole("alert")).toBeInTheDocument();
+    expect(within(container).getByText("编辑记账读取失败")).toBeInTheDocument();
     expect(
       within(container).getByText(
         "这笔记账暂时无法读取。不存在或无权限的记录仍会显示 404，本提示表示读取过程中发生了未预期错误。",
       ),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("点击按钮时重新读取编辑数据", () => {
@@ -56,6 +56,6 @@ describe("TransactionEditErrorPage", () => {
       within(container).getByText(
         "这笔记账暂时无法读取。不存在或无权限的记录仍会显示 404，本提示表示读取过程中发生了未预期错误。错误编号：abc123",
       ),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

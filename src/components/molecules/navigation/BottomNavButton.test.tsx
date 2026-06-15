@@ -29,7 +29,7 @@ describe("BottomNavButton", () => {
       <BottomNavButton href="/dashboard" label="仪表盘" selected={false} />,
     );
 
-    expect(within(container).getByText("仪表盘")).toBeTruthy();
+    expect(within(container).getByText("仪表盘")).toBeInTheDocument();
   });
 
   it("链接指向正确的 href", () => {

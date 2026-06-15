@@ -24,13 +24,15 @@ describe("AccountsTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "账户" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示当前账本名称", () => {
     const { container } = render(<AccountsTemplate {...baseProps} />);
 
-    expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
+    expect(
+      within(container).getByText("当前账本：家庭账本"),
+    ).toBeInTheDocument();
   });
 
   it("传入错误信息时显示错误提示", () => {
@@ -38,8 +40,8 @@ describe("AccountsTemplate", () => {
       <AccountsTemplate {...baseProps} errorMessage="账户新增失败。" />,
     );
 
-    expect(within(container).getByRole("alert")).toBeTruthy();
-    expect(within(container).getByText("账户新增失败。")).toBeTruthy();
+    expect(within(container).getByRole("alert")).toBeInTheDocument();
+    expect(within(container).getByText("账户新增失败。")).toBeInTheDocument();
   });
 
   it("无错误信息时不显示错误提示", () => {
@@ -51,7 +53,7 @@ describe("AccountsTemplate", () => {
   it("没有账户时显示空状态提示", () => {
     const { container } = render(<AccountsTemplate {...baseProps} />);
 
-    expect(within(container).getByText("还没有账户")).toBeTruthy();
+    expect(within(container).getByText("还没有账户")).toBeInTheDocument();
   });
 
   it("显示新增账户表单标题", () => {
@@ -59,6 +61,6 @@ describe("AccountsTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "新增账户" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

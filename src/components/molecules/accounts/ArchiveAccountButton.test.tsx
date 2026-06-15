@@ -19,7 +19,7 @@ describe("ArchiveAccountButton", () => {
       </form>,
     );
 
-    expect(screen.getByRole("button", { name: "归档" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "归档" })).toBeInTheDocument();
   });
 
   it("点击按钮时弹出确认对话框", () => {

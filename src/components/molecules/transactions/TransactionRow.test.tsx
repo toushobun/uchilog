@@ -40,13 +40,13 @@ describe("TransactionRow", () => {
   it("显示商家名称", () => {
     render(<TransactionRow item={createItem()} />);
 
-    expect(screen.getByText("便利店")).toBeTruthy();
+    expect(screen.getByText("便利店")).toBeInTheDocument();
   });
 
   it("支出记录显示负号金额", () => {
     render(<TransactionRow item={createItem()} />);
 
-    expect(screen.getByText("-1,234")).toBeTruthy();
+    expect(screen.getByText("-1,234")).toBeInTheDocument();
   });
 
   it("收入记录显示正号金额", () => {
@@ -56,25 +56,25 @@ describe("TransactionRow", () => {
       />,
     );
 
-    expect(screen.getByText("+260,000")).toBeTruthy();
+    expect(screen.getByText("+260,000")).toBeInTheDocument();
   });
 
   it("showType 为 true 时显示支出标签", () => {
     render(<TransactionRow item={createItem()} showType />);
 
-    expect(screen.getByText("支出")).toBeTruthy();
+    expect(screen.getByText("支出")).toBeInTheDocument();
   });
 
   it("showType 为 true 时显示收入标签", () => {
     render(<TransactionRow item={createItem({ type: "income" })} showType />);
 
-    expect(screen.getByText("收入")).toBeTruthy();
+    expect(screen.getByText("收入")).toBeInTheDocument();
   });
 
   it("showNote 为 true 时显示备注", () => {
     render(<TransactionRow item={createItem()} showNote />);
 
-    expect(screen.getByText(/测试备注/)).toBeTruthy();
+    expect(screen.getByText(/测试备注/)).toBeInTheDocument();
   });
 
   it("showNote 为 false 时不显示备注", () => {
@@ -86,7 +86,7 @@ describe("TransactionRow", () => {
   it("showAccount 为 true 时账户名称出现在行内", () => {
     render(<TransactionRow item={createItem()} showAccount />);
 
-    expect(screen.getByText(/日元现金/)).toBeTruthy();
+    expect(screen.getByText(/日元现金/)).toBeInTheDocument();
   });
 
   it("服务端渲染时使用日本 fallback 时区显示时间", () => {
@@ -102,13 +102,13 @@ describe("TransactionRow", () => {
 
     render(<TransactionRow item={createItem()} showAccount showTime />);
 
-    expect(screen.getByText("日元现金 · 11:20")).toBeTruthy();
+    expect(screen.getByText("日元现金 · 11:20")).toBeInTheDocument();
   });
 
   it("merchant_name 为 null 时显示未指定商家", () => {
     render(<TransactionRow item={createItem({ merchant_name: null })} />);
 
-    expect(screen.getByText("未指定商家")).toBeTruthy();
+    expect(screen.getByText("未指定商家")).toBeInTheDocument();
   });
 
   it("未传入撤销 action 时不显示撤销按钮", () => {
@@ -120,7 +120,7 @@ describe("TransactionRow", () => {
   it("传入撤销 action 时显示撤销按钮", () => {
     render(<TransactionRow item={createItem()} voidAction={vi.fn()} />);
 
-    expect(screen.getByRole("button", { name: "撤销" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "撤销" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "编辑" })).toBeNull();
   });
 
@@ -137,8 +137,8 @@ describe("TransactionRow", () => {
       <TransactionRow item={createItem()} showEdit voidAction={vi.fn()} />,
     );
 
-    expect(screen.getByRole("link", { name: "编辑" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "撤销" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "编辑" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "撤销" })).toBeInTheDocument();
   });
 
   it("确认后提交撤销表单并传递记录 id", () => {

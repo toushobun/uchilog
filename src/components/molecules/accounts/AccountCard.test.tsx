@@ -20,25 +20,25 @@ describe("AccountCard", () => {
   it("显示账户名称", () => {
     const { container } = render(<AccountCard {...baseProps} />);
 
-    expect(within(container).getByText("三菱UFJ银行")).toBeTruthy();
+    expect(within(container).getByText("三菱UFJ银行")).toBeInTheDocument();
   });
 
   it("显示账户类型标签", () => {
     const { container } = render(<AccountCard {...baseProps} />);
 
-    expect(within(container).getByText("银行账户")).toBeTruthy();
+    expect(within(container).getByText("银行账户")).toBeInTheDocument();
   });
 
   it("显示当前余额", () => {
     const { container } = render(<AccountCard {...baseProps} />);
 
-    expect(within(container).getByText(/当前余额/)).toBeTruthy();
+    expect(within(container).getByText(/当前余额/)).toBeInTheDocument();
   });
 
   it("没有持有人时显示未设置", () => {
     const { container } = render(<AccountCard {...baseProps} />);
 
-    expect(within(container).getByText("未设置")).toBeTruthy();
+    expect(within(container).getByText("未设置")).toBeInTheDocument();
   });
 
   it("有持有人时显示持有人名称", () => {
@@ -59,7 +59,7 @@ describe("AccountCard", () => {
       />,
     );
 
-    expect(within(container).getByText(/张三/)).toBeTruthy();
+    expect(within(container).getByText(/张三/)).toBeInTheDocument();
   });
 
   it("渲染自定义 actions 插槽", () => {
@@ -72,6 +72,6 @@ describe("AccountCard", () => {
 
     expect(
       within(container).getByRole("button", { name: "编辑" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

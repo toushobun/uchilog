@@ -33,6 +33,6 @@ describe("ProtectedLayoutShell", () => {
     expect(screen.getByTestId("app-shell").getAttribute("data-email")).toBe(
       "test@example.com",
     );
-    expect(screen.getByText("受保护内容")).toBeTruthy();
+    expect(screen.getByText("受保护内容")).toBeInTheDocument();
   });
 });

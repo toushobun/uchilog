@@ -16,7 +16,7 @@ describe("EmptyState", () => {
       />,
     );
 
-    expect(within(container).getByText("还没有账户")).toBeTruthy();
+    expect(within(container).getByText("还没有账户")).toBeInTheDocument();
   });
 
   it("显示描述文字", () => {
@@ -29,6 +29,6 @@ describe("EmptyState", () => {
 
     expect(
       within(container).getByText("点击下方按钮新增第一个账户。"),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

@@ -13,7 +13,7 @@ describe("SettingsAccountsEntry", () => {
 
     expect(
       within(container).getByRole("heading", { name: "账户管理" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("打开账户管理按钮链接到账户管理页面", () => {

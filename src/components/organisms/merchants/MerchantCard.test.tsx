@@ -39,14 +39,18 @@ describe("MerchantCard", () => {
       <MerchantCard {...actions} errorMessage={null} merchant={merchant} />,
     );
 
-    expect(within(container).getByText("LIFE超市")).toBeTruthy();
+    expect(within(container).getByText("LIFE超市")).toBeInTheDocument();
     expect(
       within(container).getByRole("link", { name: "https://www.lifecorp.jp" }),
-    ).toBeTruthy();
-    expect(within(container).getByText("常去的超市")).toBeTruthy();
-    expect(within(container).getByText("来福")).toBeTruthy();
-    expect(within(container).getByTestId("merchant-alias-form")).toBeTruthy();
-    expect(within(container).getByTestId("merchant-edit-form")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(within(container).getByText("常去的超市")).toBeInTheDocument();
+    expect(within(container).getByText("来福")).toBeInTheDocument();
+    expect(
+      within(container).getByTestId("merchant-alias-form"),
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByTestId("merchant-edit-form"),
+    ).toBeInTheDocument();
   });
 
   it("没有网址和别名时显示空提示", () => {
@@ -58,8 +62,8 @@ describe("MerchantCard", () => {
       />,
     );
 
-    expect(within(container).getByText("网址未设置")).toBeTruthy();
-    expect(within(container).getByText("还没有别名。")).toBeTruthy();
+    expect(within(container).getByText("网址未设置")).toBeInTheDocument();
+    expect(within(container).getByText("还没有别名。")).toBeInTheDocument();
   });
 
   it("有错误信息时显示 alert", () => {
@@ -71,7 +75,7 @@ describe("MerchantCard", () => {
       />,
     );
 
-    expect(within(container).getByRole("alert")).toBeTruthy();
-    expect(within(container).getByText("商家归档失败。")).toBeTruthy();
+    expect(within(container).getByRole("alert")).toBeInTheDocument();
+    expect(within(container).getByText("商家归档失败。")).toBeInTheDocument();
   });
 });

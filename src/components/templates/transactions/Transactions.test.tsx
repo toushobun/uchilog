@@ -47,7 +47,7 @@ describe("TransactionsTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "明细" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示当前月份标签", () => {
@@ -81,7 +81,7 @@ describe("TransactionsTemplate", () => {
 
     expect(
       within(container).getByText(transactionListPageErrorMessages.voidFailed),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("无错误信息时不显示错误提示", () => {

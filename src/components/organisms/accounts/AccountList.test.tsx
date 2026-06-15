@@ -43,7 +43,7 @@ describe("AccountList", () => {
   it("没有账户时显示空状态提示", () => {
     const { container } = render(<AccountList {...baseProps} />);
 
-    expect(within(container).getByText("还没有账户")).toBeTruthy();
+    expect(within(container).getByText("还没有账户")).toBeInTheDocument();
   });
 
   it("有账户时显示账户名称", () => {
@@ -51,7 +51,7 @@ describe("AccountList", () => {
       <AccountList {...baseProps} accounts={[baseAccount]} />,
     );
 
-    expect(within(container).getByText("三菱UFJ银行")).toBeTruthy();
+    expect(within(container).getByText("三菱UFJ银行")).toBeInTheDocument();
   });
 
   it("有多个账户时全部显示", () => {
@@ -66,7 +66,7 @@ describe("AccountList", () => {
       <AccountList {...baseProps} accounts={[baseAccount, account2]} />,
     );
 
-    expect(within(container).getByText("三菱UFJ银行")).toBeTruthy();
-    expect(within(container).getByText("PayPay")).toBeTruthy();
+    expect(within(container).getByText("三菱UFJ银行")).toBeInTheDocument();
+    expect(within(container).getByText("PayPay")).toBeInTheDocument();
   });
 });

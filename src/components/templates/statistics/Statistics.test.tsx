@@ -57,20 +57,22 @@ describe("StatisticsTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "统计" }),
-    ).toBeTruthy();
-    expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
-    expect(within(container).getByText("2026年6月")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByText("当前账本：家庭账本"),
+    ).toBeInTheDocument();
+    expect(within(container).getByText("2026年6月")).toBeInTheDocument();
   });
 
   it("显示月度收支汇总", () => {
     const { container } = render(<StatisticsTemplate {...statisticsView} />);
 
-    expect(within(container).getByText("本月收入")).toBeTruthy();
-    expect(within(container).getByText("250,000 JPY")).toBeTruthy();
-    expect(within(container).getByText("本月支出")).toBeTruthy();
-    expect(within(container).getByText("3,300 JPY")).toBeTruthy();
-    expect(within(container).getByText("本月净收支")).toBeTruthy();
-    expect(within(container).getByText("246,700 JPY")).toBeTruthy();
+    expect(within(container).getByText("本月收入")).toBeInTheDocument();
+    expect(within(container).getByText("250,000 JPY")).toBeInTheDocument();
+    expect(within(container).getByText("本月支出")).toBeInTheDocument();
+    expect(within(container).getByText("3,300 JPY")).toBeInTheDocument();
+    expect(within(container).getByText("本月净收支")).toBeInTheDocument();
+    expect(within(container).getByText("246,700 JPY")).toBeInTheDocument();
   });
 
   it("先显示分类支出汇总，再显示商家支出排行", () => {
@@ -88,17 +90,17 @@ describe("StatisticsTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "分类支出汇总" }),
-    ).toBeTruthy();
-    expect(within(container).getByText("食费 / 外食")).toBeTruthy();
-    expect(within(container).getByText("2 笔 · 占比 76%")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(within(container).getByText("食费 / 外食")).toBeInTheDocument();
+    expect(within(container).getByText("2 笔 · 占比 76%")).toBeInTheDocument();
     expect(
       within(container).getByRole("heading", { name: "商家支出排行" }),
-    ).toBeTruthy();
-    expect(within(container).getByText("超市")).toBeTruthy();
-    expect(within(container).getByText("1 笔 · 占比 45%")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(within(container).getByText("超市")).toBeInTheDocument();
+    expect(within(container).getByText("1 笔 · 占比 45%")).toBeInTheDocument();
     expect(
       within(container).getByRole("progressbar", { name: "超市支出占比" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("显示月份切换链接", () => {
@@ -121,9 +123,9 @@ describe("StatisticsTemplate", () => {
       <StatisticsTemplate {...emptyStatisticsView} />,
     );
 
-    expect(within(container).getByText("暂无统计数据")).toBeTruthy();
+    expect(within(container).getByText("暂无统计数据")).toBeInTheDocument();
     expect(
       within(container).getByText("这个月还没有可以统计的收入或支出。"),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

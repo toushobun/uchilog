@@ -24,7 +24,7 @@ describe("SettingsTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "设置" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(within(container).getAllByText("当前账本：家庭账本").length).toBe(1);
   });
 
@@ -33,12 +33,12 @@ describe("SettingsTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "账户管理" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(
       within(container).getByText(
         "管理当前账本的现金、银行卡、信用卡等账户，并可继续新增账户。",
       ),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("打开账户管理按钮链接到账户管理页面", () => {

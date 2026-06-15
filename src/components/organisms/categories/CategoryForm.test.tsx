@@ -29,10 +29,10 @@ describe("CategoryForm", () => {
 
     expect(
       within(container).getByRole("heading", { name: "新增分类" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(
       within(container).getByPlaceholderText("例如：餐饮、工资、交通"),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(within(container).getAllByText("分类类型").length).toBeGreaterThan(
       0,
     );
@@ -41,7 +41,7 @@ describe("CategoryForm", () => {
     );
     expect(
       within(container).getByRole("button", { name: "新增分类" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("说明大分类和小分类的创建方式", () => {
@@ -56,7 +56,7 @@ describe("CategoryForm", () => {
       within(container).getByText(
         "留空时创建大分类；选择大分类时创建可用于记账的小分类。",
       ),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("支出类型下只显示支出分类选项", () => {
@@ -71,7 +71,7 @@ describe("CategoryForm", () => {
       within(container).getByRole("combobox", { name: "上级分类" }),
     );
 
-    expect(screen.getByText("餐饮")).toBeTruthy();
+    expect(screen.getByText("餐饮")).toBeInTheDocument();
     expect(screen.queryByText("工资")).toBeNull();
   });
 
@@ -92,7 +92,7 @@ describe("CategoryForm", () => {
       within(container).getByRole("combobox", { name: "上级分类" }),
     );
 
-    expect(screen.getByText("工资")).toBeTruthy();
+    expect(screen.getByText("工资")).toBeInTheDocument();
     expect(screen.queryByText("餐饮")).toBeNull();
   });
 
@@ -106,11 +106,11 @@ describe("CategoryForm", () => {
 
     expect(
       within(container).getByRole("button", { name: "新增分类" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     // 打开上级分类下拉，确认只有"无上级分类"选项
     fireEvent.mouseDown(
       within(container).getByRole("combobox", { name: "上级分类" }),
     );
-    expect(screen.getByText("无上级分类")).toBeTruthy();
+    expect(screen.getByText("无上级分类")).toBeInTheDocument();
   });
 });

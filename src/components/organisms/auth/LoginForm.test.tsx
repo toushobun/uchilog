@@ -11,14 +11,14 @@ describe("LoginForm", () => {
   it("显示邮箱和密码输入框", () => {
     render(<LoginForm action={vi.fn(async () => ({}))} />);
 
-    expect(screen.getByLabelText(/邮箱/)).toBeTruthy();
-    expect(screen.getByLabelText(/密码/)).toBeTruthy();
+    expect(screen.getByLabelText(/邮箱/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/密码/)).toBeInTheDocument();
   });
 
   it("显示登录按钮", () => {
     render(<LoginForm action={vi.fn(async () => ({}))} />);
 
-    expect(screen.getByRole("button", { name: "登录" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "登录" })).toBeInTheDocument();
   });
 
   it("邮箱输入框类型为 email", () => {

@@ -20,7 +20,7 @@ describe("TransactionSummaryBar", () => {
       />,
     );
 
-    expect(within(container).getByText("收入")).toBeTruthy();
+    expect(within(container).getByText("收入")).toBeInTheDocument();
   });
 
   it("显示支出标签", () => {
@@ -35,7 +35,7 @@ describe("TransactionSummaryBar", () => {
       />,
     );
 
-    expect(within(container).getByText("支出")).toBeTruthy();
+    expect(within(container).getByText("支出")).toBeInTheDocument();
   });
 
   it("显示结余标签", () => {
@@ -50,7 +50,7 @@ describe("TransactionSummaryBar", () => {
       />,
     );
 
-    expect(within(container).getByText("结余")).toBeTruthy();
+    expect(within(container).getByText("结余")).toBeInTheDocument();
   });
 
   it("显示格式化后的收入金额", () => {
@@ -65,7 +65,7 @@ describe("TransactionSummaryBar", () => {
       />,
     );
 
-    expect(within(container).getByText("260,000")).toBeTruthy();
+    expect(within(container).getByText("260,000")).toBeInTheDocument();
   });
 
   it("显示格式化后的支出金额", () => {
@@ -80,6 +80,6 @@ describe("TransactionSummaryBar", () => {
       />,
     );
 
-    expect(within(container).getByText("80,000")).toBeTruthy();
+    expect(within(container).getByText("80,000")).toBeInTheDocument();
   });
 });

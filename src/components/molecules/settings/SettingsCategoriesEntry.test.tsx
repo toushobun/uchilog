@@ -14,7 +14,7 @@ describe("SettingsCategoriesEntry", () => {
 
     expect(
       within(container).getByRole("heading", { name: "分类管理" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(link.getAttribute("href")).toContain("/categories");
   });
 

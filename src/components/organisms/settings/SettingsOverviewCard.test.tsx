@@ -35,12 +35,14 @@ describe("SettingsOverviewCard", () => {
 
     expect(
       within(container).getByRole("link", { name: "UchiLog" }),
-    ).toBeTruthy();
-    expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
-    expect(within(container).getByText("test@example.com")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByText("当前账本：家庭账本"),
+    ).toBeInTheDocument();
+    expect(within(container).getByText("test@example.com")).toBeInTheDocument();
     expect(
       within(container).getByRole("button", { name: "登出" }),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("应用名和账本名链接到对应页面", () => {

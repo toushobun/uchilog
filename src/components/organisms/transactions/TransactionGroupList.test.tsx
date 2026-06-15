@@ -33,7 +33,7 @@ describe("TransactionGroupList", () => {
       <TransactionGroupList groups={[defaultGroup]} />,
     );
 
-    expect(within(container).getByText("06/05 周五")).toBeTruthy();
+    expect(within(container).getByText("06/05 周五")).toBeInTheDocument();
   });
 
   it("显示分组内的记账记录", () => {
@@ -43,7 +43,7 @@ describe("TransactionGroupList", () => {
 
     expect(
       within(container).getByTestId("row-00000000-0000-4000-8000-000000009001"),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it("分组内的记账记录显示编辑入口", () => {
@@ -67,8 +67,8 @@ describe("TransactionGroupList", () => {
       <TransactionGroupList groups={[defaultGroup, group2]} />,
     );
 
-    expect(within(container).getByText("06/05 周五")).toBeTruthy();
-    expect(within(container).getByText("06/01 周一")).toBeTruthy();
+    expect(within(container).getByText("06/05 周五")).toBeInTheDocument();
+    expect(within(container).getByText("06/01 周一")).toBeInTheDocument();
   });
 
   it("分组汇总结余为负数时金额有对应样式标识", () => {
@@ -76,6 +76,6 @@ describe("TransactionGroupList", () => {
       <TransactionGroupList groups={[defaultGroup]} />,
     );
 
-    expect(within(container).getByText("-1,234")).toBeTruthy();
+    expect(within(container).getByText("-1,234")).toBeInTheDocument();
   });
 });

@@ -45,8 +45,10 @@ describe("CategoriesTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "分类" }),
-    ).toBeTruthy();
-    expect(within(container).getByText("当前账本：家庭账本")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByText("当前账本：家庭账本"),
+    ).toBeInTheDocument();
   });
 
   it("显示新增表单和分类列表", () => {
@@ -54,9 +56,9 @@ describe("CategoriesTemplate", () => {
 
     expect(
       within(container).getByRole("heading", { name: "新增分类" }),
-    ).toBeTruthy();
-    expect(within(container).getByDisplayValue("餐饮")).toBeTruthy();
-    expect(within(container).getByDisplayValue("外食")).toBeTruthy();
+    ).toBeInTheDocument();
+    expect(within(container).getByDisplayValue("餐饮")).toBeInTheDocument();
+    expect(within(container).getByDisplayValue("外食")).toBeInTheDocument();
   });
 
   it("显示全局错误信息", () => {

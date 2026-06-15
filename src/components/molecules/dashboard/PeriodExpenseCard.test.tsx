@@ -13,7 +13,7 @@ describe("PeriodExpenseCard", () => {
       <PeriodExpenseCard label="今日支出" expense="3200" recordCount={5} />,
     );
 
-    expect(within(container).getByText("今日支出")).toBeTruthy();
+    expect(within(container).getByText("今日支出")).toBeInTheDocument();
   });
 
   it("显示格式化后的支出金额（含负号）", () => {
@@ -21,7 +21,7 @@ describe("PeriodExpenseCard", () => {
       <PeriodExpenseCard label="今日支出" expense="3200" recordCount={5} />,
     );
 
-    expect(within(container).getByText("-3,200")).toBeTruthy();
+    expect(within(container).getByText("-3,200")).toBeInTheDocument();
   });
 
   it("recordCount 大于 0 时显示笔数", () => {
@@ -29,7 +29,7 @@ describe("PeriodExpenseCard", () => {
       <PeriodExpenseCard label="今日支出" expense="3200" recordCount={5} />,
     );
 
-    expect(within(container).getByText("共 5 笔记录")).toBeTruthy();
+    expect(within(container).getByText("共 5 笔记录")).toBeInTheDocument();
   });
 
   it("recordCount 为 0 时不显示笔数", () => {

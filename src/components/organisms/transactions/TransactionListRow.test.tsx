@@ -31,38 +31,38 @@ describe("TransactionListRow", () => {
   it("支出记录显示支出标签", () => {
     render(<TransactionListRow item={createItem()} />);
 
-    expect(screen.getByText("支出")).toBeTruthy();
+    expect(screen.getByText("支出")).toBeInTheDocument();
   });
 
   it("收入记录显示收入标签", () => {
     render(<TransactionListRow item={createItem({ type: "income" })} />);
 
-    expect(screen.getByText("收入")).toBeTruthy();
+    expect(screen.getByText("收入")).toBeInTheDocument();
   });
 
   it("显示商家名称", () => {
     render(<TransactionListRow item={createItem()} />);
 
-    expect(screen.getByText("便利店")).toBeTruthy();
+    expect(screen.getByText("便利店")).toBeInTheDocument();
   });
 
   it("显示账户名称", () => {
     render(<TransactionListRow item={createItem()} />);
 
-    expect(screen.getByText(/日元现金/)).toBeTruthy();
+    expect(screen.getByText(/日元现金/)).toBeInTheDocument();
   });
 
   it("显示分类标签（含父分类）", () => {
     render(<TransactionListRow item={createItem()} />);
 
     // 父分类·子分类 格式
-    expect(screen.getByText("饮食·餐饮")).toBeTruthy();
+    expect(screen.getByText("饮食·餐饮")).toBeInTheDocument();
   });
 
   it("支出金额显示负号格式", () => {
     render(<TransactionListRow item={createItem()} />);
 
-    expect(screen.getByText("-1,234 JPY")).toBeTruthy();
+    expect(screen.getByText("-1,234 JPY")).toBeInTheDocument();
   });
 
   it("收入金额显示正号格式", () => {
@@ -72,13 +72,13 @@ describe("TransactionListRow", () => {
       />,
     );
 
-    expect(screen.getByText("+120,000 JPY")).toBeTruthy();
+    expect(screen.getByText("+120,000 JPY")).toBeInTheDocument();
   });
 
   it("有备注时显示备注内容", () => {
     render(<TransactionListRow item={createItem({ note: "测试备注" })} />);
 
-    expect(screen.getByText("测试备注")).toBeTruthy();
+    expect(screen.getByText("测试备注")).toBeInTheDocument();
   });
 
   it("无备注时不显示备注区域", () => {
@@ -90,7 +90,7 @@ describe("TransactionListRow", () => {
   it("传入 voidAction 时显示撤销按钮", () => {
     render(<TransactionListRow item={createItem()} voidAction={vi.fn()} />);
 
-    expect(screen.getByRole("button", { name: "撤销" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "撤销" })).toBeInTheDocument();
   });
 
   it("未传入 voidAction 时不显示撤销按钮", () => {

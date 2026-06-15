@@ -61,8 +61,8 @@ describe("TransactionAmountKeypad", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: "确认" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "退格" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "确认" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "退格" })).toBeInTheDocument();
   });
 
   it("根据 currency 显示金额符号", () => {
@@ -108,7 +108,7 @@ describe("TransactionAmountKeypad", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "加" }));
 
-    expect(screen.getByText("50 +")).toBeTruthy();
+    expect(screen.getByText("50 +")).toBeInTheDocument();
   });
 
   it("支持受控状态下实时预览加法结果和输入表达式", () => {
@@ -123,19 +123,19 @@ describe("TransactionAmountKeypad", () => {
     expect(screen.getByLabelText("计算器显示金额").textContent).toContain(
       "102",
     );
-    expect(screen.getByText("100 + 2")).toBeTruthy();
+    expect(screen.getByText("100 + 2")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "0" }));
     expect(screen.getByLabelText("计算器显示金额").textContent).toContain(
       "120",
     );
-    expect(screen.getByText("100 + 20")).toBeTruthy();
+    expect(screen.getByText("100 + 20")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "0" }));
     expect(screen.getByLabelText("计算器显示金额").textContent).toContain(
       "300",
     );
-    expect(screen.getByText("100 + 200")).toBeTruthy();
+    expect(screen.getByText("100 + 200")).toBeInTheDocument();
   });
 
   it("支持简单加法和减法", () => {
@@ -169,10 +169,10 @@ describe("TransactionAmountKeypad", () => {
     expect(screen.getByLabelText("计算器显示金额").textContent).toContain(
       "101",
     );
-    expect(screen.getByText("51 + 50 +")).toBeTruthy();
+    expect(screen.getByText("51 + 50 +")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "2" }));
-    expect(screen.getByText("51 + 50 + 2")).toBeTruthy();
+    expect(screen.getByText("51 + 50 + 2")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "确认" }));
     expect(handleConfirm).toHaveBeenCalledWith("103");
@@ -245,7 +245,7 @@ describe("TransactionAmountKeypad", () => {
     fireEvent.click(screen.getByRole("button", { name: "6" }));
 
     expect(screen.getByLabelText("计算器显示金额").textContent).toContain("89");
-    expect(screen.getByText("53 + 36")).toBeTruthy();
+    expect(screen.getByText("53 + 36")).toBeInTheDocument();
 
     rerender(
       <TransactionAmountKeypad
@@ -278,10 +278,10 @@ describe("TransactionAmountKeypad", () => {
     expect(screen.getByLabelText("计算器显示金额").textContent).toContain(
       "-33",
     );
-    expect(screen.getByText("66 - 99")).toBeTruthy();
+    expect(screen.getByText("66 - 99")).toBeInTheDocument();
     expect(screen.queryByText("66 - -33")).toBeNull();
     expect(
       screen.getByText(transactionFormValidationMessages.amountInvalid),
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });
