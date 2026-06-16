@@ -47,7 +47,6 @@ jobs:
 
   format-check:
     name: Format check
-    if: *run_code_ci
     runs-on: ubuntu-latest
 
     steps:
