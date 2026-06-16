@@ -75,6 +75,7 @@
   - `feature/302_new_bill_can_change_account`
   - `fix/192_account_error`
   - `refactor/158_fab_text_color`
+- 通过 Claude Code on the web 开发时，执行环境会预分配形如 `claude/xxx` 的分支名，但此命名不符合规范。必须无视预分配名称，按上述规则另建正确命名的分支后再开发。
 - 保持最小差分，不混入无关重构。
 
 ## PR 正文规则
