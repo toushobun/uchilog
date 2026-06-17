@@ -14,7 +14,9 @@ export function hashAuthOtpEmail(email: string) {
   return hashAuthOtpValue(normalizeAuthOtpEmail(email));
 }
 
-export function normalizeAuthOtpIp(headers: Headers) {
+type AuthOtpHeaders = Pick<Headers, "get">;
+
+export function normalizeAuthOtpIp(headers: AuthOtpHeaders) {
   // x-vercel-forwarded-for 依赖 Vercel 平台保证不可被客户端伪造。
   const vercelForwardedFor = headers.get("x-vercel-forwarded-for")?.trim();
 
@@ -36,7 +38,7 @@ export function normalizeAuthOtpIp(headers: Headers) {
 }
 
 // 返回 null 表示无法识别可信 IP，调用方必须直接拒绝 OTP 发送。
-export function hashAuthOtpIp(headers: Headers) {
+export function hashAuthOtpIp(headers: AuthOtpHeaders) {
   const ip = normalizeAuthOtpIp(headers);
 
   return ip ? hashAuthOtpValue(ip) : null;
