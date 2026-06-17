@@ -43,6 +43,7 @@ export async function createTransaction(formData: FormData) {
     ledgerId: currentLedger.id,
     merchantId: values.merchantId,
     note: values.note,
+    tagNames: values.tagNames,
     transactionAt: values.transactionAt,
     type: values.type,
   });
@@ -78,6 +79,7 @@ export async function updateTransaction(formData: FormData) {
     ledgerId: currentLedger.id,
     merchantId: values.merchantId,
     note: values.note,
+    tagNames: values.tagNames,
     transactionAt: values.transactionAt,
     transactionRecordId: values.transactionRecordId,
     type: values.type,

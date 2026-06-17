@@ -18,6 +18,16 @@ export type TransactionItemDbRow = {
   note?: string | null;
 };
 
+export type TransactionTagDbRow = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
+export type TransactionRecordTagDbRow = {
+  tag_id: string;
+};
+
 export type AccountOptionDbRow = {
   id: string;
   name: string;

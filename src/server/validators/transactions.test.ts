@@ -39,6 +39,7 @@ describe("transaction validators", () => {
         items: [{ amount: 1200, categoryId }],
         merchantId,
         note: "测试记录",
+        tagNames: [],
         transactionAt: "2026-06-04T01:30:05.000Z",
         type: "expense",
       },
@@ -62,6 +63,7 @@ describe("transaction validators", () => {
         items: [{ amount: 0, categoryId }],
         merchantId,
         note: "测试记录",
+        tagNames: [],
         transactionAt: "2026-06-04T01:30:05.000Z",
         type: "expense",
       },
@@ -94,9 +96,57 @@ describe("transaction validators", () => {
         ],
         merchantId,
         note: "测试记录",
+        tagNames: [],
         transactionAt: "2026-06-04T01:30:05.000Z",
         type: "expense",
       },
+    });
+  });
+
+  it("标签表单校验通过，并去除空值和大小写重复项", () => {
+    const formData = createFormData();
+
+    formData.append("tagName", " 日常 ");
+    formData.append("tagName", "");
+    formData.append("tagName", "日常");
+    formData.append("tagName", "DAILY");
+    formData.append("tagName", "daily");
+
+    expect(validateTransactionForm(formData)).toEqual({
+      ok: true,
+      value: {
+        accountId,
+        items: [{ amount: 1200, categoryId }],
+        merchantId,
+        note: "测试记录",
+        tagNames: ["日常", "DAILY"],
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        type: "expense",
+      },
+    });
+  });
+
+  it("拒绝超过 10 个标签", () => {
+    const formData = createFormData();
+
+    Array.from({ length: 11 }, (_, index) => `标签${index + 1}`).forEach(
+      (tagName) => formData.append("tagName", tagName),
+    );
+
+    expect(validateTransactionForm(formData)).toEqual({
+      error: "tag_invalid",
+      ok: false,
+    });
+  });
+
+  it("拒绝过长标签", () => {
+    const formData = createFormData();
+
+    formData.append("tagName", "あ".repeat(41));
+
+    expect(validateTransactionForm(formData)).toEqual({
+      error: "tag_invalid",
+      ok: false,
     });
   });
 

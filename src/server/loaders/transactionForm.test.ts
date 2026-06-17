@@ -31,12 +31,15 @@ const childId2 = "00000000-0000-4000-8000-000000005073";
 const ledgerId = "00000000-0000-4000-8000-000000000001";
 const accountId = "00000000-0000-4000-8000-000000000041";
 const merchantId = "00000000-0000-4000-8000-000000001001";
+const tagId = "00000000-0000-4000-8000-000000003001";
 const transactionRecordId = "00000000-0000-4000-8000-000000009001";
 
 type QueryResult = {
   data: unknown[] | null;
   error: unknown;
 };
+
+type QueryResults = Record<string, QueryResult | QueryResult[]>;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -62,19 +65,25 @@ function createQuery(result: QueryResult) {
   return query;
 }
 
-function setupSupabase(results: Record<string, QueryResult>) {
-  const from = vi.fn((table: string) =>
-    createQuery(results[table] ?? { data: [], error: null }),
+function setupSupabase(results: QueryResults) {
+  const queues = new Map(
+    Object.entries(results).map(([table, result]) => [
+      table,
+      Array.isArray(result) ? [...result] : [result],
+    ]),
   );
+  const from = vi.fn((table: string) => {
+    const result = queues.get(table)?.shift() ?? { data: [], error: null };
+
+    return createQuery(result);
+  });
 
   mocks.createClient.mockResolvedValue({ from });
 
   return { from };
 }
 
-function setupEditViewData(
-  overrides: Partial<Record<string, QueryResult>> = {},
-) {
+function setupEditViewData(overrides: QueryResults = {}) {
   return setupSupabase({
     account: {
       data: [{ currency: "JPY", id: accountId, name: "日元现金" }],
@@ -139,6 +148,20 @@ function setupEditViewData(
       ],
       error: null,
     },
+    transaction_record_tag: {
+      data: [{ tag_id: tagId }],
+      error: null,
+    },
+    transaction_tag: [
+      {
+        data: [{ color: null, id: tagId, name: "日常" }],
+        error: null,
+      },
+      {
+        data: [{ color: null, id: tagId, name: "日常" }],
+        error: null,
+      },
+    ],
     ...overrides,
   });
 }
@@ -225,8 +248,12 @@ describe("buildCategoryOptions", () => {
     const result = buildCategoryOptions(rows);
 
     expect(result).toHaveLength(2);
-    expect(result.find((r) => r.id === childId1)?.parentName).toBe("食材/调料");
-    expect(result.find((r) => r.id === childId2)?.parentName).toBe("交通出行");
+    expect(result.find((row) => row.id === childId1)?.parentName).toBe(
+      "食材/调料",
+    );
+    expect(result.find((row) => row.id === childId2)?.parentName).toBe(
+      "交通出行",
+    );
   });
 
   it("父分类在 DB 上不存在时 parentName 为 null", () => {
@@ -303,14 +330,30 @@ describe("loadEditTransactionView", () => {
           ],
           merchantId,
           note: "晚餐",
+          tagNames: ["日常"],
           transactionAt: "2026-06-04T10:30:05.000Z",
           transactionRecordId,
           type: "expense",
         },
         ledgerName: "家庭账本",
         merchantOptions: [{ icon_url: null, id: merchantId, name: "便利店" }],
+        tagOptions: [{ color: null, id: tagId, name: "日常" }],
       },
     );
+  });
+
+  it("回填当前记录已关联但已归档的标签", async () => {
+    setupEditViewData({
+      transaction_tag: [
+        { data: [], error: null },
+        { data: [{ color: null, id: tagId, name: "旧标签" }], error: null },
+      ],
+    });
+
+    const result = await loadEditTransactionView(transactionRecordId);
+
+    expect(result.tagOptions).toEqual([]);
+    expect(result.initialValues.tagNames).toEqual(["旧标签"]);
   });
 
   it("将 0 元明细转换为编辑表单初始值", async () => {

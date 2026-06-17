@@ -1,3 +1,10 @@
+import {
+  maxTransactionTagCount,
+  maxTransactionTagNameLength,
+} from "@/constants/transactions";
+
+const transactionTagInvalidMessage = `标签最多 ${maxTransactionTagCount} 个，单个标签不能超过 ${maxTransactionTagNameLength} 个字符。`;
+
 export const newTransactionPageErrorMessages = {
   accountInvalid: "账户指定不正确。",
   amountInvalid: "金额不能为负数，且最多两位小数。",
@@ -5,6 +12,8 @@ export const newTransactionPageErrorMessages = {
   createFailed: "新增记账失败。请稍后重试。",
   dateInvalid: "发生时间不正确。",
   merchantInvalid: "商家指定不正确。",
+  noteTooLong: "备注不能超过 2000 个字符。",
+  tagInvalid: transactionTagInvalidMessage,
   typeInvalid: "记账类型不正确。",
 } as const;
 
@@ -15,6 +24,7 @@ export const editTransactionPageErrorMessages = {
   dateInvalid: "发生时间不正确。",
   merchantInvalid: "商家指定不正确。",
   noteTooLong: "备注不能超过 2000 个字符。",
+  tagInvalid: transactionTagInvalidMessage,
   typeInvalid: "记账类型不正确。",
   updateFailed: "记账更新失败。请稍后重试。",
   updateInvalid: "编辑对象不正确。",
@@ -26,6 +36,7 @@ export const transactionFormValidationMessages = {
   categoryRequired: "请选择一个小分类。",
   itemsRequired: "请至少添加一条明细。",
   merchantRequired: "请选择商家。",
+  tagInvalid: transactionTagInvalidMessage,
 } as const;
 
 export const transactionListPageErrorMessages = {

@@ -46,6 +46,7 @@ describe("transactions service", () => {
         ledgerId,
         merchantId,
         note: "晚餐",
+        tagNames: ["日常", "公司"],
         transactionAt,
         type: "expense",
       }),
@@ -57,12 +58,13 @@ describe("transactions service", () => {
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: "晚餐",
+      p_tag_names: ["日常", "公司"],
       p_transaction_at: transactionAt,
       p_type: "expense",
     });
   });
 
-  it("createTransactionService 支持 income、多明细和空备注", async () => {
+  it("createTransactionService 支持 income、多明细、空备注和空标签", async () => {
     mockRpcResult();
 
     await expect(
@@ -75,6 +77,7 @@ describe("transactions service", () => {
         ledgerId,
         merchantId,
         note: null,
+        tagNames: [],
         transactionAt,
         type: "income",
       }),
@@ -89,6 +92,7 @@ describe("transactions service", () => {
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: null,
+      p_tag_names: [],
       p_transaction_at: transactionAt,
       p_type: "income",
     });
@@ -110,6 +114,7 @@ describe("transactions service", () => {
           ledgerId,
           merchantId,
           note: "晚餐",
+          tagNames: [],
           transactionAt,
           type: "expense",
         }),
@@ -130,6 +135,7 @@ describe("transactions service", () => {
         ledgerId,
         merchantId,
         note: "编辑后",
+        tagNames: ["旅行"],
         transactionAt,
         transactionRecordId,
         type: "expense",
@@ -142,13 +148,14 @@ describe("transactions service", () => {
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: "编辑后",
+      p_tag_names: ["旅行"],
       p_transaction_at: transactionAt,
       p_transaction_record_id: transactionRecordId,
       p_type: "expense",
     });
   });
 
-  it("updateTransactionService 支持 income、多明细和空备注", async () => {
+  it("updateTransactionService 支持 income、多明细、空备注和空标签", async () => {
     mockRpcResult();
 
     await expect(
@@ -161,6 +168,7 @@ describe("transactions service", () => {
         ledgerId,
         merchantId,
         note: null,
+        tagNames: [],
         transactionAt,
         transactionRecordId,
         type: "income",
@@ -176,6 +184,7 @@ describe("transactions service", () => {
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: null,
+      p_tag_names: [],
       p_transaction_at: transactionAt,
       p_transaction_record_id: transactionRecordId,
       p_type: "income",
@@ -198,6 +207,7 @@ describe("transactions service", () => {
           ledgerId,
           merchantId,
           note: "编辑后",
+          tagNames: [],
           transactionAt,
           transactionRecordId,
           type: "expense",
@@ -218,6 +228,7 @@ describe("transactions service", () => {
       ledgerId,
       merchantId,
       note: "编辑后",
+      tagNames: [],
       transactionAt,
       transactionRecordId,
       type: "expense",

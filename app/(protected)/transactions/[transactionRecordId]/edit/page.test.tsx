@@ -44,12 +44,14 @@ function createEditView() {
       ],
       merchantId: "00000000-0000-4000-8000-000000001001",
       note: "晚餐",
+      tagNames: ["日常"],
       transactionAt: "2026-06-04T10:30:05.000Z",
       transactionRecordId,
       type: "expense" as const,
     },
     ledgerName: "家庭账本",
     merchantOptions: [],
+    tagOptions: [],
   };
 }
 

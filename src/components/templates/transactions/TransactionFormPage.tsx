@@ -9,6 +9,7 @@ import type {
   TransactionAccountOption,
   TransactionCategoryOption,
   TransactionMerchantOption,
+  TransactionTagOption,
 } from "types/transactions";
 import { PageShell } from "templates/layout/PageShell";
 
@@ -19,6 +20,7 @@ export type TransactionFormTemplateProps = {
   errorMessage: string | null;
   ledgerName: string;
   merchantOptions: TransactionMerchantOption[];
+  tagOptions: TransactionTagOption[];
 };
 
 type EditTransactionTemplateProps = TransactionFormTemplateProps & {
@@ -32,6 +34,7 @@ export function NewTransactionTemplate({
   errorMessage,
   ledgerName,
   merchantOptions,
+  tagOptions,
 }: TransactionFormTemplateProps) {
   return (
     <TransactionFormShell>
@@ -42,6 +45,7 @@ export function NewTransactionTemplate({
         errorMessage={errorMessage}
         ledgerName={ledgerName}
         merchantOptions={merchantOptions}
+        tagOptions={tagOptions}
       />
     </TransactionFormShell>
   );
@@ -55,6 +59,7 @@ export function EditTransactionTemplate({
   initialValues,
   ledgerName,
   merchantOptions,
+  tagOptions,
 }: EditTransactionTemplateProps) {
   return (
     <TransactionFormShell>
@@ -68,6 +73,7 @@ export function EditTransactionTemplate({
         ledgerName={ledgerName}
         merchantOptions={merchantOptions}
         submitLabel="保存修改"
+        tagOptions={tagOptions}
         title="编辑记账"
       />
     </TransactionFormShell>

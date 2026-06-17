@@ -1,3 +1,4 @@
+import { maxTransactionTagCount } from "@/constants/transactions";
 import {
   transactionErrorCodes,
   type TransactionValidationErrorCode,
@@ -9,6 +10,7 @@ import {
   type TransactionType,
 } from "types/transactions";
 import { getFormText } from "utils/formData";
+import { isTransactionTagNameTooLong } from "utils/transactionTagRules";
 
 import {
   invalid,
@@ -34,6 +36,7 @@ export type TransactionFormValues = {
   items: TransactionFormItemValues[];
   merchantId: string;
   note: string | null;
+  tagNames: string[];
 };
 
 export type TransactionFormItemValues = {
@@ -149,6 +152,36 @@ function parseTransactionItems(
   return valid(items);
 }
 
+function parseTransactionTagNames(
+  formData: FormData,
+): ValidationResult<string[], TransactionValidationErrorCode> {
+  const tagNames: string[] = [];
+
+  for (const value of formData.getAll("tagName")) {
+    const tagName = String(value).trim();
+
+    if (!tagName) continue;
+
+    if (isTransactionTagNameTooLong(tagName)) {
+      return invalid(transactionErrorCodes.tagInvalid);
+    }
+
+    if (
+      !tagNames.some(
+        (currentName) => currentName.toLowerCase() === tagName.toLowerCase(),
+      )
+    ) {
+      if (tagNames.length >= maxTransactionTagCount) {
+        return invalid(transactionErrorCodes.tagInvalid);
+      }
+
+      tagNames.push(tagName);
+    }
+  }
+
+  return valid(tagNames);
+}
+
 export function validateTransactionForm(
   formData: FormData,
 ): ValidationResult<TransactionFormValues, TransactionValidationErrorCode> {
@@ -216,11 +249,18 @@ export function validateTransactionForm(
     return noteResult;
   }
 
+  const tagNamesResult = parseTransactionTagNames(formData);
+
+  if (!tagNamesResult.ok) {
+    return tagNamesResult;
+  }
+
   return valid({
     accountId: accountIdResult.value,
     items: itemsResult.value,
     merchantId: merchantIdResult.value,
     note: noteResult.value,
+    tagNames: tagNamesResult.value,
     transactionAt,
     type: typeResult.value,
   });

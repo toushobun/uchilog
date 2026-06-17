@@ -90,6 +90,10 @@ const newTransactionErrorMessages: Partial<
     newTransactionPageErrorMessages.dateInvalid,
   [transactionErrorCodes.merchantInvalid]:
     newTransactionPageErrorMessages.merchantInvalid,
+  [transactionErrorCodes.noteTooLong]:
+    newTransactionPageErrorMessages.noteTooLong,
+  [transactionErrorCodes.tagInvalid]:
+    newTransactionPageErrorMessages.tagInvalid,
   [transactionErrorCodes.typeInvalid]:
     newTransactionPageErrorMessages.typeInvalid,
 };
@@ -109,6 +113,8 @@ const editTransactionErrorMessages: Partial<
     editTransactionPageErrorMessages.merchantInvalid,
   [transactionErrorCodes.noteTooLong]:
     editTransactionPageErrorMessages.noteTooLong,
+  [transactionErrorCodes.tagInvalid]:
+    editTransactionPageErrorMessages.tagInvalid,
   [transactionErrorCodes.typeInvalid]:
     editTransactionPageErrorMessages.typeInvalid,
   [transactionErrorCodes.updateFailed]:

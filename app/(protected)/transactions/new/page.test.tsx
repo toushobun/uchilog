@@ -81,6 +81,7 @@ describe("TransactionsNewPage", () => {
       categoryOptions: [],
       ledgerName: "家庭账本",
       merchantOptions: [],
+      tagOptions: [],
     };
     mocks.loadNewTransactionView.mockResolvedValue(view);
 

@@ -20,6 +20,10 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 
+import {
+  maxTransactionTagCount,
+  maxTransactionTagNameLength,
+} from "@/constants/transactions";
 import { routePaths } from "config/paths";
 import { designTokens } from "theme/theme";
 import {
@@ -27,10 +31,12 @@ import {
   type TransactionAccountOption,
   type TransactionCategoryOption,
   type TransactionMerchantOption,
+  type TransactionTagOption,
   type TransactionType,
 } from "types/transactions";
 import { getMerchantInitial } from "utils/merchants";
 import { transactionFormValidationMessages } from "utils/transactionMessages";
+import { transactionTagValidationMessages } from "utils/transactionTagValidationMessages";
 import { getNowDateTimeLocalValue } from "utils/transactions";
 
 export type TransactionFormInitialValues = {
@@ -38,6 +44,7 @@ export type TransactionFormInitialValues = {
   items: TransactionFormInitialItem[];
   merchantId: string;
   note: string;
+  tagNames: string[];
   transactionAt: string;
   transactionRecordId?: string;
   type: TransactionType;
@@ -59,6 +66,7 @@ type TransactionFormProps = {
   ledgerName?: string;
   merchantOptions: TransactionMerchantOption[];
   submitLabel?: string;
+  tagOptions: TransactionTagOption[];
   title?: string;
 };
 
@@ -79,18 +87,6 @@ const emptyItemsByType: Record<TransactionType, TransactionFormItem[]> = {
   income: [],
 };
 
-// 后续标签维护功能落地后，这里会替换为可选择且可保存的标签数据。
-const tagPreviewOptions = [
-  { label: "日常", sx: { bgcolor: "#E3E7F0", color: "#4D5565" } },
-  { label: "腐败", sx: { bgcolor: "#FFE2B9", color: "#A45B00" } },
-  { label: "公司", sx: { bgcolor: "#BFE9E5", color: "#176A66" } },
-  { label: "人情", sx: { bgcolor: "#FFD5E3", color: "#A33D62" } },
-  { label: "孩子", sx: { bgcolor: "#D8EFC5", color: "#4E7A2E" } },
-  { label: "旅游", sx: { bgcolor: "#DDD2FF", color: "#5B48A0" } },
-  { label: "装修", sx: { bgcolor: "#FFE6C7", color: "#A7611A" } },
-  { label: "结婚", sx: { bgcolor: "#FFD9C7", color: "#A45230" } },
-] as const;
-
 export function TransactionForm({
   action,
   accountOptions,
@@ -102,6 +98,7 @@ export function TransactionForm({
   ledgerName,
   merchantOptions,
   submitLabel = "保存记账",
+  tagOptions,
   title = "新增记账",
 }: TransactionFormProps) {
   const transactionAtInputRef = useRef<HTMLInputElement>(null);
@@ -110,6 +107,7 @@ export function TransactionForm({
   const merchantFieldRef = useRef<HTMLDivElement>(null);
   const accountFieldRef = useRef<HTMLDivElement>(null);
   const itemsFieldRef = useRef<HTMLDivElement>(null);
+  const tagsFieldRef = useRef<HTMLDivElement>(null);
   const [selectedType, setSelectedType] = useState<TransactionType>(
     initialValues?.type ?? "expense",
   );
@@ -123,6 +121,7 @@ export function TransactionForm({
     account?: string;
     items?: string;
     merchant?: string;
+    tags?: string;
   }>({});
   const [itemsByType, setItemsByType] = useState<
     Record<TransactionType, TransactionFormItem[]>
@@ -135,6 +134,10 @@ export function TransactionForm({
     category?: string;
     amount?: string;
   }>({});
+  const [selectedTagNames, setSelectedTagNames] = useState<string[]>(
+    initialValues?.tagNames ?? [],
+  );
+  const [newTagName, setNewTagName] = useState("");
 
   const items = itemsByType[selectedType];
 
@@ -179,6 +182,9 @@ export function TransactionForm({
     () => new Map(categoryOptions.map((category) => [category.id, category])),
     [categoryOptions],
   );
+  const suggestedTagOptions = tagOptions.filter(
+    (tag) => !hasTagName(selectedTagNames, tag.name),
+  );
 
   const itemSummaries = items.map((item) => ({
     ...item,
@@ -199,10 +205,12 @@ export function TransactionForm({
         isValidMoneyText(item.amount)
       );
     });
+  const hasValidTags = !getSelectedTagError(selectedTagNames);
   const isSubmitDisabled =
     accountOptions.length === 0 ||
     merchantOptions.length === 0 ||
-    filteredCategoryOptions.length === 0;
+    filteredCategoryOptions.length === 0 ||
+    !hasValidTags;
   const signedTotalAmount =
     items.length > 0
       ? formatSignedAmount(selectedType, totalAmount)
@@ -232,8 +240,9 @@ export function TransactionForm({
       ...currentItems,
       { amount, categoryId, id: itemId },
     ]);
-    if (fieldErrors.items)
+    if (fieldErrors.items) {
       setFieldErrors((prev) => ({ ...prev, items: undefined }));
+    }
   }
 
   function updateItem(
@@ -251,6 +260,40 @@ export function TransactionForm({
     setCurrentItems((currentItems) =>
       currentItems.filter((item) => item.id !== itemId),
     );
+  }
+
+  function addTag(tagName: string) {
+    const normalizedTagName = tagName.trim();
+
+    if (!normalizedTagName) return;
+
+    const tagError = getNextTagError(selectedTagNames, normalizedTagName);
+
+    if (tagError) {
+      setFieldErrors((prev) => ({ ...prev, tags: tagError }));
+      return;
+    }
+
+    setSelectedTagNames((currentTagNames) => [
+      ...currentTagNames,
+      normalizedTagName,
+    ]);
+    setNewTagName("");
+    if (fieldErrors.tags) {
+      setFieldErrors((prev) => ({ ...prev, tags: undefined }));
+    }
+  }
+
+  function removeTag(tagName: string) {
+    setSelectedTagNames((currentTagNames) =>
+      currentTagNames.filter(
+        (currentTagName) =>
+          currentTagName.toLowerCase() !== tagName.toLowerCase(),
+      ),
+    );
+    if (fieldErrors.tags) {
+      setFieldErrors((prev) => ({ ...prev, tags: undefined }));
+    }
   }
 
   function openSheet() {
@@ -286,16 +329,19 @@ export function TransactionForm({
 
   function handlePickerCategoryToggle(categoryId: string) {
     setPickerCategoryId((prev) => (prev === categoryId ? "" : categoryId));
-    if (pickerErrors.category)
+    if (pickerErrors.category) {
       setPickerErrors((prev) => ({ ...prev, category: undefined }));
+    }
   }
 
   function handlePickerAdd() {
     const errors: typeof pickerErrors = {};
-    if (!pickerCategoryId)
+    if (!pickerCategoryId) {
       errors.category = transactionFormValidationMessages.categoryRequired;
-    if (!isValidMoneyText(pickerAmount))
+    }
+    if (!isValidMoneyText(pickerAmount)) {
       errors.amount = transactionFormValidationMessages.amountInvalid;
+    }
 
     if (Object.keys(errors).length > 0) {
       setPickerErrors(errors);
@@ -310,22 +356,32 @@ export function TransactionForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const errors: typeof fieldErrors = {};
-    if (!selectedMerchantId)
+    const tagError = getSelectedTagError(selectedTagNames);
+
+    if (!selectedMerchantId) {
       errors.merchant = transactionFormValidationMessages.merchantRequired;
-    if (!selectedAccountId)
+    }
+    if (!selectedAccountId) {
       errors.account = transactionFormValidationMessages.accountRequired;
-    if (!hasValidItems)
+    }
+    if (!hasValidItems) {
       errors.items = transactionFormValidationMessages.itemsRequired;
+    }
+    if (tagError) {
+      errors.tags = tagError;
+    }
 
     if (Object.keys(errors).length > 0) {
-      event.preventDefault();
+      cancelDefaultEvent(event);
       setFieldErrors(errors);
       setTimeout(() => {
         const firstErrorRef = errors.merchant
           ? merchantFieldRef
           : errors.account
             ? accountFieldRef
-            : itemsFieldRef;
+            : errors.items
+              ? itemsFieldRef
+              : tagsFieldRef;
         firstErrorRef.current?.scrollIntoView?.({
           behavior: "smooth",
           block: "center",
@@ -396,6 +452,9 @@ export function TransactionForm({
           />
         ) : null}
         <input name="type" type="hidden" value={selectedType} />
+        {selectedTagNames.map((tagName) => (
+          <input key={tagName} name="tagName" type="hidden" value={tagName} />
+        ))}
 
         <ToggleButtonGroup
           aria-label="类型"
@@ -437,8 +496,9 @@ export function TransactionForm({
           name="merchantId"
           onChange={(event) => {
             setSelectedMerchantId(event.target.value);
-            if (fieldErrors.merchant)
+            if (fieldErrors.merchant) {
               setFieldErrors((prev) => ({ ...prev, merchant: undefined }));
+            }
           }}
           select
           value={selectedMerchantId}
@@ -481,8 +541,9 @@ export function TransactionForm({
           name="accountId"
           onChange={(event) => {
             setSelectedAccountId(event.target.value);
-            if (fieldErrors.account)
+            if (fieldErrors.account) {
               setFieldErrors((prev) => ({ ...prev, account: undefined }));
+            }
           }}
           select
           value={selectedAccountId}
@@ -594,6 +655,7 @@ export function TransactionForm({
             )}
 
             <Button
+              aria-label="添加明细"
               disabled={filteredCategoryOptions.length === 0}
               onClick={openSheet}
               type="button"
@@ -636,25 +698,103 @@ export function TransactionForm({
           </Stack>
         </Paper>
 
-        <Stack spacing={1}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-            标签（选填）
-          </Typography>
-          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-            {tagPreviewOptions.map((tag) => (
-              <Chip
-                key={tag.label}
-                label={tag.label}
-                size="small"
-                sx={{
-                  borderRadius: 999,
-                  fontWeight: 700,
-                  ...tag.sx,
+        <Paper ref={tagsFieldRef} variant="outlined" sx={{ p: 2 }}>
+          <Stack spacing={1.5}>
+            <Stack spacing={0.5}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                标签（选填）
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                可从既有标签选择，也可以直接输入新标签。
+              </Typography>
+            </Stack>
+
+            {selectedTagNames.length > 0 ? (
+              <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+                {selectedTagNames.map((tagName) => (
+                  <Chip
+                    key={tagName}
+                    label={tagName}
+                    onDelete={() => removeTag(tagName)}
+                    size="small"
+                    sx={{ borderRadius: 999, fontWeight: 700 }}
+                  />
+                ))}
+              </Stack>
+            ) : (
+              <Typography color="text.secondary" variant="body2">
+                还没有选择标签。
+              </Typography>
+            )}
+
+            {suggestedTagOptions.length > 0 ? (
+              <Stack spacing={0.75}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  已有标签
+                </Typography>
+                <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+                  {suggestedTagOptions.map((tag) => (
+                    <Chip
+                      key={tag.id}
+                      label={tag.name}
+                      onClick={() => addTag(tag.name)}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        borderColor: tag.color ?? undefined,
+                        borderRadius: 999,
+                        color: tag.color ?? designTokens.color.brand.main,
+                        fontWeight: 700,
+                      }}
+                    />
+                  ))}
+                </Stack>
+              </Stack>
+            ) : null}
+
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ alignItems: "flex-start" }}
+            >
+              <TextField
+                error={!!fieldErrors.tags}
+                fullWidth
+                helperText={
+                  fieldErrors.tags ?? transactionTagValidationMessages.invalid
+                }
+                label="新增标签"
+                onChange={(event) => {
+                  setNewTagName(event.target.value);
+                  if (fieldErrors.tags) {
+                    setFieldErrors((prev) => ({ ...prev, tags: undefined }));
+                  }
                 }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return;
+
+                  cancelDefaultEvent(event);
+                  addTag(newTagName);
+                }}
+                size="small"
+                value={newTagName}
               />
-            ))}
+              <Button
+                onClick={() => addTag(newTagName)}
+                type="button"
+                variant="outlined"
+                sx={{
+                  borderColor: designTokens.color.brand.main,
+                  color: designTokens.color.brand.main,
+                  flexShrink: 0,
+                  height: 40,
+                }}
+              >
+                追加
+              </Button>
+            </Stack>
           </Stack>
-        </Stack>
+        </Paper>
 
         <TextField
           defaultValue={initialValues?.note ?? ""}
@@ -690,6 +830,14 @@ export function TransactionForm({
                 value={`${item.category ? formatCategoryName(item.category) : "未选择分类"} / ${item.amount || "未填写金额"}`}
               />
             ))}
+            <SummaryRow
+              label="标签"
+              value={
+                selectedTagNames.length > 0
+                  ? selectedTagNames.join("、")
+                  : "未选择"
+              }
+            />
             <Divider />
             <SummaryRow label="合计金额" value={signedTotalAmount} strong />
           </Stack>
@@ -904,11 +1052,12 @@ export function TransactionForm({
                     label="金额"
                     onChange={(event) => {
                       setPickerAmount(event.target.value);
-                      if (pickerErrors.amount)
+                      if (pickerErrors.amount) {
                         setPickerErrors((prev) => ({
                           ...prev,
                           amount: undefined,
                         }));
+                      }
                     }}
                     placeholder="0"
                     size="small"
@@ -1016,6 +1165,10 @@ function buildCategoryPickerGroups(categories: TransactionCategoryOption[]) {
   }, []);
 }
 
+function cancelDefaultEvent(event: { preventDefault(): void }) {
+  event.preventDefault();
+}
+
 function formatCategoryName(category: TransactionCategoryOption) {
   return category.parentName
     ? `${category.parentName} / ${category.name}`
@@ -1034,6 +1187,7 @@ function formatDateTimeLocalInputValue(value: string) {
   const minutes = padDatePart(date.getMinutes());
   const seconds = padDatePart(date.getSeconds());
 
+  // datetime-local 值不含毫秒。
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
@@ -1043,6 +1197,43 @@ function formatSignedAmount(type: TransactionType, amount: number) {
   if (normalizedAmount === 0) return "0";
 
   return `${type === "expense" ? "-" : "+"}${normalizedAmount}`;
+}
+
+function getNextTagError(tagNames: string[], tagName: string) {
+  if (tagName.length > maxTransactionTagNameLength) {
+    return transactionTagValidationMessages.nameTooLong;
+  }
+
+  if (hasTagName(tagNames, tagName)) {
+    return transactionTagValidationMessages.duplicate;
+  }
+
+  // 新标签尚未追加，因此当前列表已满时拒绝第 11 个标签。
+  if (tagNames.length >= maxTransactionTagCount) {
+    return transactionTagValidationMessages.tooMany;
+  }
+
+  return null;
+}
+
+function getSelectedTagError(tagNames: string[]) {
+  if (tagNames.length > maxTransactionTagCount) {
+    return transactionTagValidationMessages.tooMany;
+  }
+
+  if (
+    tagNames.some((tagName) => tagName.length > maxTransactionTagNameLength)
+  ) {
+    return transactionTagValidationMessages.nameTooLong;
+  }
+
+  return null;
+}
+
+function hasTagName(tagNames: string[], tagName: string) {
+  return tagNames.some(
+    (currentTagName) => currentTagName.toLowerCase() === tagName.toLowerCase(),
+  );
 }
 
 function isValidMoneyText(value: string) {

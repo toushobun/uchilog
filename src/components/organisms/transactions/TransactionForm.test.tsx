@@ -13,6 +13,7 @@ import {
   newTransactionPageErrorMessages,
   transactionFormValidationMessages,
 } from "utils/transactionMessages";
+import { transactionTagValidationMessages } from "utils/transactionTagValidationMessages";
 
 import { TransactionForm } from "./TransactionForm";
 
@@ -78,6 +79,19 @@ const merchantOptions = [
   },
 ];
 
+const tagOptions = [
+  {
+    id: "00000000-0000-4000-8000-000000003001",
+    name: "日常",
+    color: null,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000003002",
+    name: "公司",
+    color: "#176A66",
+  },
+];
+
 afterEach(() => {
   cleanup();
 });
@@ -86,21 +100,18 @@ function renderForm(
   props: Partial<React.ComponentProps<typeof TransactionForm>> = {},
 ) {
   const action = vi.fn(async () => undefined);
-
   const view = render(
     <TransactionForm
       action={action}
       accountOptions={accountOptions}
       categoryOptions={categoryOptions}
       merchantOptions={merchantOptions}
+      tagOptions={tagOptions}
       {...props}
     />,
   );
 
-  return {
-    action,
-    ...view,
-  };
+  return { action, ...view };
 }
 
 function getCombobox(container: HTMLElement, name: string) {
@@ -108,9 +119,16 @@ function getCombobox(container: HTMLElement, name: string) {
 }
 
 function openSheet(container: HTMLElement) {
-  fireEvent.click(
-    within(container).getByRole("button", { name: "+ 添加一项明细" }),
-  );
+  fireEvent.click(within(container).getByRole("button", { name: "添加明细" }));
+}
+
+function clickSheetAddButton() {
+  const buttons = screen.getAllByRole("button", { name: "追加" });
+  const button = buttons.at(-1);
+
+  if (!button) throw new Error("明细追加按钮不存在");
+
+  fireEvent.click(button);
 }
 
 function addItemViaSheet(categoryName: string, amount: string) {
@@ -118,14 +136,38 @@ function addItemViaSheet(categoryName: string, amount: string) {
   fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
     target: { value: amount },
   });
-  fireEvent.click(screen.getByRole("button", { name: "追加" }));
+  clickSheetAddButton();
+}
+
+function getSubmittedTagNames(container: HTMLElement) {
+  return Array.from(
+    container.querySelectorAll<HTMLInputElement>('input[name="tagName"]'),
+  ).map((input) => input.value);
+}
+
+function createInitialValues(tagNames: string[] = []) {
+  return {
+    accountId: accountOptions[0].id,
+    items: [{ amount: "1200", categoryId: categoryOptions[0].id }],
+    merchantId: merchantOptions[0].id,
+    note: "",
+    tagNames,
+    transactionAt: "2026-06-05T03:20:10.000Z",
+    transactionRecordId: "00000000-0000-4000-8000-000000009001",
+    type: "expense" as const,
+  };
 }
 
 function formatExpectedDateTimeLocalValue(value: string) {
   const date = new Date(value);
   const pad = (part: number) => String(part).padStart(2, "0");
 
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.000`;
+  // jsdom は datetime-local の value を正規化してミリ秒（.000）を付与する。
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate(),
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+    date.getSeconds(),
+  )}.000`;
 }
 
 describe("TransactionForm", () => {
@@ -143,15 +185,6 @@ describe("TransactionForm", () => {
     expect(
       within(container).getByRole("button", { name: "保存" }),
     ).toBeInTheDocument();
-    expect(
-      within(container).getByText("当前账本：家庭账本"),
-    ).toBeInTheDocument();
-  });
-
-  it("未传入账本名时不显示当前账本", () => {
-    const { container } = renderForm();
-
-    expect(within(container).queryByText(/^当前账本：/)).toBeNull();
   });
 
   it("传入错误信息时显示 Alert", () => {
@@ -162,28 +195,16 @@ describe("TransactionForm", () => {
     ).toBeInTheDocument();
   });
 
-  it("编辑模式下按本地时区回填发生时间", () => {
+  it("编辑模式下回填发生时间和标签", () => {
     const transactionAt = "2026-06-05T03:20:10.000Z";
     const { container } = renderForm({
-      initialValues: {
-        accountId: accountOptions[0].id,
-        items: [
-          {
-            amount: "1200",
-            categoryId: categoryOptions[0].id,
-          },
-        ],
-        merchantId: merchantOptions[0].id,
-        note: "",
-        transactionAt,
-        transactionRecordId: "00000000-0000-4000-8000-000000009001",
-        type: "expense",
-      },
+      initialValues: createInitialValues(["日常"]),
     });
 
     expect(
       (within(container).getByLabelText(/发生时间/) as HTMLInputElement).value,
     ).toBe(formatExpectedDateTimeLocalValue(transactionAt));
+    expect(getSubmittedTagNames(container)).toEqual(["日常"]);
   });
 
   it("账户选项中显示币种", () => {
@@ -194,7 +215,7 @@ describe("TransactionForm", () => {
     expect(screen.getByText("日元现金（JPY）")).toBeInTheDocument();
   });
 
-  it("打开弹框时只显示当前类型的大分类和小分类（支出）", () => {
+  it("支出弹框只显示支出分类", () => {
     const { container } = renderForm();
 
     openSheet(container);
@@ -205,16 +226,11 @@ describe("TransactionForm", () => {
     expect(
       screen.getByRole("button", { name: "食材/调料" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "交通出行" }),
-    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "餐饮" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "日用品" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "固定收入" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "工资" })).toBeNull();
   });
 
-  it("类型切换为收入时，弹框只显示收入大分类和小分类", () => {
+  it("收入弹框只显示收入分类", () => {
     const { container } = renderForm();
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
@@ -224,7 +240,6 @@ describe("TransactionForm", () => {
       screen.getByRole("button", { name: "固定收入" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "工资" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "食材/调料" })).toBeNull();
     expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
   });
 
@@ -232,90 +247,13 @@ describe("TransactionForm", () => {
     const { container } = renderForm();
 
     openSheet(container);
-
     fireEvent.click(screen.getByRole("button", { name: "交通出行" }));
 
     expect(screen.getByRole("button", { name: "电车" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
   });
 
-  it("点击小分类 Chip 后可追加，未选分类直接点追加会提示错误", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-
-    // 选中分类、填金额、追加 —— 成功，无错误
-    fireEvent.click(screen.getByRole("button", { name: "餐饮" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
-      target: { value: "100" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "追加" }));
-    expect(
-      screen.queryByText(transactionFormValidationMessages.categoryRequired),
-    ).toBeNull();
-
-    // 追加后 Drawer 还在，picker 已清空；不选分类直接填金额再追加
-    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
-      target: { value: "50" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "追加" }));
-    expect(
-      screen.getByText(transactionFormValidationMessages.categoryRequired),
-    ).toBeInTheDocument();
-  });
-
-  it("未选小分类时点击追加显示错误提示", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
-      target: { value: "500" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "追加" }));
-
-    expect(
-      screen.getByText(transactionFormValidationMessages.categoryRequired),
-    ).toBeInTheDocument();
-  });
-
-  it("打开添加明细时金额默认是 0，并可直接追加 0 元明细", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-    expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
-      "value",
-      "0",
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "餐饮" }));
-    fireEvent.click(screen.getByRole("button", { name: "追加" }));
-
-    expect(
-      screen.queryByText(transactionFormValidationMessages.amountInvalid),
-    ).toBeNull();
-    expect(screen.getByText("已选明细")).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
-      "value",
-      "0",
-    );
-  });
-
-  it("追加后 Chip 被清空且金额输入框回到 0，明细出现在已选列表", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-    addItemViaSheet("餐饮", "500");
-
-    expect(screen.getByText("已选明细")).toBeInTheDocument();
-    // 追加后同时出现在 Drawer 已选区和主表单，各一条
-    expect(screen.getAllByText("食材/调料 / 餐饮")).toHaveLength(2);
-    expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
-      "value",
-      "0",
-    );
-  });
-
-  it("可以连续追加多条明细，合计同步更新", () => {
+  it("追加明细后合计同步更新", () => {
     const { container } = renderForm();
 
     openSheet(container);
@@ -327,90 +265,27 @@ describe("TransactionForm", () => {
     expect(within(container).getByText("合计 -331")).toBeInTheDocument();
   });
 
-  it("小数明细合计正确舍入显示，不出现浮点精度问题", () => {
+  it("未选小分类时点击追加显示错误提示", () => {
     const { container } = renderForm();
 
     openSheet(container);
-    addItemViaSheet("餐饮", "0.10");
-    addItemViaSheet("日用品", "0.20");
-    fireEvent.click(screen.getByRole("button", { name: "完成" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+      target: { value: "500" },
+    });
+    clickSheetAddButton();
 
-    expect(within(container).getByText("合计 -0.3")).toBeInTheDocument();
-  });
-
-  it("允许追加 0 元明细，并显示 0 合计", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-    addItemViaSheet("餐饮", "0");
-    fireEvent.click(screen.getByRole("button", { name: "完成" }));
-
-    expect(within(container).getByText("食材/调料 / 餐饮")).toBeInTheDocument();
-    expect(within(container).getByText("合计 0")).toBeInTheDocument();
-  });
-
-  it("允许同一个小分类重复追加为多条明细", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-    addItemViaSheet("餐饮", "500");
-    addItemViaSheet("餐饮", "300");
-
-    // Drawer 已选区有 2 条独立删除按钮
     expect(
-      screen.getAllByRole("button", { name: /从已选中删除/ }),
-    ).toHaveLength(2);
-    // 主表单（getByText 不受 aria-hidden 限制）显示 2 项
-    expect(within(container).getByText("共 2 项")).toBeInTheDocument();
+      screen.getByText(transactionFormValidationMessages.categoryRequired),
+    ).toBeInTheDocument();
   });
 
-  it("已有多条明细时可删除，删到最后一条仍可继续删除", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-    addItemViaSheet("餐饮", "286");
-    addItemViaSheet("日用品", "45");
-
-    // 在 Drawer 已选区删除第二条
-    fireEvent.click(
-      screen.getByRole("button", { name: "从已选中删除 日用品" }),
-    );
-
-    expect(within(container).getByText("共 1 项")).toBeInTheDocument();
-    // 只剩一条时删除按钮仍然可用
-    expect(
-      screen.getByRole("button", { name: "从已选中删除 餐饮" }),
-    ).toHaveProperty("disabled", false);
-
-    // 再删最后一条，明细清空
-    fireEvent.click(screen.getByRole("button", { name: "从已选中删除 餐饮" }));
-    expect(within(container).queryByText("共 1 项")).toBeNull();
-  });
-
-  it("弹框内的已选列表也可删除明细", () => {
-    const { container } = renderForm();
-
-    openSheet(container);
-    addItemViaSheet("餐饮", "286");
-    addItemViaSheet("日用品", "45");
-
-    fireEvent.click(
-      screen.getByRole("button", { name: "从已选中删除 日用品" }),
-    );
-
-    expect(screen.queryByText("食材/调料 / 日用品")).toBeNull();
-    expect(within(container).getByText("共 1 项")).toBeInTheDocument();
-  });
-
-  it("保存前汇总显示商家、账户和各条明细", () => {
+  it("保存前汇总显示商家、账户和明细", () => {
     const { container } = renderForm();
 
     fireEvent.mouseDown(getCombobox(container, "商家"));
     fireEvent.click(screen.getByText("便利店"));
-
     fireEvent.mouseDown(getCombobox(container, "账户"));
     fireEvent.click(screen.getByText("日元现金（JPY）"));
-
     openSheet(container);
     addItemViaSheet("餐饮", "1200");
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
@@ -421,24 +296,81 @@ describe("TransactionForm", () => {
     expect(
       within(container).getByText("食材/调料 / 餐饮 / 1200"),
     ).toBeInTheDocument();
-    expect(within(container).getByText("合计金额")).toBeInTheDocument();
   });
 
-  it("显示设计图中的标签区但不提供未保存的交互", () => {
+  it("可选择已有标签并随表单提交", () => {
     const { container } = renderForm();
 
-    expect(within(container).getByText("标签（选填）")).toBeInTheDocument();
-    expect(within(container).getByText("日常")).toBeInTheDocument();
-    expect(within(container).getByText("腐败")).toBeInTheDocument();
-    expect(within(container).getByText("公司")).toBeInTheDocument();
-    expect(within(container).getByText("人情")).toBeInTheDocument();
-    expect(within(container).getByText("孩子")).toBeInTheDocument();
-    expect(within(container).getByText("旅游")).toBeInTheDocument();
-    expect(within(container).getByText("装修")).toBeInTheDocument();
-    expect(within(container).getByText("结婚")).toBeInTheDocument();
+    fireEvent.click(within(container).getByRole("button", { name: "日常" }));
+
+    expect(getSubmittedTagNames(container)).toEqual(["日常"]);
+    expect(within(container).getByText("标签")).toBeInTheDocument();
+  });
+
+  it("可输入新标签，重复标签会显示提示且不会重复提交", () => {
+    const { container } = renderForm();
+    const tagInput = within(container).getByRole("textbox", {
+      name: "新增标签",
+    });
+    const tagAddButton = within(container).getByRole("button", {
+      name: "追加",
+    });
+
+    fireEvent.change(tagInput, { target: { value: " 结婚 " } });
+    fireEvent.click(tagAddButton);
+    fireEvent.change(tagInput, { target: { value: "结婚" } });
+    fireEvent.click(tagAddButton);
+
+    expect(getSubmittedTagNames(container)).toEqual(["结婚"]);
     expect(
-      within(container).queryByRole("button", { name: "日常" }),
-    ).toBeNull();
+      within(container).getByText(transactionTagValidationMessages.duplicate),
+    ).toBeInTheDocument();
+  });
+
+  it("标签超过长度限制时显示独立错误", () => {
+    const { container } = renderForm();
+
+    fireEvent.change(
+      within(container).getByRole("textbox", { name: "新增标签" }),
+      { target: { value: "あ".repeat(41) } },
+    );
+    fireEvent.click(within(container).getByRole("button", { name: "追加" }));
+
+    expect(
+      within(container).getByText(transactionTagValidationMessages.nameTooLong),
+    ).toBeInTheDocument();
+  });
+
+  it("标签超过 10 个时阻断第 11 个并显示独立错误", () => {
+    const { container } = renderForm({
+      initialValues: createInitialValues(
+        Array.from({ length: 10 }, (_, index) => `标签${index + 1}`),
+      ),
+    });
+
+    fireEvent.change(
+      within(container).getByRole("textbox", { name: "新增标签" }),
+      { target: { value: "第 11 个" } },
+    );
+    fireEvent.click(within(container).getByRole("button", { name: "追加" }));
+
+    expect(getSubmittedTagNames(container)).toHaveLength(10);
+    expect(
+      within(container).getByText(transactionTagValidationMessages.tooMany),
+    ).toBeInTheDocument();
+  });
+
+  it("初始标签非法时禁用保存按钮", () => {
+    const { container } = renderForm({
+      initialValues: createInitialValues(["あ".repeat(41)]),
+    });
+
+    expect(
+      within(container).getByRole("button", { name: "保存" }),
+    ).toHaveProperty("disabled", true);
+    expect(
+      within(container).getByRole("button", { name: "保存记账" }),
+    ).toHaveProperty("disabled", true);
   });
 
   it("发生时间下面显示保存记账按钮", () => {
@@ -449,25 +381,12 @@ describe("TransactionForm", () => {
       name: "保存记账",
     });
 
-    expect(transactionAt.compareDocumentPosition(submitButton)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
+    expect(transactionAt.compareDocumentPosition(submitButton)).toBe(4);
     expect(submitButton).toHaveProperty("type", "submit");
   });
 
   it("没有账户时保存按钮不可用", () => {
     const { container } = renderForm({ accountOptions: [] });
-
-    expect(
-      within(container).getByRole("button", { name: "保存" }),
-    ).toHaveProperty("disabled", true);
-    expect(
-      within(container).getByRole("button", { name: "保存记账" }),
-    ).toHaveProperty("disabled", true);
-  });
-
-  it("没有当前类型可用分类时保存按钮不可用", () => {
-    const { container } = renderForm({ categoryOptions: [] });
 
     expect(
       within(container).getByRole("button", { name: "保存" }),

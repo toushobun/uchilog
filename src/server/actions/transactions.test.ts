@@ -119,6 +119,7 @@ describe("createTransaction", () => {
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: "测试记录",
+      p_tag_names: [],
       p_transaction_at: "2026-06-04T01:30:05.000Z",
       p_type: "expense",
     });
@@ -147,6 +148,7 @@ describe("createTransaction", () => {
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: "测试记录",
+      p_tag_names: [],
       p_transaction_at: "2026-06-04T01:30:05.000Z",
       p_type: "expense",
     });
@@ -196,6 +198,7 @@ describe("updateTransaction", () => {
       p_ledger_id: ledgerId,
       p_merchant_id: merchantId,
       p_note: "测试记录",
+      p_tag_names: [],
       p_transaction_at: "2026-06-04T01:30:05.000Z",
       p_transaction_record_id: transactionRecordId,
       p_type: "expense",

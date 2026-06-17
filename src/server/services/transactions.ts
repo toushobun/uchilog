@@ -12,6 +12,7 @@ export type CreateTransactionParams = {
   ledgerId: string;
   merchantId: string;
   note: string | null;
+  tagNames: string[];
   transactionAt: string;
   type: TransactionType;
 };
@@ -30,23 +31,17 @@ export type VoidTransactionParams = {
   transactionRecordId: string;
 };
 
-function mapTransactionItems(items: CreateTransactionItemParams[]) {
-  return items.map((item) => ({
-    amount: item.amount,
-    categoryId: item.categoryId,
-  }));
-}
-
 export async function createTransactionService(
   params: CreateTransactionParams,
 ): Promise<ServiceResult<TransactionServiceErrorCode>> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("create_transaction", {
     p_account_id: params.accountId,
-    p_items: mapTransactionItems(params.items),
+    p_items: params.items,
     p_ledger_id: params.ledgerId,
     p_merchant_id: params.merchantId,
     p_note: params.note,
+    p_tag_names: params.tagNames,
     p_transaction_at: params.transactionAt,
     p_type: params.type,
   });
@@ -64,10 +59,11 @@ export async function updateTransactionService(
   const supabase = await createClient();
   const { error } = await supabase.rpc("update_transaction", {
     p_account_id: params.accountId,
-    p_items: mapTransactionItems(params.items),
+    p_items: params.items,
     p_ledger_id: params.ledgerId,
     p_merchant_id: params.merchantId,
     p_note: params.note,
+    p_tag_names: params.tagNames,
     p_transaction_at: params.transactionAt,
     p_transaction_record_id: params.transactionRecordId,
     p_type: params.type,

@@ -40,6 +40,19 @@ const merchantOptions = [
   },
 ];
 
+const tagOptions = [
+  {
+    id: "00000000-0000-4000-8000-000000003001",
+    name: "日常",
+    color: null,
+  },
+  {
+    id: "00000000-0000-4000-8000-000000003002",
+    name: "公司",
+    color: "#176A66",
+  },
+];
+
 const meta = {
   title: "Templates/Transactions/TransactionFormPage",
   component: NewTransactionTemplate,
@@ -50,6 +63,7 @@ const meta = {
     errorMessage: null,
     ledgerName: "家庭账本",
     merchantOptions,
+    tagOptions,
   },
 } satisfies Meta<typeof NewTransactionTemplate>;
 
@@ -73,5 +87,6 @@ export const EmptyOptions: Story = {
     accountOptions: [],
     categoryOptions: [],
     merchantOptions: [],
+    tagOptions: [],
   },
 };

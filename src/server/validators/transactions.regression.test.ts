@@ -33,7 +33,7 @@ function createFormData(overrides: Record<string, string> = {}) {
 }
 
 describe("validateTransactionForm regression", () => {
-  it("accepts multiple items, zero amount, and required merchant field", () => {
+  it("接受多条明细、0 元金额和必填商家字段", () => {
     const formData = createFormData();
     formData.append("itemCategoryId", secondCategoryId);
     formData.append("itemAmount", "0");
@@ -50,13 +50,14 @@ describe("validateTransactionForm regression", () => {
         ],
         merchantId,
         note: "测试备注",
+        tagNames: [],
         transactionAt: "2026-06-05T03:20:10.000Z",
         type: "expense",
       },
     });
   });
 
-  it("rejects an empty merchant field", () => {
+  it("商家为空时校验失败", () => {
     expect(validateTransactionForm(createFormData({ merchantId: "" }))).toEqual(
       {
         error: transactionErrorCodes.merchantInvalid,
@@ -65,7 +66,7 @@ describe("validateTransactionForm regression", () => {
     );
   });
 
-  it("rejects mismatched item category and amount counts", () => {
+  it("明细分类与金额数量不一致时校验失败", () => {
     const formData = createFormData();
     formData.append("itemCategoryId", secondCategoryId);
 
@@ -75,7 +76,7 @@ describe("validateTransactionForm regression", () => {
     });
   });
 
-  it("rejects a negative item amount", () => {
+  it("明细金额为负数时校验失败", () => {
     expect(
       validateTransactionForm(createFormData({ itemAmount: "-1" })),
     ).toEqual({
@@ -90,6 +91,7 @@ describe("validateUpdateTransactionForm regression", () => {
     const formData = createFormData({ transactionRecordId });
     formData.append("itemCategoryId", secondCategoryId);
     formData.append("itemAmount", "45");
+    formData.append("tagName", "结婚");
 
     expect(validateUpdateTransactionForm(formData)).toEqual({
       ok: true,
@@ -101,6 +103,7 @@ describe("validateUpdateTransactionForm regression", () => {
         ],
         merchantId,
         note: "测试备注",
+        tagNames: ["结婚"],
         transactionAt: "2026-06-05T03:20:10.000Z",
         transactionRecordId,
         type: "expense",
@@ -108,7 +111,7 @@ describe("validateUpdateTransactionForm regression", () => {
     });
   });
 
-  it("rejects an invalid transactionRecordId before parsing update values", () => {
+  it("transactionRecordId 不合法时在解析更新值之前校验失败", () => {
     expect(
       validateUpdateTransactionForm(
         createFormData({ transactionRecordId: "invalid-id" }),

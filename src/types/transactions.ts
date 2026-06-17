@@ -45,6 +45,12 @@ export type TransactionMerchantOption = {
   icon_url: string | null;
 };
 
+export type TransactionTagOption = {
+  id: string;
+  name: string;
+  color: string | null;
+};
+
 export type TransactionListItem = TransactionRowItem & {
   note: string | null;
   recorder_name: string | null;
