@@ -71,7 +71,9 @@ describe("RegisterForm", () => {
     expect(screen.getByLabelText(/^密码/)).toBeInTheDocument();
     expect(screen.getByLabelText(/确认密码/)).toBeInTheDocument();
     expect(screen.getByTestId("turnstile-widget")).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: "通过人机验证" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "通过人机验证" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "获取验证码" })).toBeDisabled();
   });
 
@@ -81,7 +83,12 @@ describe("RegisterForm", () => {
       success: "如果该邮箱可以注册，我们已发送验证码。请查收邮件。",
     }));
 
-    render(<RegisterForm {...createDefaultProps()} requestOtpAction={requestOtpAction} />);
+    render(
+      <RegisterForm
+        {...createDefaultProps()}
+        requestOtpAction={requestOtpAction}
+      />,
+    );
 
     await fillRegisterFields();
 
@@ -99,7 +106,9 @@ describe("RegisterForm", () => {
     expect(formData.get(pwdFieldName)).toBe(demoPwd);
     expect(formData.get(pwdConfirmFieldName)).toBe(demoPwd);
     expect(formData.get("turnstileToken")).toBe("turnstile-token");
-    expect(await screen.findByText("验证码 10 分钟内有效。")).toBeInTheDocument();
+    expect(
+      await screen.findByText("验证码 10 分钟内有效。"),
+    ).toBeInTheDocument();
   });
 
   it("验证码错误时显示剩余次数", async () => {
@@ -128,7 +137,9 @@ describe("RegisterForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "完成注册" }));
 
     expect(
-      await screen.findByText("验证码不正确或已过期，请重新获取 还可尝试 4 次。"),
+      await screen.findByText(
+        "验证码不正确或已过期，请重新获取 还可尝试 4 次。",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -168,13 +179,20 @@ describe("RegisterForm", () => {
       success: "如果该邮箱可以注册，我们已发送验证码。请查收邮件。",
     }));
 
-    render(<RegisterForm {...createDefaultProps()} requestOtpAction={requestOtpAction} />);
+    render(
+      <RegisterForm
+        {...createDefaultProps()}
+        requestOtpAction={requestOtpAction}
+      />,
+    );
 
     await requestOtp();
     fireEvent.click(screen.getByRole("button", { name: "修改注册信息" }));
 
     expect(screen.queryByLabelText(/验证码/)).not.toBeInTheDocument();
-    expect(screen.getByText("注册信息已修改，请重新获取验证码。")).toBeInTheDocument();
+    expect(
+      screen.getByText("注册信息已修改，请重新获取验证码。"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "获取验证码" })).toBeDisabled();
   });
 });
