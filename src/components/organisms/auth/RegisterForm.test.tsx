@@ -25,9 +25,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const pwdFieldName = "pass" + "word";
-const pwdConfirmFieldName = `${pwdFieldName}Confirm`;
-const demoPwd = "abc12345";
+const passwordFieldName = "password";
+const passwordConfirmFieldName = `${passwordFieldName}Confirm`;
+const demoPassword = "abc12345";
 
 function createDefaultProps() {
   return {
@@ -46,10 +46,10 @@ async function fillRegisterFields() {
     target: { value: "山田太郎" },
   });
   fireEvent.change(screen.getByLabelText(/^密码/), {
-    target: { value: demoPwd },
+    target: { value: demoPassword },
   });
   fireEvent.change(screen.getByLabelText(/确认密码/), {
-    target: { value: demoPwd },
+    target: { value: demoPassword },
   });
 
   fireEvent.click(await screen.findByRole("button", { name: "通过人机验证" }));
@@ -109,8 +109,8 @@ describe("RegisterForm", () => {
     const formData = requestOtpAction.mock.calls[0][1] as FormData;
     expect(formData.get("email")).toBe("yamada@example.test");
     expect(formData.get("displayName")).toBe("山田太郎");
-    expect(formData.get(pwdFieldName)).toBe(demoPwd);
-    expect(formData.get(pwdConfirmFieldName)).toBe(demoPwd);
+    expect(formData.get(passwordFieldName)).toBe(demoPassword);
+    expect(formData.get(passwordConfirmFieldName)).toBe(demoPassword);
     expect(formData.get("turnstileToken")).toBe("turnstile-token");
     expect(
       await screen.findByText("验证码 10 分钟内有效。"),
