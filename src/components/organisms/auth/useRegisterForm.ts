@@ -16,8 +16,8 @@ type Stage = "initial" | "sending" | "otp_input" | "submitting" | "done";
 type Snapshot = {
   displayName: string;
   email: string;
-  pw: string;
-  pw2: string;
+  password: string;
+  passwordConfirm: string;
 };
 type Params = {
   requestOtpAction: (
@@ -32,15 +32,6 @@ type Params = {
   turnstileSiteKey: string;
 };
 
-const pwMax = authRules[
-  ("pass" + "wordMaxLength") as keyof typeof authRules
-] as number;
-const pwRule = authRules[
-  ("pass" + "wordRuleMessage") as keyof typeof authRules
-] as string;
-const isValidPw = authRules[
-  ("isValidRegister" + "Pass" + "word") as keyof typeof authRules
-] as (value: string) => boolean;
 const cooldownSeconds = 60;
 
 function getEmailError(email: string) {
@@ -63,25 +54,27 @@ function getDisplayNameError(displayName: string) {
   return `昵称最多 ${authRules.displayNameMaxLength} 个字符。`;
 }
 
-function getPwError(value: string) {
+function getPasswordError(value: string) {
   if (!value) {
     return "";
   }
 
-  if (value.length > pwMax) {
-    return `密码最多 ${pwMax} 个字符。`;
+  if (value.length > authRules.passwordMaxLength) {
+    return `密码最多 ${authRules.passwordMaxLength} 个字符。`;
   }
 
-  return isValidPw(value) ? "" : pwRule;
+  return authRules.isValidRegisterPassword(value)
+    ? ""
+    : authRules.passwordRuleMessage;
 }
 
-function getPw2Error(value: string, value2: string) {
+function getPasswordConfirmError(value: string, value2: string) {
   if (!value2) {
     return "";
   }
 
-  if (value2.length > pwMax) {
-    return `确认密码最多 ${pwMax} 个字符。`;
+  if (value2.length > authRules.passwordMaxLength) {
+    return `确认密码最多 ${authRules.passwordMaxLength} 个字符。`;
   }
 
   return value === value2 ? "" : "两次输入的密码不一致。";
@@ -105,8 +98,8 @@ export function useRegisterForm({
   const [stage, setStage] = useState<Stage>("initial");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
-  const [pw2, setPw2] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [otp, setOtp] = useState("");
   const [countdown, setCountdown] = useState(0);
   const [showTurnstile, setShowTurnstile] = useState(true);
@@ -120,16 +113,16 @@ export function useRegisterForm({
   const latestRef = useRef<Snapshot>({
     displayName: "",
     email: "",
-    pw: "",
-    pw2: "",
+    password: "",
+    passwordConfirm: "",
   });
   const requestSeenRef = useRef<RequestRegisterOtpActionState | null>(null);
   const submitSeenRef = useRef<SubmitRegisterOtpActionState | null>(null);
 
   latestRef.current.displayName = displayName;
   latestRef.current.email = email;
-  latestRef.current.pw = pw;
-  latestRef.current.pw2 = pw2;
+  latestRef.current.password = password;
+  latestRef.current.passwordConfirm = passwordConfirm;
 
   const isEmailValid =
     Boolean(email) &&
@@ -138,9 +131,14 @@ export function useRegisterForm({
   const isDisplayNameValid =
     Boolean(displayName) &&
     displayName.length <= authRules.displayNameMaxLength;
-  const isPwdValid = Boolean(pw) && pw.length <= pwMax && isValidPw(pw);
+  const isPwdValid =
+    Boolean(password) &&
+    password.length <= authRules.passwordMaxLength &&
+    authRules.isValidRegisterPassword(password);
   const isPwdConfirmValid =
-    Boolean(pw2) && pw2.length <= pwMax && pw === pw2;
+    Boolean(passwordConfirm) &&
+    passwordConfirm.length <= authRules.passwordMaxLength &&
+    password === passwordConfirm;
   const isOtpValid = /^\d{6}$/.test(otp);
   const isLocked = ["otp_input", "submitting", "done"].includes(stage);
   const isSubmittingOtp = isLocked && !showTurnstile;
@@ -242,11 +240,9 @@ export function useRegisterForm({
 
     setTurnstileToken("");
 
-    const resetKey = ("reset" + "Pass" + "word") as keyof RequestRegisterOtpActionState;
-
-    if (requestState[resetKey]) {
-      setPw("");
-      setPw2("");
+    if (requestState.resetPassword) {
+      setPassword("");
+      setPasswordConfirm("");
     }
 
     if (requestState.status === "success" || requestState.status === "neutral") {
@@ -311,12 +307,12 @@ export function useRegisterForm({
     handleOtpChange: (value: string) =>
       setOtp(value.replace(/\D/g, "").slice(0, 6)),
     handlePwdChange: (value: string) => {
-      setPw(value);
-      if (pw2) {
-        setPw2("");
+      setPassword(value);
+      if (passwordConfirm) {
+        setPasswordConfirm("");
       }
     },
-    handlePwdConfirmChange: setPw2,
+    handlePwdConfirmChange: setPasswordConfirm,
     handleStartResend: () => {
       if (!lockedSnapshot) {
         return;
@@ -324,8 +320,8 @@ export function useRegisterForm({
 
       setDisplayName(lockedSnapshot.displayName);
       setEmail(lockedSnapshot.email);
-      setPw(lockedSnapshot.pw);
-      setPw2(lockedSnapshot.pw2);
+      setPassword(lockedSnapshot.password);
+      setPasswordConfirm(lockedSnapshot.passwordConfirm);
       setTurnstileToken("");
       setShowTurnstile(true);
       setModificationNotice("");
@@ -341,10 +337,10 @@ export function useRegisterForm({
     modificationNotice,
     otp,
     otpError: otp && !/^\d{0,6}$/.test(otp) ? "验证码只能输入 6 位数字。" : "",
-    pwd: pw,
-    pwdConfirm: pw2,
-    pwdConfirmError: getPw2Error(pw, pw2),
-    pwdError: getPwError(pw),
+    pwd: password,
+    pwdConfirm: passwordConfirm,
+    pwdConfirmError: getPasswordConfirmError(password, passwordConfirm),
+    pwdError: getPasswordError(password),
     requestState,
     showTurnstile,
     stage,
