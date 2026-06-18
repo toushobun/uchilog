@@ -3,7 +3,7 @@ import { redirectIfAuthenticated } from "server/loaders/login";
 import { LoginTemplate } from "templates/login/Login";
 
 type LoginRouteProps = {
-  searchParams?: Promise<{
+  searchParams: Promise<{
     email?: string | string[];
   }>;
 };
@@ -22,6 +22,6 @@ export default async function LoginRoute({ searchParams }: LoginRouteProps) {
   const params = await searchParams;
 
   return (
-    <LoginTemplate action={login} initialEmail={getInitialEmail(params?.email)} />
+    <LoginTemplate action={login} initialEmail={getInitialEmail(params.email)} />
   );
 }
