@@ -8,15 +8,15 @@ import { RegisterForm } from "organisms/auth/RegisterForm";
 import { routePaths } from "config/paths";
 
 type RegisterTemplateProps = {
-  action: Parameters<typeof RegisterForm>[0]["action"];
-  validateEmailFormatAction: Parameters<
-    typeof RegisterForm
-  >[0]["validateEmailFormatAction"];
+  requestOtpAction: Parameters<typeof RegisterForm>[0]["requestOtpAction"];
+  submitOtpAction: Parameters<typeof RegisterForm>[0]["submitOtpAction"];
+  turnstileSiteKey: string;
 };
 
 export function RegisterTemplate({
-  action,
-  validateEmailFormatAction,
+  requestOtpAction,
+  submitOtpAction,
+  turnstileSiteKey,
 }: RegisterTemplateProps) {
   return (
     <Box
@@ -45,8 +45,9 @@ export function RegisterTemplate({
           </Typography>
 
           <RegisterForm
-            action={action}
-            validateEmailFormatAction={validateEmailFormatAction}
+            requestOtpAction={requestOtpAction}
+            submitOtpAction={submitOtpAction}
+            turnstileSiteKey={turnstileSiteKey}
           />
 
           <Typography
