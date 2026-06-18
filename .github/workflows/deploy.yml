@@ -27,14 +27,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Check for migration changes
         id: check-migrations
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
-          elif git diff --name-only HEAD^ HEAD -- supabase/migrations/ | grep -q .; then
+          elif git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- supabase/migrations/ | grep -q .; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
