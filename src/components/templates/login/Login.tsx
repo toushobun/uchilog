@@ -9,9 +9,13 @@ import { routePaths } from "config/paths";
 
 type LoginTemplateProps = {
   action: Parameters<typeof LoginForm>[0]["action"];
+  initialEmail?: string;
 };
 
-export function LoginTemplate({ action }: LoginTemplateProps) {
+export function LoginTemplate({
+  action,
+  initialEmail = "",
+}: LoginTemplateProps) {
   return (
     <Box
       component="main"
@@ -38,7 +42,7 @@ export function LoginTemplate({ action }: LoginTemplateProps) {
             登录后开始使用记账功能
           </Typography>
 
-          <LoginForm action={action} />
+          <LoginForm action={action} initialEmail={initialEmail} />
 
           <Typography
             color="text.secondary"
