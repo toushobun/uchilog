@@ -1,24 +1,29 @@
 "use client";
 
-import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import InputAdornment from "@mui/material/InputAdornment";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { displayNameMaxLength, passwordRuleText } from "lib/validators/auth";
-import type { EmailAvailabilityState, RegisterActionState } from "types/auth";
+import type {
+  RequestRegisterOtpActionState,
+  SubmitRegisterOtpActionState,
+} from "types/auth";
 
+import { registerFormMessages } from "./registerFormMessages";
 import { useRegisterForm } from "./useRegisterForm";
 
 type RegisterFormProps = {
-  action: (
-    prevState: RegisterActionState,
+  requestOtpAction: (
+    prevState: RequestRegisterOtpActionState,
     formData: FormData,
-  ) => Promise<RegisterActionState>;
-  validateEmailFormatAction: (email: string) => Promise<EmailAvailabilityState>;
+  ) => Promise<RequestRegisterOtpActionState>;
+  submitOtpAction: (
+    prevState: SubmitRegisterOtpActionState,
+    formData: FormData,
+  ) => Promise<SubmitRegisterOtpActionState>;
+  turnstileSiteKey: string;
 };
 
 const shrinkInputLabelSlotProps = {
@@ -27,163 +32,277 @@ const shrinkInputLabelSlotProps = {
   },
 } as const;
 
-export function RegisterForm({
-  action,
-  validateEmailFormatAction,
-}: RegisterFormProps) {
+const readonlyFieldSlotProps = {
+  htmlInput: {
+    readOnly: true,
+  },
+  inputLabel: {
+    shrink: true,
+  },
+} as const;
+
+export function RegisterForm(props: RegisterFormProps) {
   const {
+    alertMessage,
+    alertSeverity,
+    canRequestOtp,
+    canResendOtp,
+    canSubmitOtp,
+    cooldownSeconds,
     displayName,
     displayNameError,
     email,
-    emailCheckState,
     emailError,
-    formAction,
-    handleDisplayNameBlur,
-    handleDisplayNameChange,
-    handleEmailBlur,
-    handleEmailChange,
+    handleModifyRegisterInfo,
+    handleOtpCodeChange,
     handlePasswordBlur,
-    handlePasswordChange,
     handlePasswordConfirmBlur,
-    handlePasswordConfirmChange,
-    handleValidateEmailFormat,
-    isCheckingEmail,
-    isPending,
+    handlePrepareResend,
+    handleResendOtp,
+    handleRetryTurnstile,
+    isDisplayNameValid,
+    isDonePhase,
+    isEmailValid,
+    isFieldsLocked,
+    isPasswordConfirmValid,
+    isPasswordValid,
+    isRequestOtpPending,
+    isResendPreparing,
+    isSubmitOtpPending,
+    otpCode,
+    otpCodeError,
+    password,
+    passwordConfirm,
     passwordConfirmError,
-    passwordConfirmInputRef,
     passwordError,
-    passwordInputRef,
-    state,
-  } = useRegisterForm({ action, validateEmailFormatAction });
+    requestOtpFormAction,
+    requestValues,
+    setDisplayName,
+    setEmail,
+    setPassword,
+    setPasswordConfirm,
+    shouldShowTurnstile,
+    submitOtpFormAction,
+    submitOtpState,
+    turnstileContainerRef,
+    turnstileErrorMessage,
+    turnstileToken,
+  } = useRegisterForm(props);
+  const isAnyRequestPending =
+    isRequestOtpPending || isSubmitOtpPending || isDonePhase;
+
+  const retryTurnstileButton = turnstileErrorMessage ? (
+    <Button
+      type="button"
+      variant="outlined"
+      onClick={handleRetryTurnstile}
+      fullWidth
+    >
+      {registerFormMessages.retryTurnstile}
+    </Button>
+  ) : null;
 
   return (
-    <Box
-      component="form"
-      action={formAction}
-      sx={{
-        display: "grid",
-        gap: 2,
-      }}
-    >
-      {state.error ? <Alert severity="error">{state.error}</Alert> : null}
-      {state.success ? <Alert severity="success">{state.success}</Alert> : null}
-
-      <TextField
-        label="邮箱"
-        name="email"
-        type="email"
-        autoComplete="email"
-        error={Boolean(emailError)}
-        helperText={emailError || undefined}
-        placeholder="name@example.com"
-        value={email}
-        onBlur={handleEmailBlur}
-        onChange={(event) => {
-          handleEmailChange(event.target.value);
-        }}
-        required
-        fullWidth
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <Button
-                  type="button"
-                  variant="text"
-                  size="small"
-                  onClick={handleValidateEmailFormat}
-                  disabled={isCheckingEmail || !email}
-                  sx={{ minWidth: 48, px: 1, whiteSpace: "nowrap" }}
-                >
-                  {isCheckingEmail ? "校验中" : "校验"}
-                </Button>
-              </InputAdornment>
-            ),
-          },
-          inputLabel: shrinkInputLabelSlotProps.inputLabel,
-        }}
-      />
-      {emailCheckState.error ? (
-        <Typography color="error" role="alert" variant="body2">
-          {emailCheckState.error}
-        </Typography>
+    <Box sx={{ display: "grid", gap: 2 }}>
+      {alertMessage && alertSeverity ? (
+        <Alert severity={alertSeverity}>{alertMessage}</Alert>
       ) : null}
-      {emailCheckState.success ? (
+
+      {!isFieldsLocked ? (
         <Box
-          role="status"
-          sx={{
-            alignItems: "center",
-            color: "success.main",
-            display: "flex",
-            gap: 0.75,
-          }}
+          component="form"
+          action={requestOtpFormAction}
+          sx={{ display: "grid", gap: 2 }}
         >
-          <CheckCircleOutlineRoundedIcon color="success" fontSize="small" />
-          <Typography color="inherit" variant="body2">
-            {emailCheckState.success}
-          </Typography>
+          <TextField
+            label={registerFormMessages.labels.email}
+            name="email"
+            type="email"
+            autoComplete="email"
+            error={Boolean(emailError)}
+            helperText={
+              emailError ||
+              (isEmailValid ? registerFormMessages.fieldPassed : undefined)
+            }
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            fullWidth
+            slotProps={shrinkInputLabelSlotProps}
+          />
+          <TextField
+            label={registerFormMessages.labels.displayName}
+            name="displayName"
+            error={Boolean(displayNameError)}
+            helperText={
+              displayNameError ||
+              (isDisplayNameValid
+                ? registerFormMessages.fieldPassed
+                : undefined)
+            }
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            required
+            fullWidth
+            slotProps={shrinkInputLabelSlotProps}
+          />
+          <TextField
+            label={registerFormMessages.labels.password}
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            error={Boolean(passwordError)}
+            helperText={
+              passwordError ||
+              (isPasswordValid ? registerFormMessages.fieldPassed : undefined)
+            }
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            onBlur={handlePasswordBlur}
+            required
+            fullWidth
+            slotProps={shrinkInputLabelSlotProps}
+          />
+          <TextField
+            label={registerFormMessages.labels.passwordConfirm}
+            name="passwordConfirm"
+            type="password"
+            autoComplete="new-password"
+            error={Boolean(passwordConfirmError)}
+            helperText={
+              passwordConfirmError ||
+              (isPasswordConfirmValid
+                ? registerFormMessages.fieldPassed
+                : undefined)
+            }
+            value={passwordConfirm}
+            onChange={(event) => setPasswordConfirm(event.target.value)}
+            onBlur={handlePasswordConfirmBlur}
+            required
+            fullWidth
+            slotProps={shrinkInputLabelSlotProps}
+          />
+          <input
+            name="turnstileToken"
+            type="hidden"
+            value={turnstileToken}
+            readOnly
+          />
+          {shouldShowTurnstile ? <Box ref={turnstileContainerRef} /> : null}
+          {retryTurnstileButton}
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            disabled={!canRequestOtp}
+            fullWidth
+          >
+            {isRequestOtpPending
+              ? registerFormMessages.requestOtpPending
+              : registerFormMessages.requestOtp}
+          </Button>
         </Box>
       ) : null}
 
-      <TextField
-        label="昵称"
-        name="displayName"
-        type="text"
-        autoComplete="name"
-        error={Boolean(displayNameError)}
-        helperText={displayNameError || undefined}
-        placeholder={`输入昵称，最多 ${displayNameMaxLength} 个字符`}
-        value={displayName}
-        onBlur={handleDisplayNameBlur}
-        onChange={(event) => {
-          handleDisplayNameChange(event.target.value);
-        }}
-        required
-        fullWidth
-        slotProps={shrinkInputLabelSlotProps}
-      />
-
-      <TextField
-        label="密码"
-        name="password"
-        type="password"
-        autoComplete="new-password"
-        error={Boolean(passwordError)}
-        helperText={passwordError || undefined}
-        inputRef={passwordInputRef}
-        onBlur={handlePasswordBlur}
-        onChange={handlePasswordChange}
-        placeholder={passwordRuleText}
-        required
-        fullWidth
-        slotProps={shrinkInputLabelSlotProps}
-      />
-
-      <TextField
-        label="确认密码"
-        name="passwordConfirm"
-        type="password"
-        autoComplete="new-password"
-        error={Boolean(passwordConfirmError)}
-        helperText={passwordConfirmError || undefined}
-        inputRef={passwordConfirmInputRef}
-        onBlur={handlePasswordConfirmBlur}
-        onChange={handlePasswordConfirmChange}
-        placeholder="再次输入相同密码"
-        required
-        fullWidth
-        slotProps={shrinkInputLabelSlotProps}
-      />
-
-      <Button
-        type="submit"
-        variant="contained"
-        size="large"
-        disabled={isPending}
-        fullWidth
-      >
-        {isPending ? "注册中..." : "注册"}
-      </Button>
+      {isFieldsLocked ? (
+        <Box sx={{ display: "grid", gap: 2 }}>
+          <Typography color="text.secondary" variant="body2">
+            {registerFormMessages.otpInstruction}
+            {cooldownSeconds > 0
+              ? ` ${registerFormMessages.getResendCooldownText(cooldownSeconds)}`
+              : ""}
+          </Typography>
+          <Box
+            component="form"
+            action={submitOtpFormAction}
+            sx={{ display: "grid", gap: 2 }}
+          >
+            <TextField
+              label={registerFormMessages.labels.email}
+              name="email"
+              value={requestValues.email}
+              fullWidth
+              slotProps={readonlyFieldSlotProps}
+            />
+            <TextField
+              label={registerFormMessages.labels.displayName}
+              value={requestValues.displayName}
+              fullWidth
+              slotProps={readonlyFieldSlotProps}
+            />
+            <TextField
+              label={registerFormMessages.labels.otp}
+              name="token"
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              error={Boolean(otpCodeError)}
+              helperText={
+                otpCodeError ||
+                (otpCode.length === 6
+                  ? registerFormMessages.fieldPassed
+                  : undefined)
+              }
+              value={otpCode}
+              onChange={(event) => handleOtpCodeChange(event.target.value)}
+              required
+              fullWidth
+              slotProps={shrinkInputLabelSlotProps}
+            />
+            {submitOtpState.remainingAttempts !== undefined ? (
+              <Typography color="text.secondary" variant="body2">
+                {registerFormMessages.getRemainingAttemptsText(
+                  submitOtpState.remainingAttempts,
+                )}
+              </Typography>
+            ) : null}
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={!canSubmitOtp}
+              fullWidth
+            >
+              {isSubmitOtpPending
+                ? registerFormMessages.submitOtpPending
+                : registerFormMessages.submitOtp}
+            </Button>
+          </Box>
+          {cooldownSeconds <= 0 &&
+          !isResendPreparing &&
+          !isSubmitOtpPending &&
+          !isDonePhase ? (
+            <Button type="button" variant="text" onClick={handlePrepareResend}>
+              {registerFormMessages.resendOtp}
+            </Button>
+          ) : null}
+          {isResendPreparing && !isDonePhase ? (
+            <Box sx={{ display: "grid", gap: 2 }}>
+              <Box ref={turnstileContainerRef} />
+              {retryTurnstileButton}
+              <Button
+                type="button"
+                variant="outlined"
+                disabled={!canResendOtp}
+                onClick={handleResendOtp}
+                fullWidth
+              >
+                {isRequestOtpPending
+                  ? registerFormMessages.requestOtpPending
+                  : registerFormMessages.resendOtp}
+              </Button>
+            </Box>
+          ) : null}
+          <Button
+            type="button"
+            variant="text"
+            disabled={isAnyRequestPending}
+            onClick={handleModifyRegisterInfo}
+          >
+            {registerFormMessages.modifyRegisterInfo}
+          </Button>
+        </Box>
+      ) : null}
     </Box>
   );
 }

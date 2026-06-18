@@ -27,6 +27,17 @@ describe("LoginForm", () => {
     expect(screen.getByLabelText(/邮箱/).getAttribute("type")).toBe("email");
   });
 
+  it("预填 email query 传入的邮箱", () => {
+    render(
+      <LoginForm
+        action={vi.fn(async () => ({}))}
+        defaultEmail="yamada@example.test"
+      />,
+    );
+
+    expect(screen.getByLabelText(/邮箱/)).toHaveValue("yamada@example.test");
+  });
+
   it("密码输入框类型为 password", () => {
     render(<LoginForm action={vi.fn(async () => ({}))} />);
 

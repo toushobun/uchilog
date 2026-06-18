@@ -2,27 +2,27 @@ import { cleanup, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { turnstileTestSiteKey } from "config/turnstile";
+
 import { RegisterTemplate } from "./Register";
 
 vi.mock("organisms/auth/RegisterForm", () => ({
   RegisterForm: ({
-    action,
-    validateEmailFormatAction,
+    requestOtpAction,
+    submitOtpAction,
+    turnstileSiteKey,
   }: {
-    action: unknown;
-    validateEmailFormatAction: unknown;
+    requestOtpAction: unknown;
+    submitOtpAction: unknown;
+    turnstileSiteKey: string;
   }): ReactNode => (
     <form
       data-testid="register-form"
-      data-has-email-format-validation={String(
-        Boolean(validateEmailFormatAction),
-      )}
-      onSubmit={(e) => {
-        e.preventDefault();
-        void (action as () => Promise<void>)();
-      }}
+      data-has-request-action={String(Boolean(requestOtpAction))}
+      data-has-submit-action={String(Boolean(submitOtpAction))}
+      data-turnstile-site-key={turnstileSiteKey}
     >
-      <button type="submit">注册</button>
+      <button type="submit">获取验证码</button>
     </form>
   ),
 }));
@@ -32,8 +32,9 @@ afterEach(() => {
 });
 
 const defaultProps = {
-  action: vi.fn(async () => ({})),
-  validateEmailFormatAction: vi.fn(async () => ({})),
+  requestOtpAction: vi.fn(async () => ({})),
+  submitOtpAction: vi.fn(async () => ({})),
+  turnstileSiteKey: turnstileTestSiteKey,
 };
 
 describe("RegisterTemplate", () => {
@@ -45,23 +46,15 @@ describe("RegisterTemplate", () => {
     ).toBeTruthy();
   });
 
-  it("显示注册提示文字", () => {
-    const { container } = render(<RegisterTemplate {...defaultProps} />);
-
-    expect(
-      within(container).getByText("创建账号后开始使用记账功能"),
-    ).toBeTruthy();
-  });
-
   it("渲染注册表单", () => {
     const { container } = render(<RegisterTemplate {...defaultProps} />);
+    const form = within(container).getByTestId("register-form");
 
-    expect(within(container).getByTestId("register-form")).toBeTruthy();
-    expect(
-      within(container)
-        .getByTestId("register-form")
-        .getAttribute("data-has-email-format-validation"),
-    ).toBe("true");
+    expect(form.getAttribute("data-has-request-action")).toBe("true");
+    expect(form.getAttribute("data-has-submit-action")).toBe("true");
+    expect(form.getAttribute("data-turnstile-site-key")).toBe(
+      turnstileTestSiteKey,
+    );
   });
 
   it("显示返回登录页的链接", () => {
