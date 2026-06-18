@@ -74,7 +74,7 @@ jobs:
 
       - name: Apply migrations
         if: steps.check-migrations.outputs.changed == 'true'
-        run: supabase db push --include-all
+        run: supabase db push
 
   deploy:
     name: Deploy to Vercel Production
