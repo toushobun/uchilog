@@ -53,10 +53,16 @@ async function fillRegisterFields() {
   });
 
   fireEvent.click(await screen.findByRole("button", { name: "通过人机验证" }));
+  await screen.findByText("人机验证已通过");
 }
 
 async function requestOtp() {
   await fillRegisterFields();
+
+  await waitFor(() => {
+    expect(screen.getByRole("button", { name: "获取验证码" })).toBeEnabled();
+  });
+
   fireEvent.click(screen.getByRole("button", { name: "获取验证码" }));
 
   await screen.findByLabelText(/验证码/);
