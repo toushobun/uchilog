@@ -34,6 +34,8 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
           elif git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- supabase/migrations/ | grep -q .; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
@@ -79,7 +81,7 @@ jobs:
   deploy:
     name: Deploy to Vercel Production
     needs: migrate
-    # migrate 成功或无 migration 变更被跳过时才执行
+    # migration 检查成功后执行；无 migration 变更时 migrate job 仍为 success。
     if: >-
       always() &&
       (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
