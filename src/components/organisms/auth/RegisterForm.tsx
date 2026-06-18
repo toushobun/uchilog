@@ -30,11 +30,9 @@ type RegisterFormProps = {
   turnstileSiteKey: string;
 };
 
-const pwdFieldName = "pass" + "word";
-const pwdConfirmFieldName = `${pwdFieldName}Confirm`;
-const pwdRuleText = authRules[
-  ("pass" + "wordRuleText") as keyof typeof authRules
-] as string;
+const passwordFieldName = "password";
+const passwordConfirmFieldName = `${passwordFieldName}Confirm`;
+const passwordRuleText = authRules.passwordRuleText;
 
 const registerFormText = {
   cooldown: (seconds: number) => `重新发送可在 ${seconds} 秒后使用`,
@@ -190,14 +188,14 @@ export function RegisterForm({
 
       <TextField
         label="密码"
-        name={pwdFieldName}
-        type={pwdFieldName}
-        autoComplete={`new-${pwdFieldName}`}
+        name={passwordFieldName}
+        type={passwordFieldName}
+        autoComplete={`new-${passwordFieldName}`}
         error={Boolean(pwdError)}
         helperText={pwdError || undefined}
         value={pwd}
         onChange={(event) => handlePwdChange(event.target.value)}
-        placeholder={pwdRuleText}
+        placeholder={passwordRuleText}
         required
         fullWidth
         slotProps={{
@@ -211,9 +209,9 @@ export function RegisterForm({
 
       <TextField
         label="确认密码"
-        name={pwdConfirmFieldName}
-        type={pwdFieldName}
-        autoComplete={`new-${pwdFieldName}`}
+        name={passwordConfirmFieldName}
+        type={passwordFieldName}
+        autoComplete={`new-${passwordFieldName}`}
         error={Boolean(pwdConfirmError)}
         helperText={pwdConfirmError || undefined}
         value={pwdConfirm}
