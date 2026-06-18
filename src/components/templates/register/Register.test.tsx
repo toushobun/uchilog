@@ -6,23 +6,21 @@ import { RegisterTemplate } from "./Register";
 
 vi.mock("organisms/auth/RegisterForm", () => ({
   RegisterForm: ({
-    action,
-    validateEmailFormatAction,
+    requestOtpAction,
+    submitOtpAction,
+    turnstileSiteKey,
   }: {
-    action: unknown;
-    validateEmailFormatAction: unknown;
+    requestOtpAction: unknown;
+    submitOtpAction: unknown;
+    turnstileSiteKey: string;
   }): ReactNode => (
     <form
       data-testid="register-form"
-      data-has-email-format-validation={String(
-        Boolean(validateEmailFormatAction),
-      )}
-      onSubmit={(e) => {
-        e.preventDefault();
-        void (action as () => Promise<void>)();
-      }}
+      data-has-request-otp={String(Boolean(requestOtpAction))}
+      data-has-submit-otp={String(Boolean(submitOtpAction))}
+      data-turnstile-site-key={turnstileSiteKey}
     >
-      <button type="submit">注册</button>
+      <button type="submit">获取验证码</button>
     </form>
   ),
 }));
@@ -32,8 +30,9 @@ afterEach(() => {
 });
 
 const defaultProps = {
-  action: vi.fn(async () => ({})),
-  validateEmailFormatAction: vi.fn(async () => ({})),
+  requestOtpAction: vi.fn(async () => ({})),
+  submitOtpAction: vi.fn(async () => ({})),
+  turnstileSiteKey: "test-site-key",
 };
 
 describe("RegisterTemplate", () => {
@@ -53,15 +52,14 @@ describe("RegisterTemplate", () => {
     ).toBeTruthy();
   });
 
-  it("渲染注册表单", () => {
+  it("渲染注册 OTP 表单", () => {
     const { container } = render(<RegisterTemplate {...defaultProps} />);
+    const form = within(container).getByTestId("register-form");
 
-    expect(within(container).getByTestId("register-form")).toBeTruthy();
-    expect(
-      within(container)
-        .getByTestId("register-form")
-        .getAttribute("data-has-email-format-validation"),
-    ).toBe("true");
+    expect(form).toBeTruthy();
+    expect(form.getAttribute("data-has-request-otp")).toBe("true");
+    expect(form.getAttribute("data-has-submit-otp")).toBe("true");
+    expect(form.getAttribute("data-turnstile-site-key")).toBe("test-site-key");
   });
 
   it("显示返回登录页的链接", () => {
