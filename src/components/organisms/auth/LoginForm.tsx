@@ -13,6 +13,7 @@ type LoginFormProps = {
     prevState: LoginActionState,
     formData: FormData,
   ) => Promise<LoginActionState>;
+  defaultEmail?: string;
 };
 
 const initialState: LoginActionState = {};
@@ -22,7 +23,7 @@ const shrinkInputLabelSlotProps = {
   },
 } as const;
 
-export function LoginForm({ action }: LoginFormProps) {
+export function LoginForm({ action, defaultEmail = "" }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
 
   return (
@@ -41,6 +42,7 @@ export function LoginForm({ action }: LoginFormProps) {
         name="email"
         type="email"
         autoComplete="email"
+        defaultValue={defaultEmail}
         required
         fullWidth
         slotProps={shrinkInputLabelSlotProps}

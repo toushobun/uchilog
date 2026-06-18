@@ -1,79 +1,98 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { userEvent, within } from "storybook/test";
+import { userEvent, waitFor, within } from "storybook/test";
+
+import { turnstileTestSiteKey } from "config/turnstile";
 
 import { RegisterForm } from "./RegisterForm";
+import { installTurnstileTestDouble } from "./turnstileTestDouble";
 
 const meta: Meta<typeof RegisterForm> = {
   title: "Organisms/Auth/RegisterForm",
   component: RegisterForm,
+  decorators: [
+    (Story) => {
+      installTurnstileTestDouble();
+      return <Story />;
+    },
+  ],
   args: {
-    action: async () => ({}),
-    validateEmailFormatAction: async () => ({
-      success: "该邮箱格式可以使用。",
-    }),
+    requestOtpAction: async () => ({}),
+    submitOtpAction: async () => ({}),
+    turnstileSiteKey: turnstileTestSiteKey,
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+async function fillRegisterFields(canvasElement: HTMLElement) {
+  const canvas = within(canvasElement);
+
+  await userEvent.type(canvas.getByLabelText(/邮箱/), "yamada@example.test");
+  await userEvent.type(canvas.getByLabelText(/昵称/), "山田太郎");
+  await userEvent.type(canvas.getByLabelText(/^密码/), "password123");
+  await userEvent.type(canvas.getByLabelText(/确认密码/), "password123");
+  await waitFor(() => {
+    if (
+      canvas
+        .getByRole("button", { name: "获取验证码" })
+        .hasAttribute("disabled")
+    ) {
+      throw new Error("等待 Turnstile 响应");
+    }
+  });
+}
+
 export const Default: Story = {
-  name: "默认",
+  name: "初始填写",
 };
 
-export const WithError: Story = {
-  name: "含注册失败提示",
+export const OtpInput: Story = {
+  name: "OTP 输入",
   args: {
-    action: async () => ({ error: "注册失败，请确认邮箱和密码后再试。" }),
-  },
-};
-
-export const WithSuccess: Story = {
-  name: "含注册成功提示",
-  args: {
-    action: async () => ({
-      success: "注册申请已提交。请查收确认邮件后再登录。",
-    }),
-  },
-};
-
-export const EmailCheckSuccess: Story = {
-  name: "邮箱格式校验成功",
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    await userEvent.type(canvas.getByLabelText(/邮箱/), "new@example.test");
-    await userEvent.click(canvas.getByRole("button", { name: "校验" }));
-  },
-};
-
-export const EmailCheckError: Story = {
-  name: "邮箱格式错误",
-  args: {
-    validateEmailFormatAction: async () => ({
-      error: "邮箱格式有误",
+    requestOtpAction: async () => ({
+      status: "success",
+      success: "验证码已发送。",
     }),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-
-    await userEvent.type(canvas.getByLabelText(/邮箱/), "not-email");
-    await userEvent.click(canvas.getByRole("button", { name: "校验" }));
+    await fillRegisterFields(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "获取验证码" }));
   },
 };
 
-export const WithValidationErrors: Story = {
-  name: "字段校验错误",
+export const ResendReady: Story = {
+  name: "重新发送",
+  args: {
+    requestOtpAction: async () => ({
+      retryAfterSeconds: 0,
+      status: "success",
+      success: "验证码已发送。",
+    }),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    await fillRegisterFields(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "获取验证码" }));
+  },
+};
 
-    await userEvent.type(canvas.getByLabelText(/邮箱/), "not-email");
-    await userEvent.tab();
-    await userEvent.type(canvas.getByLabelText(/昵称/), "名".repeat(51));
-    await userEvent.tab();
-    await userEvent.type(canvas.getByLabelText(/^密码/), "password");
-    await userEvent.tab();
-    await userEvent.type(canvas.getByLabelText(/确认密码/), "different");
-    await userEvent.tab();
+export const SubmitError: Story = {
+  name: "验证码错误",
+  args: {
+    requestOtpAction: async () => ({ status: "success" }),
+    submitOtpAction: async () => ({
+      error: "验证码不正确或已过期，请重新获取",
+      remainingAttempts: 4,
+      status: "otp_invalid",
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await fillRegisterFields(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "获取验证码" }));
+    await userEvent.type(await canvas.findByLabelText(/验证码/), "012345");
+    await userEvent.click(canvas.getByRole("button", { name: "完成注册" }));
   },
 };

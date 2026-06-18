@@ -5,9 +5,16 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LoginTemplate } from "./Login";
 
 vi.mock("organisms/auth/LoginForm", () => ({
-  LoginForm: ({ action }: { action: unknown }): ReactNode => (
+  LoginForm: ({
+    action,
+    defaultEmail,
+  }: {
+    action: unknown;
+    defaultEmail?: string;
+  }): ReactNode => (
     <form
       data-testid="login-form"
+      data-default-email={defaultEmail ?? ""}
       onSubmit={(e) => {
         e.preventDefault();
         void (action as () => Promise<void>)();
@@ -43,10 +50,18 @@ describe("LoginTemplate", () => {
 
   it("渲染登录表单", () => {
     const { container } = render(
-      <LoginTemplate action={vi.fn(async () => ({}))} />,
+      <LoginTemplate
+        action={vi.fn(async () => ({}))}
+        defaultEmail="yamada@example.test"
+      />,
     );
 
     expect(within(container).getByTestId("login-form")).toBeTruthy();
+    expect(
+      within(container)
+        .getByTestId("login-form")
+        .getAttribute("data-default-email"),
+    ).toBe("yamada@example.test");
   });
 
   it("显示前往注册页的链接", () => {

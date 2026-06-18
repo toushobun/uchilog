@@ -52,6 +52,7 @@ const registerOtpMessages = {
 } as const;
 
 const maxRegisterOtpVerifyFailures = 5;
+const registerOtpCooldownSeconds = 60;
 
 function validateRegisterFields({
   displayName,
@@ -142,14 +143,43 @@ function validateRequestRegisterOtpFields(params: {
   };
 }
 
+function validateResendRegisterOtpFields(
+  email: string,
+): RequestRegisterOtpActionState | null {
+  if (!email) {
+    return {
+      error: "请输入邮箱。",
+      resetTurnstile: true,
+      status: "validation_error",
+    };
+  }
+
+  if (email.length > emailMaxLength) {
+    return {
+      error: `邮箱最多 ${emailMaxLength} 个字符。`,
+      resetTurnstile: true,
+      status: "validation_error",
+    };
+  }
+
+  if (!isValidEmailFormat(email)) {
+    return {
+      error: "邮箱格式有误",
+      resetTurnstile: true,
+      status: "validation_error",
+    };
+  }
+
+  return null;
+}
+
 function validateSubmitRegisterOtpFields(params: {
-  displayName: string;
   email: string;
   token: string;
 }): SubmitRegisterOtpActionState | null {
-  if (!params.displayName || !params.email || !params.token) {
+  if (!params.email || !params.token) {
     return {
-      error: "请输入昵称、邮箱和验证码。",
+      error: "请输入邮箱和验证码。",
       status: "validation_error",
     };
   }
@@ -168,16 +198,9 @@ function validateSubmitRegisterOtpFields(params: {
     };
   }
 
-  if (params.displayName.length > displayNameMaxLength) {
-    return {
-      error: `昵称最多 ${displayNameMaxLength} 个字符。`,
-      status: "validation_error",
-    };
-  }
-
   if (!/^\d{6}$/.test(params.token)) {
     return {
-      error: "请输入6位数字验证码",
+      error: "请输入 6 位数字验证码",
       status: "validation_error",
     };
   }
@@ -224,18 +247,21 @@ export async function requestRegisterOtp(
   _previousState: RequestRegisterOtpActionState,
   formData: FormData,
 ): Promise<RequestRegisterOtpActionState> {
+  const isResend = formData.get("resend") === "true";
   const displayName = String(formData.get("displayName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const passwordConfirm = String(formData.get("passwordConfirm") ?? "");
   const turnstileToken = String(formData.get("turnstileToken") ?? "");
 
-  const validationError = validateRequestRegisterOtpFields({
-    displayName,
-    email,
-    password,
-    passwordConfirm,
-  });
+  const validationError = isResend
+    ? validateResendRegisterOtpFields(email)
+    : validateRequestRegisterOtpFields({
+        displayName,
+        email,
+        password,
+        passwordConfirm,
+      });
 
   if (validationError) {
     return validationError;
@@ -289,15 +315,20 @@ export async function requestRegisterOtp(
     }
 
     const supabase = await createClient();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
-        },
-      },
-    });
+    const { error } = isResend
+      ? await supabase.auth.resend({
+          email,
+          type: "signup",
+        })
+      : await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: displayName,
+            },
+          },
+        });
 
     if (!error) {
       await recordAuthOtpAttempt({
@@ -310,6 +341,7 @@ export async function requestRegisterOtp(
 
       return {
         resetTurnstile: true,
+        retryAfterSeconds: registerOtpCooldownSeconds,
         status: "success",
         success: registerOtpMessages.success,
       };
@@ -335,6 +367,7 @@ export async function requestRegisterOtp(
     if (code === "user_already_exists") {
       return {
         resetTurnstile: true,
+        retryAfterSeconds: registerOtpCooldownSeconds,
         status: "neutral",
         success: registerOtpMessages.success,
       };
@@ -358,12 +391,10 @@ export async function submitRegisterOtp(
   _previousState: SubmitRegisterOtpActionState,
   formData: FormData,
 ): Promise<SubmitRegisterOtpActionState> {
-  const displayName = String(formData.get("displayName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const token = String(formData.get("token") ?? "").trim();
 
   const validationError = validateSubmitRegisterOtpFields({
-    displayName,
     email,
     token,
   });
@@ -439,6 +470,18 @@ export async function submitRegisterOtp(
       return {
         redirectTo: routeWithQuery(routePaths.login, { email }),
         status: "session_invalid",
+      };
+    }
+
+    const displayName =
+      typeof user.user_metadata.display_name === "string"
+        ? user.user_metadata.display_name.trim()
+        : "";
+
+    if (!displayName || displayName.length > displayNameMaxLength) {
+      return {
+        error: registerOtpMessages.appUserSyncFailed,
+        status: "app_user_sync_failed",
       };
     }
 
@@ -560,7 +603,6 @@ export async function register(
   }
 
   const supabase = await createClient();
-
   const { error } = await supabase.auth.signUp({
     email,
     password,

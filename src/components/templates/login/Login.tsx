@@ -4,14 +4,18 @@ import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 
-import { LoginForm } from "organisms/auth/LoginForm";
 import { routePaths } from "config/paths";
+import { LoginForm } from "organisms/auth/LoginForm";
 
 type LoginTemplateProps = {
   action: Parameters<typeof LoginForm>[0]["action"];
+  defaultEmail?: string;
 };
 
-export function LoginTemplate({ action }: LoginTemplateProps) {
+export function LoginTemplate({
+  action,
+  defaultEmail = "",
+}: LoginTemplateProps) {
   return (
     <Box
       component="main"
@@ -38,7 +42,7 @@ export function LoginTemplate({ action }: LoginTemplateProps) {
             登录后开始使用记账功能
           </Typography>
 
-          <LoginForm action={action} />
+          <LoginForm action={action} defaultEmail={defaultEmail} />
 
           <Typography
             color="text.secondary"

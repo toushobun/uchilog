@@ -1,31 +1,46 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+import { turnstileTestSiteKey } from "config/turnstile";
+import { installTurnstileTestDouble } from "organisms/auth/turnstileTestDouble";
+import type {
+  RequestRegisterOtpActionState,
+  SubmitRegisterOtpActionState,
+} from "types/auth";
+
 import { RegisterTemplate } from "./Register";
 
-async function defaultAction() {
+async function defaultRequestOtpAction(): Promise<RequestRegisterOtpActionState> {
   return {};
 }
 
-async function validateEmailFormatAction() {
+async function defaultSubmitOtpAction(): Promise<SubmitRegisterOtpActionState> {
+  return {};
+}
+
+async function errorRequestOtpAction(): Promise<RequestRegisterOtpActionState> {
+  return { error: "验证码发送失败，请稍后再试。" };
+}
+
+async function successRequestOtpAction(): Promise<RequestRegisterOtpActionState> {
   return {
-    success: "该邮箱格式可以使用。",
+    status: "success",
+    success: "验证码已发送。",
   };
-}
-
-async function errorAction() {
-  return { error: "注册失败，请确认邮箱和密码后再试。" };
-}
-
-async function successAction() {
-  return { success: "注册申请已提交。请查收确认邮件后再登录。" };
 }
 
 const meta = {
   title: "Templates/Register/RegisterTemplate",
   component: RegisterTemplate,
+  decorators: [
+    (Story) => {
+      installTurnstileTestDouble();
+      return <Story />;
+    },
+  ],
   args: {
-    action: defaultAction,
-    validateEmailFormatAction,
+    requestOtpAction: defaultRequestOtpAction,
+    submitOtpAction: defaultSubmitOtpAction,
+    turnstileSiteKey: turnstileTestSiteKey,
   },
 } satisfies Meta<typeof RegisterTemplate>;
 
@@ -39,13 +54,13 @@ export const Default: Story = {
 export const WithError: Story = {
   name: "含错误提示",
   args: {
-    action: errorAction,
+    requestOtpAction: errorRequestOtpAction,
   },
 };
 
 export const WithSuccess: Story = {
   name: "含成功提示",
   args: {
-    action: successAction,
+    requestOtpAction: successRequestOtpAction,
   },
 };

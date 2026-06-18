@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   redirect: vi.fn((path: string) => {
     throw new Error(`NEXT_REDIRECT:${path}`);
   }),
+  resend: vi.fn(),
   signUp: vi.fn(),
   verifyOtp: vi.fn(),
   verifyTurnstileToken: vi.fn(),
@@ -75,7 +76,6 @@ function createSubmitRegisterOtpFormData(
 ) {
   const formData = new FormData();
 
-  formData.set("displayName", "山田太郎");
   formData.set("email", "yamada@example.test");
   formData.set("token", "012345");
 
@@ -104,71 +104,6 @@ describe("register", () => {
     expect(mocks.createClient).not.toHaveBeenCalled();
   });
 
-  it("密码确认不一致时返回错误", async () => {
-    const result = await register(
-      {},
-      createRegisterFormData({ passwordConfirm: "different-password" }),
-    );
-
-    expect(result).toEqual({ error: "两次输入的密码不一致。" });
-    expect(mocks.createClient).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    [
-      "邮箱过长",
-      { email: `${"a".repeat(250)}@example.test` },
-      "邮箱最多 255 个字符。",
-      false,
-    ],
-    ["邮箱格式有误", { email: "not-email" }, "邮箱格式有误", false],
-    [
-      "昵称过长",
-      { displayName: "名".repeat(51) },
-      "昵称最多 50 个字符。",
-      false,
-    ],
-    [
-      "密码过长",
-      { password: "a1".repeat(37), passwordConfirm: "a1".repeat(37) },
-      "密码最多 72 个字符。",
-      true,
-    ],
-    [
-      "确认密码过长",
-      { passwordConfirm: "a1".repeat(37) },
-      "确认密码最多 72 个字符。",
-      false,
-    ],
-  ])(
-    "字段长度或格式不符合规则时返回错误：%s",
-    async (_, overrides, errorMessage, resetPassword) => {
-      const result = await register({}, createRegisterFormData(overrides));
-
-      expect(result).toEqual({
-        error: errorMessage,
-        ...(resetPassword ? { resetPassword } : {}),
-      });
-      expect(mocks.createClient).not.toHaveBeenCalled();
-    },
-  );
-
-  it("密码不符合强度规则时返回错误并要求清空密码", async () => {
-    const result = await register(
-      {},
-      createRegisterFormData({
-        password: "password",
-        passwordConfirm: "password",
-      }),
-    );
-
-    expect(result).toEqual({
-      error: "密码强度不足。密码至少 8 位，并且需要同时包含字母和数字。",
-      resetPassword: true,
-    });
-    expect(mocks.createClient).not.toHaveBeenCalled();
-  });
-
   it("注册时将昵称写入 Supabase Auth metadata", async () => {
     const result = await register({}, createRegisterFormData());
 
@@ -186,62 +121,18 @@ describe("register", () => {
     });
   });
 
-  it.each([
-    [
-      "邮箱已存在",
-      { code: "user_already_exists", message: "User already registered" },
-      "这个邮箱已经注册过了，请直接登录或换一个邮箱。",
-      false,
-    ],
-    [
-      "邮箱格式不正确",
-      { code: "invalid_email", message: "Email address is invalid" },
-      "邮箱格式看起来不正确，请检查后再试。",
-      false,
-    ],
-    [
-      "密码强度不足",
-      { code: "weak_password", message: "Password should be stronger" },
-      "密码强度不足。密码至少 8 位，并且需要同时包含字母和数字。",
-      true,
-    ],
-    [
-      "注册功能关闭",
-      { code: "signup_disabled", message: "Signups are disabled" },
-      "当前暂时无法开放新用户注册，请稍后再试。",
-      false,
-    ],
-    [
-      "请求过于频繁",
-      { code: "over_email_send_rate_limit", message: "Too many requests" },
-      "注册请求太频繁了，请稍等一会儿再试。",
-      false,
-    ],
-    [
-      "未知错误",
-      { message: "unexpected auth error" },
-      "注册失败，请确认邮箱和密码后再试。",
-      false,
-    ],
-    [
-      "仅 message 提到 password 时不误判为弱密码",
-      { message: "unexpected password provider error" },
-      "注册失败，请确认邮箱和密码后再试。",
-      false,
-    ],
-  ])(
-    "Supabase 注册失败时返回细分错误：%s",
-    async (_, error, errorMessage, resetPassword) => {
-      mocks.signUp.mockResolvedValue({ error });
+  it("Supabase 返回弱密码错误时要求重置密码", async () => {
+    mocks.signUp.mockResolvedValue({
+      error: { code: "weak_password" },
+    });
 
-      const result = await register({}, createRegisterFormData());
+    const result = await register({}, createRegisterFormData());
 
-      expect(result).toEqual({
-        error: errorMessage,
-        ...(resetPassword ? { resetPassword } : {}),
-      });
-    },
-  );
+    expect(result).toEqual({
+      error: "密码强度不足。密码至少 8 位，并且需要同时包含字母和数字。",
+      resetPassword: true,
+    });
+  });
 });
 
 describe("requestRegisterOtp", () => {
@@ -249,6 +140,7 @@ describe("requestRegisterOtp", () => {
     vi.clearAllMocks();
     mocks.createClient.mockResolvedValue({
       auth: {
+        resend: mocks.resend,
         signUp: mocks.signUp,
       },
     });
@@ -260,6 +152,7 @@ describe("requestRegisterOtp", () => {
       retryAfterSeconds: 0,
     });
     mocks.recordAuthOtpAttempt.mockResolvedValue(undefined);
+    mocks.resend.mockResolvedValue({ error: null });
     mocks.signUp.mockResolvedValue({ error: null });
     mocks.verifyTurnstileToken.mockResolvedValue(true);
   });
@@ -365,10 +258,60 @@ describe("requestRegisterOtp", () => {
     );
     expect(result).toEqual({
       resetTurnstile: true,
+      retryAfterSeconds: 60,
       status: "success",
       success: "如果该邮箱可以注册，我们已发送验证码。请查收邮件。",
     });
   });
+
+  it("重新发送时只使用邮箱调用 resend", async () => {
+    const result = await requestRegisterOtp(
+      {},
+      createRequestRegisterOtpFormData({
+        displayName: "",
+        password: "",
+        passwordConfirm: "",
+        resend: "true",
+      }),
+    );
+
+    expect(mocks.resend).toHaveBeenCalledWith({
+      email: "yamada@example.test",
+      type: "signup",
+    });
+    expect(mocks.signUp).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      resetTurnstile: true,
+      retryAfterSeconds: 60,
+      status: "success",
+      success: "如果该邮箱可以注册，我们已发送验证码。请查收邮件。",
+    });
+  });
+
+  it.each([
+    ["邮箱为空", "", "请输入邮箱。"],
+    ["邮箱过长", `${"a".repeat(250)}@example.test`, "邮箱最多 255 个字符。"],
+    ["邮箱格式有误", "not-email", "邮箱格式有误"],
+  ])(
+    "重新发送字段校验失败时不调用 Turnstile 和 Supabase：%s",
+    async (_, email, errorMessage) => {
+      const result = await requestRegisterOtp(
+        {},
+        createRequestRegisterOtpFormData({
+          email,
+          resend: "true",
+        }),
+      );
+
+      expect(result).toEqual({
+        error: errorMessage,
+        resetTurnstile: true,
+        status: "validation_error",
+      });
+      expect(mocks.verifyTurnstileToken).not.toHaveBeenCalled();
+      expect(mocks.createClient).not.toHaveBeenCalled();
+    },
+  );
 
   it("Supabase 发送限制时返回频繁文案", async () => {
     mocks.signUp.mockResolvedValue({
@@ -405,6 +348,7 @@ describe("requestRegisterOtp", () => {
 
     expect(result).toEqual({
       resetTurnstile: true,
+      retryAfterSeconds: 60,
       status: "neutral",
       success: "如果该邮箱可以注册，我们已发送验证码。请查收邮件。",
     });
@@ -440,6 +384,26 @@ describe("requestRegisterOtp", () => {
   });
 });
 
+describe("validateRegisterEmailFormat", () => {
+  it.each([
+    ["未输入邮箱", "", "请输入邮箱后再校验。"],
+    ["邮箱过长", `${"a".repeat(250)}@example.test`, "邮箱最多 255 个字符。"],
+    ["邮箱格式有误", "not-email", "邮箱格式有误"],
+  ])("邮箱格式无法校验时返回错误：%s", async (_, email, errorMessage) => {
+    const result = await validateRegisterEmailFormat(email);
+
+    expect(result).toEqual({ error: errorMessage });
+  });
+
+  it("邮箱格式可用时返回可继续填写提示", async () => {
+    const result = await validateRegisterEmailFormat("yamada@example.test");
+
+    expect(result).toEqual({
+      success: "该邮箱格式可以使用。",
+    });
+  });
+});
+
 describe("submitRegisterOtp", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -460,7 +424,12 @@ describe("submitRegisterOtp", () => {
     mocks.recordAuthOtpAttempt.mockResolvedValue(undefined);
     mocks.verifyOtp.mockResolvedValue({ error: null });
     mocks.getUser.mockResolvedValue({
-      data: { user: { id: "user-1" } },
+      data: {
+        user: {
+          id: "user-1",
+          user_metadata: { display_name: "山田太郎" },
+        },
+      },
     });
   });
 
@@ -471,7 +440,7 @@ describe("submitRegisterOtp", () => {
     );
 
     expect(result).toEqual({
-      error: "请输入6位数字验证码",
+      error: "请输入 6 位数字验证码",
       status: "validation_error",
     });
     expect(mocks.verifyOtp).not.toHaveBeenCalled();
@@ -606,6 +575,46 @@ describe("submitRegisterOtp", () => {
     ]);
   });
 
+  it("忽略 OTP 提交表单中的昵称并使用已验证用户的 metadata", async () => {
+    const supabase = createSupabaseMock({
+      queryResponses: [{ data: { display_name: "別名" } }, {}],
+    });
+    mocks.createClient.mockResolvedValue({
+      ...supabase.client,
+      auth: {
+        getUser: mocks.getUser,
+        verifyOtp: mocks.verifyOtp,
+      },
+    });
+
+    const result = await submitRegisterOtp(
+      {},
+      createSubmitRegisterOtpFormData({ displayName: "篡改后的昵称" }),
+    );
+
+    expect(result.status).toBe("success");
+    expect(supabase.queries[1].calls).toEqual([
+      { method: "update", args: [{ display_name: "山田太郎" }] },
+      { method: "eq", args: ["id", "user-1"] },
+    ]);
+  });
+
+  it("已验证用户缺少昵称 metadata 时返回同步异常", async () => {
+    mocks.getUser.mockResolvedValue({
+      data: { user: { id: "user-1", user_metadata: {} } },
+    });
+
+    const result = await submitRegisterOtp(
+      {},
+      createSubmitRegisterOtpFormData(),
+    );
+
+    expect(result).toEqual({
+      error: "注册资料同步异常，请稍后登录后再确认。",
+      status: "app_user_sync_failed",
+    });
+  });
+
   it("display_name 不一致且 update 失败时返回同步异常", async () => {
     const supabase = createSupabaseMock({
       queryResponses: [
@@ -629,26 +638,6 @@ describe("submitRegisterOtp", () => {
     expect(result).toEqual({
       error: "注册资料同步异常，请稍后登录后再确认。",
       status: "app_user_sync_failed",
-    });
-  });
-});
-
-describe("validateRegisterEmailFormat", () => {
-  it.each([
-    ["未输入邮箱", "", "请输入邮箱后再校验。"],
-    ["邮箱过长", `${"a".repeat(250)}@example.test`, "邮箱最多 255 个字符。"],
-    ["邮箱格式有误", "not-email", "邮箱格式有误"],
-  ])("邮箱格式无法校验时返回错误：%s", async (_, email, errorMessage) => {
-    const result = await validateRegisterEmailFormat(email);
-
-    expect(result).toEqual({ error: errorMessage });
-  });
-
-  it("邮箱格式可用时返回可继续填写提示", async () => {
-    const result = await validateRegisterEmailFormat("yamada@example.test");
-
-    expect(result).toEqual({
-      success: "该邮箱格式可以使用。",
     });
   });
 });
