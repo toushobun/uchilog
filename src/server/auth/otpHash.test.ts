@@ -77,6 +77,25 @@ describe("auth OTP hash", () => {
     expect(normalizeAuthOtpIp(headers)).toBe("192.0.2.51");
   });
 
+  it.each([
+    ['for="192.0.2.50:8080"', "192.0.2.50"],
+    ['for="[2001:db8::1]"', "2001:db8::1"],
+    ['for="[2001:db8::1]:8080"', "2001:db8::1"],
+  ])("标准化 forwarded 的 IP 节点标识：%s", (forwarded, expected) => {
+    expect(normalizeAuthOtpIp(new Headers({ forwarded }))).toBe(expected);
+  });
+
+  it("无法识别任意字符串为可信 IP", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const headers = new Headers({
+      forwarded: 'for="not-an-ip"',
+      "x-vercel-proxied-for": "arbitrary-value",
+    });
+
+    expect(normalizeAuthOtpIp(headers)).toBeNull();
+    expect(hashAuthOtpIp(headers)).toBeNull();
+  });
+
   it("开发环境没有可用 IP 时使用本地 fallback", () => {
     vi.stubEnv("NODE_ENV", "development");
     const headers = new Headers();
