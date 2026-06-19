@@ -71,10 +71,10 @@ describe("auth OTP hash", () => {
 
   it("从 forwarded header 读取 for 值", () => {
     const headers = new Headers({
-      forwarded: 'for="192.0.2.50";proto=https',
+      forwarded: 'for="192.0.2.50";proto=https, for="192.0.2.51";proto=https',
     });
 
-    expect(normalizeAuthOtpIp(headers)).toBe("192.0.2.50");
+    expect(normalizeAuthOtpIp(headers)).toBe("192.0.2.51");
   });
 
   it("开发环境没有可用 IP 时使用本地 fallback", () => {

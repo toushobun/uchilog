@@ -55,14 +55,20 @@ export function normalizeAuthOtpIp(headers: AuthOtpHeaders) {
   }
 
   const forwarded = headers.get("forwarded");
-  const forwardedIp = forwarded
+  // forwarded 依赖部署层保证最后一个 for= 值来自受信代理。
+  const forwardedValues = forwarded
     ?.split(",")
     .flatMap((value) => value.split(";"))
     .map((value) => value.trim())
-    .find((value) => value.toLowerCase().startsWith("for="))
-    ?.slice(4)
-    .trim()
-    .replace(/^"(.*)"$/, "$1");
+    .filter((value) => value.toLowerCase().startsWith("for="))
+    .map((value) =>
+      value
+        .slice(4)
+        .trim()
+        .replace(/^"(.*)"$/, "$1"),
+    )
+    .filter((value) => value.length > 0);
+  const forwardedIp = forwardedValues?.[forwardedValues.length - 1];
 
   if (forwardedIp && forwardedIp.length > 0) {
     return forwardedIp;
