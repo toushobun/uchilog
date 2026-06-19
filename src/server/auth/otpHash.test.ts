@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   hashAuthOtpEmail,
@@ -13,6 +13,10 @@ import {
 function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("auth OTP hash", () => {
   it("邮箱 hash 前会去除首尾空白并转成小写", () => {
@@ -57,13 +61,25 @@ describe("auth OTP hash", () => {
     expect(normalizeAuthOtpIp(headers)).toBe("198.51.100.20");
   });
 
-  it("没有可用 IP 时返回 null", () => {
-    const headers = new Headers({
-      "x-forwarded-for": " , ",
-      "x-real-ip": " ",
-    });
+  it("开发环境没有可用 IP 时使用本地 fallback", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    const headers = new Headers();
 
-    expect(normalizeAuthOtpIp(headers)).toBeNull();
-    expect(hashAuthOtpIp(headers)).toBeNull();
+    expect(normalizeAuthOtpIp(headers)).toBe("127.0.0.1");
+    expect(hashAuthOtpIp(headers)).toBe(sha256("127.0.0.1"));
   });
+
+  it.each(["production", "test"])(
+    "%s 环境没有可用 IP 时返回 null",
+    (nodeEnv) => {
+      vi.stubEnv("NODE_ENV", nodeEnv);
+      const headers = new Headers({
+        "x-forwarded-for": " , ",
+        "x-real-ip": " ",
+      });
+
+      expect(normalizeAuthOtpIp(headers)).toBeNull();
+      expect(hashAuthOtpIp(headers)).toBeNull();
+    },
+  );
 });

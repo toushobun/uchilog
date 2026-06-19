@@ -157,10 +157,13 @@ export function useRegisterForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [isDisplayNameTouched, setIsDisplayNameTouched] = useState(false);
+  const [isEmailTouched, setIsEmailTouched] = useState(false);
   const [isPasswordTouched, setIsPasswordTouched] = useState(false);
   const [isPasswordConfirmTouched, setIsPasswordConfirmTouched] =
     useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [isOtpCodeTouched, setIsOtpCodeTouched] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const [lockedSnapshot, setLockedSnapshot] = useState<RegisterSnapshot | null>(
@@ -194,10 +197,13 @@ export function useRegisterForm({
         setLockedSnapshot(null);
         setPassword("");
         setPasswordConfirm("");
+        setIsDisplayNameTouched(false);
+        setIsEmailTouched(false);
         setIsPasswordTouched(false);
         setIsPasswordConfirmTouched(false);
         setSubmitOtpState(submitOtpInitialState);
         setOtpCode("");
+        setIsOtpCodeTouched(false);
         setCooldownSeconds(0);
         setIsResendPreparing(false);
         setPhase("initial");
@@ -215,6 +221,7 @@ export function useRegisterForm({
         setIsPasswordConfirmTouched(false);
         setSubmitOtpState(submitOtpInitialState);
         setOtpCode("");
+        setIsOtpCodeTouched(false);
         setTurnstileToken("");
         setCooldownSeconds(result.retryAfterSeconds ?? otpCooldownSeconds);
         setIsResendPreparing(false);
@@ -275,18 +282,23 @@ export function useRegisterForm({
     redirectTo: submitOtpState.redirectTo,
   });
   const isDonePhase = currentPhase === "done";
-  const emailError = getEmailError(email);
-  const displayNameError = getDisplayNameError(displayName);
+  const emailValidationError = getEmailError(email);
+  const displayNameValidationError = getDisplayNameError(displayName);
   const passwordValidationError = getPasswordError(password);
   const passwordConfirmValidationError = getPasswordConfirmError(
     password,
     passwordConfirm,
   );
+  const emailError = isEmailTouched ? emailValidationError : "";
+  const displayNameError = isDisplayNameTouched
+    ? displayNameValidationError
+    : "";
   const passwordError = isPasswordTouched ? passwordValidationError : "";
   const passwordConfirmError = isPasswordConfirmTouched
     ? passwordConfirmValidationError
     : "";
-  const otpCodeError = getOtpCodeError(otpCode);
+  const otpCodeValidationError = getOtpCodeError(otpCode);
+  const otpCodeError = isOtpCodeTouched ? otpCodeValidationError : "";
   const requestValues = useMemo(
     () =>
       lockedSnapshot ?? {
@@ -299,12 +311,13 @@ export function useRegisterForm({
   const isFieldsLocked = isOtpPhase && Boolean(lockedSnapshot);
   const shouldShowTurnstile =
     !isDonePhase && cooldownSeconds <= 0 && (!isOtpPhase || isResendPreparing);
-  const isEmailValid = Boolean(email) && !emailError;
-  const isDisplayNameValid = Boolean(displayName) && !displayNameError;
+  const isEmailValid = Boolean(email) && !emailValidationError;
+  const isDisplayNameValid =
+    Boolean(displayName) && !displayNameValidationError;
   const isPasswordValid = Boolean(password) && !passwordValidationError;
   const isPasswordConfirmValid =
     Boolean(passwordConfirm) && !passwordConfirmValidationError;
-  const isOtpCodeValid = Boolean(otpCode) && !otpCodeError;
+  const isOtpCodeValid = Boolean(otpCode) && !otpCodeValidationError;
   const isSubmitOtpLocked =
     submitOtpState.status === "too_many_attempts" ||
     submitOtpState.remainingAttempts === 0;
@@ -441,6 +454,9 @@ export function useRegisterForm({
     setManualRequestOtpState({});
     setSubmitOtpState(submitOtpInitialState);
     setOtpCode("");
+    setIsOtpCodeTouched(false);
+    setIsDisplayNameTouched(false);
+    setIsEmailTouched(false);
     setCooldownSeconds(0);
     setIsResendPreparing(false);
     setTurnstileErrorMessage("");
@@ -575,17 +591,16 @@ export function useRegisterForm({
     emailError,
     handleModifyRegisterInfo,
     handleOtpCodeChange,
+    handleOtpCodeBlur: () => setIsOtpCodeTouched(true),
+    handleDisplayNameBlur: () => setIsDisplayNameTouched(true),
+    handleEmailBlur: () => setIsEmailTouched(true),
     handlePasswordBlur: () => setIsPasswordTouched(true),
     handlePasswordConfirmBlur: () => setIsPasswordConfirmTouched(true),
     handlePrepareResend,
     handleResendOtp,
     handleRetryTurnstile,
-    isDisplayNameValid,
     isDonePhase,
-    isEmailValid,
     isFieldsLocked,
-    isPasswordConfirmValid,
-    isPasswordValid,
     isRequestOtpPending,
     isResendPreparing,
     isSubmitOtpPending,

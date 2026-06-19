@@ -53,19 +53,18 @@ export function RegisterForm(props: RegisterFormProps) {
     displayNameError,
     email,
     emailError,
+    handleDisplayNameBlur,
+    handleEmailBlur,
     handleModifyRegisterInfo,
+    handleOtpCodeBlur,
     handleOtpCodeChange,
     handlePasswordBlur,
     handlePasswordConfirmBlur,
     handlePrepareResend,
     handleResendOtp,
     handleRetryTurnstile,
-    isDisplayNameValid,
     isDonePhase,
-    isEmailValid,
     isFieldsLocked,
-    isPasswordConfirmValid,
-    isPasswordValid,
     isRequestOtpPending,
     isResendPreparing,
     isSubmitOtpPending,
@@ -120,12 +119,10 @@ export function RegisterForm(props: RegisterFormProps) {
             type="email"
             autoComplete="email"
             error={Boolean(emailError)}
-            helperText={
-              emailError ||
-              (isEmailValid ? registerFormMessages.fieldPassed : undefined)
-            }
+            helperText={emailError || undefined}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            onBlur={handleEmailBlur}
             required
             fullWidth
             slotProps={shrinkInputLabelSlotProps}
@@ -134,14 +131,10 @@ export function RegisterForm(props: RegisterFormProps) {
             label={registerFormMessages.labels.displayName}
             name="displayName"
             error={Boolean(displayNameError)}
-            helperText={
-              displayNameError ||
-              (isDisplayNameValid
-                ? registerFormMessages.fieldPassed
-                : undefined)
-            }
+            helperText={displayNameError || undefined}
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
+            onBlur={handleDisplayNameBlur}
             required
             fullWidth
             slotProps={shrinkInputLabelSlotProps}
@@ -152,10 +145,7 @@ export function RegisterForm(props: RegisterFormProps) {
             type="password"
             autoComplete="new-password"
             error={Boolean(passwordError)}
-            helperText={
-              passwordError ||
-              (isPasswordValid ? registerFormMessages.fieldPassed : undefined)
-            }
+            helperText={passwordError || undefined}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             onBlur={handlePasswordBlur}
@@ -169,12 +159,7 @@ export function RegisterForm(props: RegisterFormProps) {
             type="password"
             autoComplete="new-password"
             error={Boolean(passwordConfirmError)}
-            helperText={
-              passwordConfirmError ||
-              (isPasswordConfirmValid
-                ? registerFormMessages.fieldPassed
-                : undefined)
-            }
+            helperText={passwordConfirmError || undefined}
             value={passwordConfirm}
             onChange={(event) => setPasswordConfirm(event.target.value)}
             onBlur={handlePasswordConfirmBlur}
@@ -237,14 +222,10 @@ export function RegisterForm(props: RegisterFormProps) {
               inputMode="numeric"
               autoComplete="one-time-code"
               error={Boolean(otpCodeError)}
-              helperText={
-                otpCodeError ||
-                (otpCode.length === 6
-                  ? registerFormMessages.fieldPassed
-                  : undefined)
-              }
+              helperText={otpCodeError || undefined}
               value={otpCode}
               onChange={(event) => handleOtpCodeChange(event.target.value)}
+              onBlur={handleOtpCodeBlur}
               required
               fullWidth
               slotProps={shrinkInputLabelSlotProps}

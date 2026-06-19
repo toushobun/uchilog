@@ -25,7 +25,6 @@ import {
 } from "server/auth/otpHash";
 import { verifyTurnstileToken } from "server/auth/turnstile";
 import type {
-  EmailAvailabilityState,
   LoginActionState,
   RegisterActionState,
   RequestRegisterOtpActionState,
@@ -552,34 +551,6 @@ export async function login(
   }
 
   redirect(routePaths.dashboard);
-}
-
-export async function validateRegisterEmailFormat(
-  email: string,
-): Promise<EmailAvailabilityState> {
-  const trimmedEmail = email.trim();
-
-  if (!trimmedEmail) {
-    return {
-      error: "请输入邮箱后再校验。",
-    };
-  }
-
-  if (trimmedEmail.length > emailMaxLength) {
-    return {
-      error: `邮箱最多 ${emailMaxLength} 个字符。`,
-    };
-  }
-
-  if (!isValidEmailFormat(trimmedEmail)) {
-    return {
-      error: "邮箱格式有误",
-    };
-  }
-
-  return {
-    success: "该邮箱格式可以使用。",
-  };
 }
 
 export async function register(

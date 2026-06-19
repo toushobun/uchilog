@@ -1,5 +1,4 @@
 export const registerFormMessages = {
-  fieldPassed: "格式已通过",
   labels: {
     displayName: "昵称",
     email: "邮箱",

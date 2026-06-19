@@ -5,7 +5,6 @@ import {
   register,
   requestRegisterOtp,
   submitRegisterOtp,
-  validateRegisterEmailFormat,
 } from "server/actions/auth";
 
 const mocks = vi.hoisted(() => ({
@@ -381,26 +380,6 @@ describe("requestRegisterOtp", () => {
         result: "failed",
       }),
     );
-  });
-});
-
-describe("validateRegisterEmailFormat", () => {
-  it.each([
-    ["未输入邮箱", "", "请输入邮箱后再校验。"],
-    ["邮箱过长", `${"a".repeat(250)}@example.test`, "邮箱最多 255 个字符。"],
-    ["邮箱格式有误", "not-email", "邮箱格式有误"],
-  ])("邮箱格式无法校验时返回错误：%s", async (_, email, errorMessage) => {
-    const result = await validateRegisterEmailFormat(email);
-
-    expect(result).toEqual({ error: errorMessage });
-  });
-
-  it("邮箱格式可用时返回可继续填写提示", async () => {
-    const result = await validateRegisterEmailFormat("yamada@example.test");
-
-    expect(result).toEqual({
-      success: "该邮箱格式可以使用。",
-    });
   });
 });
 

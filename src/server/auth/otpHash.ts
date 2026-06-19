@@ -34,7 +34,15 @@ export function normalizeAuthOtpIp(headers: AuthOtpHeaders) {
 
   const realIp = headers.get("x-real-ip")?.trim();
 
-  return forwardedFor ?? (realIp && realIp.length > 0 ? realIp : null);
+  if (forwardedFor) {
+    return forwardedFor;
+  }
+
+  if (realIp && realIp.length > 0) {
+    return realIp;
+  }
+
+  return process.env.NODE_ENV === "development" ? "127.0.0.1" : null;
 }
 
 // 返回 null 表示无法识别可信 IP，调用方必须直接拒绝 OTP 发送。
