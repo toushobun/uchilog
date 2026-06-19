@@ -1,10 +1,10 @@
 "use client";
 
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import HourglassEmptyOutlinedIcon from "@mui/icons-material/HourglassEmptyOutlined";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import MuiLink from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -147,7 +147,7 @@ export function RegisterForm(props: RegisterFormProps) {
                     gap: 0.5,
                   }}
                 >
-                  <HourglassEmptyOutlinedIcon fontSize="inherit" />
+                  <CircularProgress size="1em" />
                   {registerFormMessages.messages.emailChecking}
                 </Box>
               ) : emailAvailabilityChecked && isEmailExists ? (
