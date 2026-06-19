@@ -32,9 +32,14 @@
 
 ## 图标规范
 
-- 图标一律优先使用 `@mui/icons-material`，不引入其他图标库。
+- 静态语义图标优先使用 `@mui/icons-material`。
+  - 例如：成功、错误、编辑、删除、添加、日历、账户等。
+- 加载 / 处理中状态优先使用 `@mui/material/CircularProgress` 或同类 MUI loading 组件。
+  - 例如：检查中、提交中、保存中、加载中。
+- 不为了统一 import 来源而把 loading 状态改成静态 icon。
 - UI 整体固定 MUI 风格，自定义组件需与 MUI 视觉风格保持一致。
-- 若 MUI 图标库中无合适图标，需在对应 Issue 或 PR 中说明原因，经人工确认后方可使用其他方案。
+- 不引入 MUI 以外的新图标库，除非当前 Issue 明确要求并说明理由。
+- 若 MUI 图标库或 MUI loading 组件中无合适方案，需在对应 Issue 或 PR 中说明原因，经人工确认后方可使用其他方案。
 
 ## 安全边界
 
