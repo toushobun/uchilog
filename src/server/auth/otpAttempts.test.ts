@@ -12,6 +12,7 @@ vi.mock("lib/supabase/serviceRole", () => ({
 
 import {
   checkAuthOtpSendRateLimit,
+  checkRegisterEmailAvailabilityRateLimit,
   countAuthOtpVerifyFailuresSinceLastSend,
   recordAuthOtpAttempt,
 } from "./otpAttempts";
@@ -177,6 +178,96 @@ describe("auth OTP attempts", () => {
     await expect(
       checkAuthOtpSendRateLimit({ emailHash, ipHash, now }),
     ).rejects.toThrow("Failed to load auth OTP send attempts.");
+  });
+
+  it("邮箱可用性检查未命中 IP 限制时允许查询", async () => {
+    const supabase = createSupabaseMock({
+      queryResponses: [
+        {
+          data: rows(["2026-06-16T11:30:00.000Z", "2026-06-16T11:59:00.000Z"]),
+        },
+      ],
+    });
+    mocks.createServiceRoleClient.mockReturnValue(supabase.client);
+
+    await expect(
+      checkRegisterEmailAvailabilityRateLimit({ ipHash, now }),
+    ).resolves.toEqual({
+      allowed: true,
+      retryAfterSeconds: 0,
+    });
+
+    expect(supabase.queries[0].calls).toEqual(
+      expect.arrayContaining([
+        { args: ["attempt_type", "availability_check"], method: "eq" },
+        { args: ["ip_hash", ipHash], method: "eq" },
+        {
+          args: ["created_at", "2026-06-16T11:00:00.000Z"],
+          method: "gte",
+        },
+        { args: [101], method: "limit" },
+      ]),
+    );
+  });
+
+  it("一分钟内邮箱可用性检查达到上限时拒绝查询", async () => {
+    const supabase = createSupabaseMock({
+      queryResponses: [
+        {
+          data: rows(
+            Array.from(
+              { length: 10 },
+              (_, index) =>
+                `2026-06-16T11:59:${String(index + 30).padStart(2, "0")}.000Z`,
+            ),
+          ),
+        },
+      ],
+    });
+    mocks.createServiceRoleClient.mockReturnValue(supabase.client);
+
+    await expect(
+      checkRegisterEmailAvailabilityRateLimit({ ipHash, now }),
+    ).resolves.toEqual({
+      allowed: false,
+      retryAfterSeconds: 30,
+    });
+  });
+
+  it("一小时内邮箱可用性检查达到上限时拒绝查询", async () => {
+    const supabase = createSupabaseMock({
+      queryResponses: [
+        {
+          data: rows(
+            Array.from({ length: 100 }, (_, index) =>
+              new Date(
+                new Date("2026-06-16T11:00:01.000Z").getTime() +
+                  index * 30 * 1000,
+              ).toISOString(),
+            ),
+          ),
+        },
+      ],
+    });
+    mocks.createServiceRoleClient.mockReturnValue(supabase.client);
+
+    await expect(
+      checkRegisterEmailAvailabilityRateLimit({ ipHash, now }),
+    ).resolves.toEqual({
+      allowed: false,
+      retryAfterSeconds: 1,
+    });
+  });
+
+  it("读取邮箱可用性检查记录失败时抛出错误", async () => {
+    const supabase = createSupabaseMock({
+      queryResponses: [{ error: new Error("db down") }],
+    });
+    mocks.createServiceRoleClient.mockReturnValue(supabase.client);
+
+    await expect(
+      checkRegisterEmailAvailabilityRateLimit({ ipHash, now }),
+    ).rejects.toThrow("Failed to load register email availability attempts.");
   });
 
   it("写入 OTP attempt 记录", async () => {

@@ -16,6 +16,7 @@ const meta: Meta<typeof RegisterForm> = {
     },
   ],
   args: {
+    checkEmailAvailabilityAction: async () => ({ available: true }),
     requestOtpAction: async () => ({}),
     submitOtpAction: async () => ({}),
     turnstileSiteKey: turnstileTestSiteKey,
@@ -45,6 +46,26 @@ async function fillRegisterFields(canvasElement: HTMLElement) {
 
 export const Default: Story = {
   name: "初始填写",
+};
+
+export const EmailAlreadyRegistered: Story = {
+  name: "邮箱已注册",
+  args: {
+    checkEmailAvailabilityAction: async () => ({
+      available: false,
+      error: "这个邮箱已经注册过了，请直接登录或换一个邮箱。",
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.type(
+      canvas.getByLabelText(/邮箱/),
+      "registered@example.test",
+    );
+    await userEvent.tab();
+    await canvas.findByText("这个邮箱已经注册过了，请直接登录或换一个邮箱。");
+  },
 };
 
 export const OtpInput: Story = {

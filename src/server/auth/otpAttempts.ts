@@ -3,7 +3,10 @@ import "server-only";
 import { createServiceRoleClient } from "lib/supabase/serviceRole";
 
 export type AuthOtpPurpose = "signup";
-export type AuthOtpAttemptType = "send" | "verify_failure";
+export type AuthOtpAttemptType =
+  | "send"
+  | "verify_failure"
+  | "availability_check";
 export type AuthOtpAttemptResult = "success" | "blocked" | "failed";
 
 export type AuthOtpSendRateLimitResult =
@@ -32,6 +35,9 @@ const ipHourLimit = 20;
 const ipDayLimit = 100;
 const emailSendLookupLimit = emailDayLimit + 1;
 const ipSendLookupLimit = ipDayLimit + 1;
+const availabilityCheckMinuteLimit = 10;
+const availabilityCheckHourLimit = 100;
+const availabilityCheckLookupLimit = availabilityCheckHourLimit + 1;
 
 function toIsoBefore(now: Date, seconds: number) {
   return new Date(now.getTime() - seconds * 1000).toISOString();
@@ -156,6 +162,57 @@ export async function checkAuthOtpSendRateLimit(params: {
     getLimitRetryAfterSeconds(ipRows, ipDayLimit, dayWindowSeconds, now),
   ];
   const retryAfterSeconds = Math.max(...retryAfterCandidates);
+
+  return retryAfterSeconds > 0
+    ? { allowed: false, retryAfterSeconds }
+    : { allowed: true, retryAfterSeconds: 0 };
+}
+
+export async function checkRegisterEmailAvailabilityRateLimit(params: {
+  ipHash: string;
+  now?: Date;
+  purpose?: AuthOtpPurpose;
+}): Promise<AuthOtpSendRateLimitResult> {
+  const now = params.now ?? new Date();
+  const purpose = params.purpose ?? "signup";
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from(authOtpAttemptTable)
+    .select("created_at")
+    .eq("purpose", purpose)
+    .eq("attempt_type", "availability_check")
+    .eq("ip_hash", params.ipHash)
+    .gte("created_at", toIsoBefore(now, hourWindowSeconds))
+    .order("created_at", { ascending: false })
+    .limit(availabilityCheckLookupLimit);
+
+  if (error) {
+    throw new Error("Failed to load register email availability attempts.");
+  }
+
+  const rows = toCreatedAtRows(data).sort((left, right) =>
+    left.created_at < right.created_at
+      ? -1
+      : left.created_at > right.created_at
+        ? 1
+        : 0,
+  );
+  const retryAfterSeconds = Math.max(
+    getLimitRetryAfterSeconds(
+      rows.filter(
+        (row) => row.created_at >= toIsoBefore(now, sendCooldownSeconds),
+      ),
+      availabilityCheckMinuteLimit,
+      sendCooldownSeconds,
+      now,
+    ),
+    getLimitRetryAfterSeconds(
+      rows,
+      availabilityCheckHourLimit,
+      hourWindowSeconds,
+      now,
+    ),
+  );
 
   return retryAfterSeconds > 0
     ? { allowed: false, retryAfterSeconds }

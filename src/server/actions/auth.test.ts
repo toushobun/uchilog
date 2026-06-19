@@ -10,6 +10,7 @@ import {
 
 const mocks = vi.hoisted(() => ({
   checkAuthOtpSendRateLimit: vi.fn(),
+  checkRegisterEmailAvailabilityRateLimit: vi.fn(),
   countAuthOtpVerifyFailuresSinceLastSend: vi.fn(),
   createClient: vi.fn(),
   headers: vi.fn(),
@@ -39,6 +40,8 @@ vi.mock("lib/supabase/server", () => ({
 
 vi.mock("server/auth/otpAttempts", () => ({
   checkAuthOtpSendRateLimit: mocks.checkAuthOtpSendRateLimit,
+  checkRegisterEmailAvailabilityRateLimit:
+    mocks.checkRegisterEmailAvailabilityRateLimit,
   countAuthOtpVerifyFailuresSinceLastSend:
     mocks.countAuthOtpVerifyFailuresSinceLastSend,
   recordAuthOtpAttempt: mocks.recordAuthOtpAttempt,
@@ -143,6 +146,14 @@ describe("register", () => {
 describe("checkRegisterEmailAvailability", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.headers.mockResolvedValue(
+      new Headers({ "x-real-ip": "203.0.113.10" }),
+    );
+    mocks.checkRegisterEmailAvailabilityRateLimit.mockResolvedValue({
+      allowed: true,
+      retryAfterSeconds: 0,
+    });
+    mocks.recordAuthOtpAttempt.mockResolvedValue(undefined);
   });
 
   it("邮箱已存在时返回明确错误", async () => {
@@ -154,6 +165,12 @@ describe("checkRegisterEmailAvailability", () => {
       available: false,
       error: "这个邮箱已经注册过了，请直接登录或换一个邮箱。",
     });
+    expect(mocks.recordAuthOtpAttempt).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attempt_type: "availability_check",
+        result: "success",
+      }),
+    );
   });
 
   it("邮箱可用时返回可用状态", async () => {
@@ -162,12 +179,52 @@ describe("checkRegisterEmailAvailability", () => {
     const result = await checkRegisterEmailAvailability("yamada@example.test");
 
     expect(result).toEqual({ available: true });
+    expect(mocks.recordAuthOtpAttempt).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attempt_type: "availability_check",
+        result: "success",
+      }),
+    );
+  });
+
+  it("IP 限流命中时不查询 Auth 用户", async () => {
+    mocks.checkRegisterEmailAvailabilityRateLimit.mockResolvedValue({
+      allowed: false,
+      retryAfterSeconds: 30,
+    });
+
+    const result = await checkRegisterEmailAvailability("yamada@example.test");
+
+    expect(result).toEqual({
+      available: false,
+      error: "邮箱检查过于频繁，请稍后再试。",
+    });
+    expect(mocks.isRegisterEmailAvailable).not.toHaveBeenCalled();
+    expect(mocks.recordAuthOtpAttempt).not.toHaveBeenCalled();
   });
 
   it("邮箱格式不合法时不查询 Auth 用户", async () => {
     const result = await checkRegisterEmailAvailability("not-email");
 
     expect(result).toEqual({ available: false });
+    expect(
+      mocks.checkRegisterEmailAvailabilityRateLimit,
+    ).not.toHaveBeenCalled();
+    expect(mocks.isRegisterEmailAvailable).not.toHaveBeenCalled();
+  });
+
+  it("无法识别可信 IP 时不查询 Auth 用户", async () => {
+    mocks.headers.mockResolvedValue(new Headers());
+
+    const result = await checkRegisterEmailAvailability("yamada@example.test");
+
+    expect(result).toEqual({
+      available: false,
+      error: "服务异常，请稍后再试",
+    });
+    expect(
+      mocks.checkRegisterEmailAvailabilityRateLimit,
+    ).not.toHaveBeenCalled();
     expect(mocks.isRegisterEmailAvailable).not.toHaveBeenCalled();
   });
 
@@ -191,6 +248,12 @@ describe("checkRegisterEmailAvailability", () => {
         available: false,
         error: "服务异常，请稍后再试",
       });
+      expect(mocks.recordAuthOtpAttempt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attempt_type: "availability_check",
+          result: "failed",
+        }),
+      );
     } finally {
       consoleError.mockRestore();
     }
@@ -297,6 +360,7 @@ describe("requestRegisterOtp", () => {
     });
     expect(mocks.recordAuthOtpAttempt).not.toHaveBeenCalled();
     expect(mocks.createClient).not.toHaveBeenCalled();
+    expect(mocks.isRegisterEmailAvailable).not.toHaveBeenCalled();
   });
 
   it("无法识别可信 IP 时记录固定错误 tag", async () => {
