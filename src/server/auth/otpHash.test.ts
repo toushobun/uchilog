@@ -43,6 +43,16 @@ describe("auth OTP hash", () => {
     expect(hashAuthOtpIp(headers)).toBe(sha256("192.0.2.30"));
   });
 
+  it("Vercel 转发头无效时使用下一个可信 header", () => {
+    const headers = new Headers({
+      "x-forwarded-for": "203.0.113.10",
+      "x-vercel-forwarded-for": "not-an-ip",
+    });
+
+    expect(normalizeAuthOtpIp(headers)).toBe("203.0.113.10");
+    expect(hashAuthOtpIp(headers)).toBe(sha256("203.0.113.10"));
+  });
+
   it("IP 优先使用 x-forwarded-for 的最后一个非空值", () => {
     const headers = new Headers({
       "x-forwarded-for": " , 203.0.113.10, 203.0.113.11",
@@ -75,6 +85,14 @@ describe("auth OTP hash", () => {
     });
 
     expect(normalizeAuthOtpIp(headers)).toBe("192.0.2.51");
+  });
+
+  it("从 forwarded header 读取无引号 IPv4", () => {
+    const headers = new Headers({
+      forwarded: "for=192.0.2.50;proto=https",
+    });
+
+    expect(normalizeAuthOtpIp(headers)).toBe("192.0.2.50");
   });
 
   it.each([
