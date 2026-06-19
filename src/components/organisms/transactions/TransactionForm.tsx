@@ -761,7 +761,7 @@ export function TransactionForm({
                 error={!!fieldErrors.tags}
                 fullWidth
                 helperText={
-                  fieldErrors.tags ?? transactionTagValidationMessages.invalid
+                  fieldErrors.tags ?? transactionTagValidationMessages.hint
                 }
                 label="新增标签"
                 onChange={(event) => {
