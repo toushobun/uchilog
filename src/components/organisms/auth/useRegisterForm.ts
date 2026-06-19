@@ -197,6 +197,8 @@ export function useRegisterForm({
         setLockedSnapshot(null);
         setPassword("");
         setPasswordConfirm("");
+        setIsDisplayNameTouched(false);
+        setIsEmailTouched(false);
         setIsPasswordTouched(false);
         setIsPasswordConfirmTouched(false);
         setSubmitOtpState(submitOtpInitialState);
@@ -453,6 +455,8 @@ export function useRegisterForm({
     setSubmitOtpState(submitOtpInitialState);
     setOtpCode("");
     setIsOtpCodeTouched(false);
+    setIsDisplayNameTouched(false);
+    setIsEmailTouched(false);
     setCooldownSeconds(0);
     setIsResendPreparing(false);
     setTurnstileErrorMessage("");

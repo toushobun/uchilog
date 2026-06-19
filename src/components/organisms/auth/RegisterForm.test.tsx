@@ -229,6 +229,8 @@ describe("RegisterForm", () => {
     render(<RegisterForm {...props} />);
 
     await fillRegisterFields();
+    fireEvent.blur(screen.getByLabelText(/邮箱/));
+    fireEvent.blur(screen.getByLabelText(/昵称/));
     fireEvent.click(screen.getByRole("button", { name: "获取验证码" }));
 
     const modifyButton = await screen.findByRole("button", {
@@ -245,6 +247,14 @@ describe("RegisterForm", () => {
     expect(
       screen.getByRole("button", { name: "获取验证码" }),
     ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/邮箱/), {
+      target: { value: "not-email" },
+    });
+    fireEvent.change(screen.getByLabelText(/昵称/), {
+      target: { value: "a".repeat(51) },
+    });
+    expect(screen.queryByText("邮箱格式有误")).not.toBeInTheDocument();
+    expect(screen.queryByText("昵称最多 50 个字符。")).not.toBeInTheDocument();
   });
 
   it("冷却结束后可以使用锁定信息重新发送验证码", async () => {
@@ -255,6 +265,8 @@ describe("RegisterForm", () => {
     render(<RegisterForm {...props} />);
 
     await fillRegisterFields();
+    fireEvent.blur(screen.getByLabelText(/邮箱/));
+    fireEvent.blur(screen.getByLabelText(/昵称/));
     fireEvent.click(screen.getByRole("button", { name: "获取验证码" }));
     fireEvent.click(
       await screen.findByRole("button", { name: "重新发送验证码" }),
@@ -305,6 +317,20 @@ describe("RegisterForm", () => {
 
     expect(await screen.findByText("密码强度不足")).toBeInTheDocument();
     expect(screen.getByLabelText(/^密码/)).toHaveValue("");
+    fireEvent.change(screen.getByLabelText(/邮箱/), {
+      target: { value: "not-email" },
+    });
+    fireEvent.change(screen.getByLabelText(/昵称/), {
+      target: { value: "a".repeat(51) },
+    });
+    expect(screen.queryByText("邮箱格式有误")).not.toBeInTheDocument();
+    expect(screen.queryByText("昵称最多 50 个字符。")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/邮箱/), {
+      target: { value: "yamada@example.test" },
+    });
+    fireEvent.change(screen.getByLabelText(/昵称/), {
+      target: { value: "山田太郎" },
+    });
     fireEvent.change(screen.getByLabelText(/^密码/), {
       target: { value: "new-password123" },
     });

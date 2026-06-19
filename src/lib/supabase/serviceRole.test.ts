@@ -41,4 +41,14 @@ describe("createServiceRoleClient", () => {
       expect.any(Object),
     );
   });
+
+  it("两个服务端 key 均缺失时抛出错误", () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
+    vi.stubEnv("SUPABASE_SECRET_KEY", "");
+
+    expect(() => createServiceRoleClient()).toThrow(
+      "Supabase service role environment variables are missing.",
+    );
+  });
 });
