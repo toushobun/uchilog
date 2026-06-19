@@ -42,7 +42,13 @@ export function normalizeAuthOtpIp(headers: AuthOtpHeaders) {
     return realIp;
   }
 
-  const vercelProxiedFor = headers.get("x-vercel-proxied-for")?.trim();
+  const vercelProxiedForValues = headers
+    .get("x-vercel-proxied-for")
+    ?.split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+  const vercelProxiedFor =
+    vercelProxiedForValues?.[vercelProxiedForValues.length - 1];
 
   if (vercelProxiedFor && vercelProxiedFor.length > 0) {
     return vercelProxiedFor;

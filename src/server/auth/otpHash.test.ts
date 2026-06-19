@@ -63,10 +63,10 @@ describe("auth OTP hash", () => {
 
   it("没有更高优先级的 header 时使用 x-vercel-proxied-for", () => {
     const headers = new Headers({
-      "x-vercel-proxied-for": " 192.0.2.40 ",
+      "x-vercel-proxied-for": " , 192.0.2.40, 192.0.2.41",
     });
 
-    expect(normalizeAuthOtpIp(headers)).toBe("192.0.2.40");
+    expect(normalizeAuthOtpIp(headers)).toBe("192.0.2.41");
   });
 
   it("从 forwarded header 读取 for 值", () => {
