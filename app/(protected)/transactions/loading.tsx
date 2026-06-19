@@ -1,5 +1,4 @@
 import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
 import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -35,7 +34,7 @@ export default function TransactionsLoadingPage() {
         明细
       </Typography>
 
-      {/* 月ナビ pill：‹ | 月名 | › */}
+      {/* 月导航胶囊：‹ | 月份 | › */}
       <Stack
         direction="row"
         sx={{
@@ -53,7 +52,7 @@ export default function TransactionsLoadingPage() {
         <Skeleton width={24} sx={{ fontSize: 16 }} />
       </Stack>
 
-      {/* TransactionSummaryBar：収入 | 支出 | 結余 */}
+      {/* 收支汇总栏：收入 | 支出 | 结余 */}
       <Box
         sx={{
           bgcolor: "background.paper",
@@ -65,8 +64,11 @@ export default function TransactionsLoadingPage() {
       >
         <Stack
           direction="row"
-          divider={<Divider flexItem orientation="vertical" />}
-          sx={{ px: 2, py: 1.5 }}
+          sx={{
+            px: 2,
+            py: 1.5,
+            "& > * + *": { borderLeft: `1px solid ${transactionBorderColor}` },
+          }}
         >
           {[0, 1, 2].map((i) => (
             <Stack key={i} spacing={0.4} sx={{ alignItems: "center", flex: 1 }}>
@@ -77,7 +79,7 @@ export default function TransactionsLoadingPage() {
         </Stack>
       </Box>
 
-      {/* 日付グループ × 2 */}
+      {/* 日期分组列表 × 2 */}
       <Stack
         sx={{
           left: { xs: "50%", sm: "auto" },
@@ -89,7 +91,7 @@ export default function TransactionsLoadingPage() {
       >
         {[3, 2].map((rowCount, gi) => (
           <Box key={gi}>
-            {/* 日付ヘッダー行 */}
+            {/* 日期表头行 */}
             <Stack
               direction="row"
               spacing={2}
@@ -104,14 +106,16 @@ export default function TransactionsLoadingPage() {
               <Skeleton width={48} sx={{ fontSize: 13 }} />
             </Stack>
 
-            {/* 取引行グループ */}
+            {/* 交易记录行组 */}
             <Stack
-              divider={<Divider flexItem sx={{ ml: 7.2 }} />}
               sx={{
                 bgcolor: "background.paper",
                 boxShadow: "0 10px 24px rgba(77, 55, 120, 0.05)",
                 overflow: "hidden",
                 px: 1.6,
+                "& > * + *": {
+                  borderTop: `1px solid ${transactionBorderColor}`,
+                },
               }}
             >
               {Array.from({ length: rowCount }).map((_, i) => (
