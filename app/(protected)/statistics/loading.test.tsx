@@ -11,6 +11,7 @@ describe("StatisticsLoadingPage", () => {
   it("显示统计页面的加载状态", () => {
     const { container } = render(<StatisticsLoadingPage />);
 
+    expect(within(container).getByRole("status")).toBeInTheDocument();
     expect(
       within(container).getByRole("heading", { name: "统计" }),
     ).toBeInTheDocument();

@@ -7,8 +7,13 @@ import { transactionSummaryBackgroundColor } from "theme/transactionColors";
 
 export default function DashboardLoadingPage() {
   return (
-    <Stack spacing={2.5}>
-      {/* DashboardMonthSummaryCard スケルトン */}
+    <Stack
+      role="status"
+      aria-label="页面数据加载中"
+      aria-busy="true"
+      spacing={2.5}
+    >
+      {/* 月度汇总卡片骨架 */}
       <Box
         sx={{
           bgcolor: transactionSummaryBackgroundColor,
@@ -32,7 +37,7 @@ export default function DashboardLoadingPage() {
         </Stack>
       </Box>
 
-      {/* DashboardRecentTransactions スケルトン */}
+      {/* 最近记录骨架 */}
       <Stack spacing={0}>
         <Stack
           direction="row"
@@ -83,7 +88,7 @@ export default function DashboardLoadingPage() {
         </Box>
       </Stack>
 
-      {/* DashboardPeriodExpenses スケルトン */}
+      {/* 周期支出骨架 */}
       <Stack direction="row" spacing={1.5}>
         <Skeleton
           variant="rounded"

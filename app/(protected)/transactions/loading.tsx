@@ -29,7 +29,12 @@ function TransactionRowSkeleton() {
 
 export default function TransactionsLoadingPage() {
   return (
-    <Stack spacing={2.2}>
+    <Stack
+      role="status"
+      aria-label="页面数据加载中"
+      aria-busy="true"
+      spacing={2.2}
+    >
       <Typography component="h1" sx={{ fontSize: 24, fontWeight: 900 }}>
         明细
       </Typography>
