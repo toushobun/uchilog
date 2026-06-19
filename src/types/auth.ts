@@ -11,6 +11,7 @@ export type LoginActionState = Pick<BaseActionState, "error">;
 
 export type RegisterEmailAvailabilityState = Pick<BaseActionState, "error"> & {
   available: boolean;
+  reason?: "email_exists";
 };
 
 export type RequestRegisterOtpActionState = BaseActionState & {

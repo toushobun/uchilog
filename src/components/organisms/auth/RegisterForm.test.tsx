@@ -96,20 +96,50 @@ describe("RegisterForm", () => {
     expect(props.checkEmailAvailabilityAction).not.toHaveBeenCalled();
   });
 
-  it("邮箱失焦后提示已使用并禁用获取验证码", async () => {
+  it("邮箱失焦检查中时显示加载提示", async () => {
+    let resolve: (value: RegisterEmailAvailabilityState) => void;
+    const pending = new Promise<RegisterEmailAvailabilityState>((res) => {
+      resolve = res;
+    });
+    const props = createDefaultProps();
+    props.checkEmailAvailabilityAction.mockReturnValue(pending);
+    render(<RegisterForm {...props} />);
+
+    fireEvent.change(screen.getByLabelText(/邮箱/), {
+      target: { value: "yamada@example.test" },
+    });
+    fireEvent.blur(screen.getByLabelText(/邮箱/));
+
+    expect(await screen.findByText("正在检查邮箱可用性")).toBeInTheDocument();
+
+    resolve!({ available: true });
+  });
+
+  it("邮箱检查完成且可用时显示可用提示", async () => {
+    render(<RegisterForm {...createDefaultProps()} />);
+
+    fireEvent.change(screen.getByLabelText(/邮箱/), {
+      target: { value: "yamada@example.test" },
+    });
+    fireEvent.blur(screen.getByLabelText(/邮箱/));
+
+    expect(await screen.findByText("该邮箱可用")).toBeInTheDocument();
+  });
+
+  it("邮箱失焦后提示已使用并显示登录链接，禁用获取验证码", async () => {
     const props = createDefaultProps();
     props.checkEmailAvailabilityAction.mockResolvedValue({
       available: false,
-      error: "这个邮箱已经注册过了，请直接登录或换一个邮箱。",
+      error: "该邮箱已被注册",
+      reason: "email_exists",
     });
     render(<RegisterForm {...props} />);
 
     await fillRegisterFields();
     fireEvent.blur(screen.getByLabelText(/邮箱/));
 
-    expect(
-      await screen.findByText("这个邮箱已经注册过了，请直接登录或换一个邮箱。"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("该邮箱已被注册，前往")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "登录" })).toBeInTheDocument();
     expect(props.checkEmailAvailabilityAction).toHaveBeenCalledWith(
       "yamada@example.test",
     );
@@ -120,23 +150,20 @@ describe("RegisterForm", () => {
     const props = createDefaultProps();
     props.checkEmailAvailabilityAction.mockResolvedValue({
       available: false,
-      error: "这个邮箱已经注册过了，请直接登录或换一个邮箱。",
+      error: "该邮箱已被注册",
+      reason: "email_exists",
     });
     render(<RegisterForm {...props} />);
 
     await fillRegisterFields();
     fireEvent.blur(screen.getByLabelText(/邮箱/));
-    expect(
-      await screen.findByText("这个邮箱已经注册过了，请直接登录或换一个邮箱。"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("该邮箱已被注册，前往")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/邮箱/), {
       target: { value: "new@example.test" },
     });
 
-    expect(
-      screen.queryByText("这个邮箱已经注册过了，请直接登录或换一个邮箱。"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("该邮箱已被注册，前往")).not.toBeInTheDocument();
   });
 
   it("输入格式正确时不常态显示成功提示", async () => {

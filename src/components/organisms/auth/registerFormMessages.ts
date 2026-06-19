@@ -8,6 +8,10 @@ export const registerFormMessages = {
   },
   messages: {
     emailCheckFailed: "暂时无法确认邮箱是否可用，请稍后再试。",
+    emailChecking: "正在检查邮箱可用性",
+    emailAvailable: "该邮箱可用",
+    emailAlreadyRegisteredPrefix: "该邮箱已被注册，前往",
+    emailAlreadyRegisteredLinkText: "登录",
     modifyRequired: "注册信息已修改，请重新获取验证码",
     redirecting: "注册完成，正在跳转...",
     submitOtpLocked: "验证码尝试次数已用尽，请重新获取验证码。",

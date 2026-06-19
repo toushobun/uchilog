@@ -48,12 +48,44 @@ export const Default: Story = {
   name: "初始填写",
 };
 
+export const EmailChecking: Story = {
+  name: "邮箱检查中",
+  args: {
+    checkEmailAvailabilityAction: () => new Promise(() => {}),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.type(
+      canvas.getByLabelText(/邮箱/),
+      "checking@example.test",
+    );
+    await userEvent.tab();
+    await canvas.findByText("正在检查邮箱可用性");
+  },
+};
+
+export const EmailAvailable: Story = {
+  name: "邮箱可用",
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.type(
+      canvas.getByLabelText(/邮箱/),
+      "available@example.test",
+    );
+    await userEvent.tab();
+    await canvas.findByText("该邮箱可用");
+  },
+};
+
 export const EmailAlreadyRegistered: Story = {
   name: "邮箱已注册",
   args: {
     checkEmailAvailabilityAction: async () => ({
       available: false,
-      error: "这个邮箱已经注册过了，请直接登录或换一个邮箱。",
+      error: "该邮箱已被注册",
+      reason: "email_exists",
     }),
   },
   play: async ({ canvasElement }) => {
@@ -64,7 +96,8 @@ export const EmailAlreadyRegistered: Story = {
       "registered@example.test",
     );
     await userEvent.tab();
-    await canvas.findByText("这个邮箱已经注册过了，请直接登录或换一个邮箱。");
+    await canvas.findByText("该邮箱已被注册，前往");
+    await canvas.findByRole("link", { name: "登录" });
   },
 };
 

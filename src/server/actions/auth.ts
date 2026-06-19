@@ -128,7 +128,11 @@ async function loadRegisterEmailAvailability(
 
   return available
     ? { available: true }
-    : { available: false, error: registerErrorMessages.duplicateEmail };
+    : {
+        available: false,
+        error: registerErrorMessages.duplicateEmail,
+        reason: "email_exists" as const,
+      };
 }
 
 function validateRegisterFields({

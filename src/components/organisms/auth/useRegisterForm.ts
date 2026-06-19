@@ -167,6 +167,9 @@ export function useRegisterForm({
   const [emailAvailabilityError, setEmailAvailabilityError] = useState("");
   const [isEmailAvailabilityPending, setIsEmailAvailabilityPending] =
     useState(false);
+  const [emailAvailabilityChecked, setEmailAvailabilityChecked] =
+    useState(false);
+  const [isEmailExists, setIsEmailExists] = useState(false);
   const [isPasswordTouched, setIsPasswordTouched] = useState(false);
   const [isPasswordConfirmTouched, setIsPasswordConfirmTouched] =
     useState(false);
@@ -336,6 +339,8 @@ export function useRegisterForm({
     setEmail(value);
     setEmailAvailabilityError("");
     setIsEmailAvailabilityPending(false);
+    setEmailAvailabilityChecked(false);
+    setIsEmailExists(false);
   }, []);
 
   const handleEmailBlur = useCallback(async () => {
@@ -348,6 +353,8 @@ export function useRegisterForm({
     const requestId = emailAvailabilityRequestIdRef.current + 1;
     emailAvailabilityRequestIdRef.current = requestId;
     setIsEmailAvailabilityPending(true);
+    setEmailAvailabilityChecked(false);
+    setIsEmailExists(false);
 
     try {
       const result = await checkEmailAvailabilityAction(email);
@@ -358,12 +365,15 @@ export function useRegisterForm({
             ? ""
             : result.error || registerFormMessages.messages.emailCheckFailed,
         );
+        setIsEmailExists(result.reason === "email_exists");
+        setEmailAvailabilityChecked(true);
       }
     } catch {
       if (emailAvailabilityRequestIdRef.current === requestId) {
         setEmailAvailabilityError(
           registerFormMessages.messages.emailCheckFailed,
         );
+        setEmailAvailabilityChecked(true);
       }
     } finally {
       if (emailAvailabilityRequestIdRef.current === requestId) {
@@ -636,7 +646,11 @@ export function useRegisterForm({
     displayName,
     displayNameError,
     email,
-    emailError: emailError || emailAvailabilityError,
+    emailAvailabilityChecked,
+    emailAvailabilityError,
+    emailError,
+    isEmailAvailabilityPending,
+    isEmailExists,
     handleEmailChange,
     handleModifyRegisterInfo,
     handleOtpCodeChange,

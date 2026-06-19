@@ -164,6 +164,7 @@ describe("checkRegisterEmailAvailability", () => {
     expect(result).toEqual({
       available: false,
       error: "这个邮箱已经注册过了，请直接登录或换一个邮箱。",
+      reason: "email_exists",
     });
     expect(mocks.recordAuthOtpAttempt).toHaveBeenCalledWith(
       expect.objectContaining({

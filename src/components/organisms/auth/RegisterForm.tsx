@@ -1,11 +1,15 @@
 "use client";
 
+import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import MuiLink from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
+import { routePaths } from "config/paths";
 import type {
   RegisterEmailAvailabilityState,
   RequestRegisterOtpActionState,
@@ -56,7 +60,11 @@ export function RegisterForm(props: RegisterFormProps) {
     displayName,
     displayNameError,
     email,
+    emailAvailabilityChecked,
+    emailAvailabilityError,
     emailError,
+    isEmailAvailabilityPending,
+    isEmailExists,
     handleDisplayNameBlur,
     handleEmailChange,
     handleEmailBlur,
@@ -122,8 +130,53 @@ export function RegisterForm(props: RegisterFormProps) {
             name="email"
             type="email"
             autoComplete="email"
-            error={Boolean(emailError)}
-            helperText={emailError || undefined}
+            error={
+              Boolean(emailError) ||
+              isEmailExists ||
+              Boolean(emailAvailabilityError && !isEmailExists)
+            }
+            helperText={
+              emailError ? (
+                emailError
+              ) : isEmailAvailabilityPending ? (
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                  }}
+                >
+                  <CircularProgress size="1em" />
+                  {registerFormMessages.messages.emailChecking}
+                </Box>
+              ) : emailAvailabilityChecked && isEmailExists ? (
+                <span>
+                  {registerFormMessages.messages.emailAlreadyRegisteredPrefix}
+                  <MuiLink href={routePaths.login}>
+                    {
+                      registerFormMessages.messages
+                        .emailAlreadyRegisteredLinkText
+                    }
+                  </MuiLink>
+                </span>
+              ) : emailAvailabilityChecked && !emailAvailabilityError ? (
+                <Box
+                  component="span"
+                  sx={{
+                    color: "success.main",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                  }}
+                >
+                  <CheckCircleOutlinedIcon fontSize="inherit" />
+                  {registerFormMessages.messages.emailAvailable}
+                </Box>
+              ) : emailAvailabilityError ? (
+                emailAvailabilityError
+              ) : undefined
+            }
             value={email}
             onChange={(event) => handleEmailChange(event.target.value)}
             onBlur={handleEmailBlur}
