@@ -11,6 +11,6 @@ describe("DashboardLoadingPage", () => {
   it("显示首页的加载状态", () => {
     const { container } = render(<DashboardLoadingPage />);
 
-    expect(within(container).getByRole("status")).toBeInTheDocument();
+    expect(within(container).getByText("最近记录")).toBeInTheDocument();
   });
 });

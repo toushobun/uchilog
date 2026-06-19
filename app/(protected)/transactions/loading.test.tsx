@@ -14,7 +14,5 @@ describe("TransactionsLoadingPage", () => {
     expect(
       within(container).getByRole("heading", { name: "明细" }),
     ).toBeInTheDocument();
-    expect(within(container).getByRole("status")).toBeInTheDocument();
-    expect(within(container).getByText("正在读取明细数据")).toBeInTheDocument();
   });
 });

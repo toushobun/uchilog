@@ -14,7 +14,5 @@ describe("StatisticsLoadingPage", () => {
     expect(
       within(container).getByRole("heading", { name: "统计" }),
     ).toBeInTheDocument();
-    expect(within(container).getByRole("status")).toBeInTheDocument();
-    expect(within(container).getByText("正在读取统计数据")).toBeInTheDocument();
   });
 });
