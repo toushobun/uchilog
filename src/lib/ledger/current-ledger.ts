@@ -1,3 +1,4 @@
+import type { QueryData } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
@@ -16,24 +17,6 @@ export type CurrentLedgerContext = {
   ledgers: CurrentLedger[];
   currentLedger: CurrentLedger | null;
 };
-
-type LedgerRow = {
-  id: string;
-  name: string;
-  base_currency: string;
-};
-
-type LedgerMemberRow = {
-  ledger_id: string | null;
-};
-
-function toCurrentLedger(ledger: LedgerRow): CurrentLedger {
-  return {
-    id: ledger.id,
-    name: ledger.name,
-    baseCurrency: ledger.base_currency,
-  };
-}
 
 export const getCurrentLedgerContext = cache(
   async (): Promise<CurrentLedgerContext> => {
@@ -55,11 +38,14 @@ export const getCurrentLedgerContext = cache(
     const email =
       typeof data.claims.email === "string" ? data.claims.email : "登录用户";
 
-    const { data: memberRows, error: memberError } = await supabase
+    const memberQuery = supabase
       .from("ledger_member")
       .select("ledger_id")
       .eq("user_id", userId)
       .eq("status", "active");
+    type LedgerMemberRows = QueryData<typeof memberQuery>;
+
+    const { data: memberData, error: memberError } = await memberQuery;
 
     if (memberError) {
       console.error("Failed to load current ledger members.", memberError);
@@ -68,7 +54,8 @@ export const getCurrentLedgerContext = cache(
       );
     }
 
-    const ledgerIds = ((memberRows ?? []) as LedgerMemberRow[])
+    const memberRows: LedgerMemberRows = memberData ?? [];
+    const ledgerIds = memberRows
       .map((row) => row.ledger_id)
       .filter(
         (ledgerId): ledgerId is string =>
@@ -84,20 +71,28 @@ export const getCurrentLedgerContext = cache(
       };
     }
 
-    const { data: ledgerRows, error: ledgerError } = await supabase
+    const ledgerQuery = supabase
       .from("ledger")
       .select("id, name, base_currency")
       .in("id", ledgerIds);
+    type LedgerRows = QueryData<typeof ledgerQuery>;
+
+    const { data: ledgerData, error: ledgerError } = await ledgerQuery;
 
     if (ledgerError) {
       console.error("Failed to load current ledgers.", ledgerError);
       throw new Error(`Failed to load current ledgers: ${ledgerError.message}`);
     }
 
+    const ledgerRows: LedgerRows = ledgerData ?? [];
     const ledgerById = new Map(
-      ((ledgerRows ?? []) as LedgerRow[]).map((ledger) => [
+      ledgerRows.map((ledger) => [
         ledger.id,
-        toCurrentLedger(ledger),
+        {
+          baseCurrency: ledger.base_currency,
+          id: ledger.id,
+          name: ledger.name,
+        },
       ]),
     );
 
