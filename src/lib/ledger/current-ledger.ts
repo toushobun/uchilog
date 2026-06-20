@@ -89,9 +89,9 @@ export const getCurrentLedgerContext = cache(
       ledgerRows.map((ledger) => [
         ledger.id,
         {
-          baseCurrency: ledger.base_currency,
           id: ledger.id,
           name: ledger.name,
+          baseCurrency: ledger.base_currency,
         },
       ]),
     );
