@@ -202,6 +202,51 @@ export function formatTransactionTime(
   }).format(new Date(value));
 }
 
+export function formatDateTimeLocalInputValue(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return value;
+
+  return `${date.getFullYear()}-${padDatePart(
+    date.getMonth() + 1,
+  )}-${padDatePart(date.getDate())}T${padDatePart(
+    date.getHours(),
+  )}:${padDatePart(date.getMinutes())}:${padDatePart(date.getSeconds())}`;
+}
+
+export function splitDateTimeLocalValue(value: string) {
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}(?::\d{2})?)$/);
+
+  if (!match) {
+    return { date: "", time: "" };
+  }
+
+  return {
+    date: match[1],
+    time: normalizeTransactionTimeValue(match[2]),
+  };
+}
+
+export function composeTransactionDateTimeLocalValue(
+  date: string,
+  time: string,
+) {
+  const normalizedTime = normalizeTransactionTimeValue(time);
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !normalizedTime) {
+    return "";
+  }
+
+  return `${date}T${normalizedTime}`;
+}
+
+function normalizeTransactionTimeValue(value: string) {
+  if (/^\d{2}:\d{2}$/.test(value)) return `${value}:00`;
+  if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value;
+
+  return "";
+}
+
 function padDatePart(value: number) {
   return String(value).padStart(2, "0");
 }
@@ -209,17 +254,9 @@ function padDatePart(value: number) {
 export function getNowDateTimeLocalValue() {
   const current = new Date();
 
-  return [
-    current.getFullYear(),
-    "-",
-    padDatePart(current.getMonth() + 1),
-    "-",
-    padDatePart(current.getDate()),
-    "T",
-    padDatePart(current.getHours()),
-    ":",
-    padDatePart(current.getMinutes()),
-    ":",
-    padDatePart(current.getSeconds()),
-  ].join("");
+  return `${current.getFullYear()}-${padDatePart(
+    current.getMonth() + 1,
+  )}-${padDatePart(current.getDate())}T${padDatePart(
+    current.getHours(),
+  )}:${padDatePart(current.getMinutes())}:${padDatePart(current.getSeconds())}`;
 }

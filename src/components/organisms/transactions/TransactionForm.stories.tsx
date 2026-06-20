@@ -110,6 +110,25 @@ export const WithTags: Story = {
   },
 };
 
+export const CustomDateTime: Story = {
+  args: {
+    initialValues: {
+      accountId: "00000000-0000-4000-8000-000000000046",
+      items: [
+        {
+          amount: "980",
+          categoryId: "00000000-0000-4000-8000-000000005073",
+        },
+      ],
+      merchantId: "00000000-0000-4000-8000-000000001002",
+      note: "自定义发生时间示例",
+      tagNames: [],
+      transactionAt: "2026-06-01T12:34:56.000Z",
+      type: "expense",
+    },
+  },
+};
+
 export const EditMode: Story = {
   args: {
     formId: "edit-transaction-form",

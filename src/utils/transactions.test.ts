@@ -4,9 +4,11 @@ import type { TransactionListItem } from "types/transactions";
 
 import {
   addTransactionAmount,
+  composeTransactionDateTimeLocalValue,
   createTransactionAmountSummary,
   formatDateKey,
   formatDateLabel,
+  formatDateTimeLocalInputValue,
   formatMonthLabel,
   formatNumber,
   formatPlainAmount,
@@ -21,6 +23,7 @@ import {
   groupTransactionItemsByDate,
   normalizeMonth,
   shiftMonth,
+  splitDateTimeLocalValue,
 } from "./transactions";
 
 const numberFormatter = new Intl.NumberFormat(undefined, {
@@ -238,5 +241,39 @@ describe("transactions utils", () => {
     vi.setSystemTime(new Date(2026, 5, 10, 9, 8, 7));
 
     expect(getNowDateTimeLocalValue()).toBe("2026-06-10T09:08:07");
+  });
+
+  it("将 ISO 发生时间转换为本地日期时间输入值", () => {
+    const value = "2026-06-05T03:20:10.000Z";
+    const date = new Date(value);
+    const pad = (part: number) => String(part).padStart(2, "0");
+
+    expect(formatDateTimeLocalInputValue(value)).toBe(
+      `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+        date.getDate(),
+      )}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+        date.getSeconds(),
+      )}`,
+    );
+    expect(formatDateTimeLocalInputValue("invalid")).toBe("invalid");
+  });
+
+  it("拆分并组合本地日期时间值", () => {
+    expect(splitDateTimeLocalValue("2026-06-10T09:08:07")).toEqual({
+      date: "2026-06-10",
+      time: "09:08:07",
+    });
+    expect(splitDateTimeLocalValue("2026-06-10T09:08")).toEqual({
+      date: "2026-06-10",
+      time: "09:08:00",
+    });
+    expect(splitDateTimeLocalValue("invalid")).toEqual({ date: "", time: "" });
+    expect(composeTransactionDateTimeLocalValue("2026-06-10", "09:08")).toBe(
+      "2026-06-10T09:08:00",
+    );
+    expect(composeTransactionDateTimeLocalValue("2026-06-10", "09:08:07")).toBe(
+      "2026-06-10T09:08:07",
+    );
+    expect(composeTransactionDateTimeLocalValue("invalid", "09:08")).toBe("");
   });
 });

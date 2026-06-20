@@ -25,6 +25,7 @@ import {
   maxTransactionTagNameLength,
 } from "@/constants/transactions";
 import { routePaths } from "config/paths";
+import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
 import { designTokens } from "theme/theme";
 import {
   transactionTypeOptions,
@@ -37,7 +38,12 @@ import {
 import { getMerchantInitial } from "utils/merchants";
 import { transactionFormValidationMessages } from "utils/transactionMessages";
 import { transactionTagValidationMessages } from "utils/transactionTagValidationMessages";
-import { getNowDateTimeLocalValue } from "utils/transactions";
+import {
+  composeTransactionDateTimeLocalValue,
+  formatDateTimeLocalInputValue,
+  getNowDateTimeLocalValue,
+  splitDateTimeLocalValue,
+} from "utils/transactions";
 
 export type TransactionFormInitialValues = {
   accountId: string;
@@ -101,8 +107,6 @@ export function TransactionForm({
   tagOptions,
   title = "新增记账",
 }: TransactionFormProps) {
-  const transactionAtInputRef = useRef<HTMLInputElement>(null);
-  const timeZoneOffsetInputRef = useRef<HTMLInputElement>(null);
   const nextItemIdRef = useRef((initialValues?.items.length ?? 0) + 1);
   const merchantFieldRef = useRef<HTMLDivElement>(null);
   const accountFieldRef = useRef<HTMLDivElement>(null);
@@ -138,21 +142,22 @@ export function TransactionForm({
     initialValues?.tagNames ?? [],
   );
   const [newTagName, setNewTagName] = useState("");
+  const [transactionDate, setTransactionDate] = useState("");
+  const [transactionTime, setTransactionTime] = useState("");
+  const [timeZoneOffsetMinutes, setTimeZoneOffsetMinutes] = useState("");
 
   const items = itemsByType[selectedType];
 
   useEffect(() => {
-    if (transactionAtInputRef.current) {
-      transactionAtInputRef.current.value = initialValues?.transactionAt
-        ? formatDateTimeLocalInputValue(initialValues.transactionAt)
-        : getNowDateTimeLocalValue();
-    }
+    const localValue = initialValues?.transactionAt
+      ? formatDateTimeLocalInputValue(initialValues.transactionAt)
+      : getNowDateTimeLocalValue();
+    const nextDateTime = splitDateTimeLocalValue(localValue);
 
-    if (timeZoneOffsetInputRef.current) {
-      timeZoneOffsetInputRef.current.value = String(
-        new Date().getTimezoneOffset(),
-      );
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 客户端挂载后同步本地时区时间，避免服务端水合差异。
+    setTransactionDate(nextDateTime.date);
+    setTransactionTime(nextDateTime.time);
+    setTimeZoneOffsetMinutes(String(new Date().getTimezoneOffset()));
   }, [initialValues?.transactionAt]);
 
   const filteredCategoryOptions = useMemo(
@@ -162,6 +167,10 @@ export function TransactionForm({
   const categoryGroups = useMemo(
     () => buildCategoryPickerGroups(filteredCategoryOptions),
     [filteredCategoryOptions],
+  );
+  const categoryById = useMemo(
+    () => new Map(categoryOptions.map((category) => [category.id, category])),
+    [categoryOptions],
   );
 
   const effectiveCategoryGroupId = categoryGroups.some(
@@ -178,14 +187,9 @@ export function TransactionForm({
   const selectedMerchant = merchantOptions.find(
     (merchant) => merchant.id === selectedMerchantId,
   );
-  const categoryById = useMemo(
-    () => new Map(categoryOptions.map((category) => [category.id, category])),
-    [categoryOptions],
-  );
   const suggestedTagOptions = tagOptions.filter(
     (tag) => !hasTagName(selectedTagNames, tag.name),
   );
-
   const itemSummaries = items.map((item) => ({
     ...item,
     category: categoryById.get(item.categoryId),
@@ -206,10 +210,15 @@ export function TransactionForm({
       );
     });
   const hasValidTags = !getSelectedTagError(selectedTagNames);
+  const transactionAtValue = composeTransactionDateTimeLocalValue(
+    transactionDate,
+    transactionTime,
+  );
   const isSubmitDisabled =
     accountOptions.length === 0 ||
     merchantOptions.length === 0 ||
     filteredCategoryOptions.length === 0 ||
+    !transactionAtValue ||
     !hasValidTags;
   const signedTotalAmount =
     items.length > 0
@@ -298,7 +307,7 @@ export function TransactionForm({
 
   function openSheet() {
     setPickerCategoryId("");
-    setPickerAmount("0");
+    setPickerAmount("");
     setPickerErrors({});
     setSelectedCategoryGroupId(categoryGroups[0]?.id ?? "");
     setIsSheetOpen(true);
@@ -314,7 +323,7 @@ export function TransactionForm({
     setSelectedType(value);
     setIsSheetOpen(false);
     setPickerCategoryId("");
-    setPickerAmount("0");
+    setPickerAmount("");
     setPickerErrors({});
     setSelectedCategoryGroupId("");
     setFieldErrors((prev) => ({ ...prev, items: undefined }));
@@ -323,7 +332,7 @@ export function TransactionForm({
   function handlePickerGroupSelect(groupId: string) {
     setSelectedCategoryGroupId(groupId);
     setPickerCategoryId("");
-    setPickerAmount("0");
+    setPickerAmount("");
     setPickerErrors({});
   }
 
@@ -351,10 +360,15 @@ export function TransactionForm({
     setPickerErrors({});
     addItem(pickerCategoryId, pickerAmount);
     setPickerCategoryId("");
-    setPickerAmount("0");
+    setPickerAmount("");
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!transactionAtValue) {
+      cancelDefaultEvent(event);
+      return;
+    }
+
     const errors: typeof fieldErrors = {};
     const tagError = getSelectedTagError(selectedTagNames);
 
@@ -440,9 +454,16 @@ export function TransactionForm({
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
         <input
-          ref={timeZoneOffsetInputRef}
           name="timeZoneOffsetMinutes"
+          readOnly
           type="hidden"
+          value={timeZoneOffsetMinutes}
+        />
+        <input
+          name="transactionAt"
+          readOnly
+          type="hidden"
+          value={transactionAtValue}
         />
         {initialValues?.transactionRecordId ? (
           <input
@@ -464,15 +485,7 @@ export function TransactionForm({
             handleTypeChange(value)
           }
           value={selectedType}
-          sx={{
-            "& .MuiToggleButton-root.Mui-selected": {
-              color: "var(--user-theme-action-text)",
-              backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
-            },
-            "& .MuiToggleButton-root.Mui-selected:hover": {
-              backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
-            },
-          }}
+          sx={selectedToggleButtonGroupSx}
         >
           {transactionTypeOptions.map((option) => (
             <ToggleButton key={option.value} value={option.value}>
@@ -580,16 +593,7 @@ export function TransactionForm({
                   : "请选择分类";
 
                 return (
-                  <Paper
-                    key={item.id}
-                    elevation={0}
-                    sx={{
-                      bgcolor: designTokens.color.background.subtle,
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 1,
-                    }}
-                  >
+                  <Paper key={item.id} elevation={0} sx={subtlePaperSx}>
                     <Stack
                       direction="row"
                       spacing={1}
@@ -627,24 +631,13 @@ export function TransactionForm({
                         type="text"
                         value={item.amount}
                         variant="standard"
-                        sx={{
-                          width: 96,
-                          "& .MuiInputBase-root": {
-                            bgcolor: "transparent",
-                            fontSize: "1.25rem",
-                            fontWeight: 800,
-                          },
-                        }}
+                        sx={amountFieldSx}
                       />
                       <IconButton
                         aria-label={`删除明细 ${index + 1}`}
                         onClick={() => removeItem(item.id)}
                         size="small"
-                        sx={{
-                          color: "text.secondary",
-                          height: 40,
-                          width: 40,
-                        }}
+                        sx={smallIconButtonSx}
                       >
                         <CloseIcon fontSize="small" />
                       </IconButton>
@@ -660,28 +653,13 @@ export function TransactionForm({
               onClick={openSheet}
               type="button"
               variant="text"
-              sx={{
-                border: "2px dashed",
-                borderColor: "var(--user-theme-action-text)",
-                borderRadius: 2,
-                color: "var(--user-theme-action-text)",
-                minHeight: 48,
-              }}
+              sx={addItemButtonSx}
             >
               + 添加一项明细
             </Button>
 
             {items.length > 0 ? (
-              <Box
-                sx={{
-                  bgcolor: designTokens.color.background.subtle,
-                  borderRadius: 2,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  px: 2,
-                  py: 1.25,
-                }}
-              >
+              <Box sx={summaryBoxSx}>
                 <Typography sx={{ fontWeight: 700 }}>
                   共 {items.length} 项
                 </Typography>
@@ -783,12 +761,7 @@ export function TransactionForm({
                 onClick={() => addTag(newTagName)}
                 type="button"
                 variant="outlined"
-                sx={{
-                  borderColor: designTokens.color.brand.main,
-                  color: designTokens.color.brand.main,
-                  flexShrink: 0,
-                  height: 40,
-                }}
+                sx={tagAddButtonSx}
               >
                 追加
               </Button>
@@ -804,6 +777,13 @@ export function TransactionForm({
           multiline
           name="note"
           placeholder="可选"
+        />
+
+        <TransactionDateTimePicker
+          date={transactionDate}
+          onDateChange={setTransactionDate}
+          onTimeChange={setTransactionTime}
+          time={transactionTime}
         />
 
         <Paper variant="outlined" sx={{ p: 2 }}>
@@ -838,27 +818,14 @@ export function TransactionForm({
                   : "未选择"
               }
             />
+            <SummaryRow
+              label="时间"
+              value={formatSummaryDateTime(transactionDate, transactionTime)}
+            />
             <Divider />
             <SummaryRow label="合计金额" value={signedTotalAmount} strong />
           </Stack>
         </Paper>
-
-        <TextField
-          fullWidth
-          inputRef={transactionAtInputRef}
-          label="发生时间"
-          name="transactionAt"
-          required
-          slotProps={{
-            htmlInput: {
-              step: 1,
-            },
-            inputLabel: {
-              shrink: true,
-            },
-          }}
-          type="datetime-local"
-        />
 
         <Button
           disabled={isSubmitDisabled}
@@ -880,17 +847,7 @@ export function TransactionForm({
         anchor="bottom"
         onClose={closeSheet}
         open={isSheetOpen}
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: "16px 16px 0 0",
-              display: "flex",
-              flexDirection: "column",
-              maxHeight: "85vh",
-              overflow: "hidden",
-            },
-          },
-        }}
+        slotProps={{ paper: { sx: drawerPaperSx } }}
       >
         <Box
           sx={{
@@ -942,12 +899,7 @@ export function TransactionForm({
                         aria-label={`从已选中删除 ${item.category?.name ?? ""}`}
                         onClick={() => removeItem(item.id)}
                         size="small"
-                        sx={{
-                          borderRadius: 1,
-                          color: "text.secondary",
-                          height: 40,
-                          width: 40,
-                        }}
+                        sx={sheetItemIconButtonSx}
                       >
                         <CloseIcon fontSize="small" />
                       </IconButton>
@@ -968,16 +920,10 @@ export function TransactionForm({
             </Typography>
           ) : (
             <Stack direction="row" sx={{ minHeight: 180 }}>
-              <Box
-                sx={{
-                  borderRight: 1,
-                  borderColor: "divider",
-                  flexShrink: 0,
-                  width: 112,
-                }}
-              >
+              <Box sx={categoryGroupListSx}>
                 {categoryGroups.map((group) => {
                   const isSelected = selectedCategoryGroup?.id === group.id;
+
                   return (
                     <Button
                       key={group.id}
@@ -1014,6 +960,7 @@ export function TransactionForm({
                   <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
                     {selectedCategoryGroup?.categories.map((category) => {
                       const isSelected = pickerCategoryId === category.id;
+
                       return (
                         <Chip
                           key={category.id}
@@ -1076,12 +1023,7 @@ export function TransactionForm({
                     onClick={handlePickerAdd}
                     type="button"
                     variant="contained"
-                    sx={{
-                      flexShrink: 0,
-                      height: 40,
-                      background: "var(--user-theme-fab-bg)",
-                      color: "white",
-                    }}
+                    sx={drawerAddButtonSx}
                   >
                     追加
                   </Button>
@@ -1091,26 +1033,14 @@ export function TransactionForm({
           )}
         </Box>
 
-        <Box
-          sx={{
-            borderTop: 1,
-            borderColor: "divider",
-            flexShrink: 0,
-            p: 2,
-            pt: 1.5,
-          }}
-        >
+        <Box sx={drawerFooterSx}>
           <Stack direction="row" spacing={1.5}>
             <Button
               fullWidth
               onClick={closeSheet}
               type="button"
               variant="outlined"
-              sx={{
-                borderColor: "var(--user-theme-action-text)",
-                color: "var(--user-theme-action-text)",
-                "&:hover": { borderColor: "var(--user-theme-action-text)" },
-              }}
+              sx={drawerCancelButtonSx}
             >
               取消
             </Button>
@@ -1119,11 +1049,7 @@ export function TransactionForm({
               onClick={closeSheet}
               type="button"
               variant="contained"
-              sx={{
-                background: "var(--user-theme-fab-bg)",
-                color: "white",
-                "&:hover": { background: "var(--user-theme-fab-bg)" },
-              }}
+              sx={drawerDoneButtonSx}
             >
               完成
             </Button>
@@ -1173,22 +1099,6 @@ function formatCategoryName(category: TransactionCategoryOption) {
   return category.parentName
     ? `${category.parentName} / ${category.name}`
     : category.name;
-}
-
-function formatDateTimeLocalInputValue(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return value;
-
-  const year = date.getFullYear();
-  const month = padDatePart(date.getMonth() + 1);
-  const day = padDatePart(date.getDate());
-  const hours = padDatePart(date.getHours());
-  const minutes = padDatePart(date.getMinutes());
-  const seconds = padDatePart(date.getSeconds());
-
-  // datetime-local 值不含毫秒。
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 function formatSignedAmount(type: TransactionType, amount: number) {
@@ -1244,8 +1154,123 @@ function isValidMoneyText(value: string) {
   return Number.isFinite(amount) && amount >= 0;
 }
 
-function padDatePart(value: number) {
-  return String(value).padStart(2, "0");
+const selectedToggleButtonGroupSx = {
+  "& .MuiToggleButton-root.Mui-selected": {
+    backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
+    color: "var(--user-theme-action-text)",
+  },
+  "& .MuiToggleButton-root.Mui-selected:hover": {
+    backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
+  },
+};
+
+const subtlePaperSx = {
+  bgcolor: designTokens.color.background.subtle,
+  borderRadius: 2,
+  px: 1.5,
+  py: 1,
+};
+
+const amountFieldSx = {
+  width: 96,
+  "& .MuiInputBase-root": {
+    bgcolor: "transparent",
+    fontSize: "1.25rem",
+    fontWeight: 800,
+  },
+};
+
+const smallIconButtonSx = {
+  color: "text.secondary",
+  height: 40,
+  width: 40,
+};
+
+const sheetItemIconButtonSx = {
+  ...smallIconButtonSx,
+  borderRadius: 1,
+};
+
+const addItemButtonSx = {
+  border: "2px dashed",
+  borderColor: "var(--user-theme-action-text)",
+  borderRadius: 2,
+  color: "var(--user-theme-action-text)",
+  minHeight: 48,
+};
+
+const summaryBoxSx = {
+  bgcolor: designTokens.color.background.subtle,
+  borderRadius: 2,
+  display: "flex",
+  justifyContent: "space-between",
+  px: 2,
+  py: 1.25,
+};
+
+const tagAddButtonSx = {
+  borderColor: designTokens.color.brand.main,
+  color: designTokens.color.brand.main,
+  flexShrink: 0,
+  height: 40,
+};
+
+const drawerPaperSx = {
+  borderRadius: "16px 16px 0 0",
+  display: "flex",
+  flexDirection: "column",
+  maxHeight: "85vh",
+  overflow: "hidden",
+};
+
+const categoryGroupListSx = {
+  borderColor: "divider",
+  borderRight: 1,
+  flexShrink: 0,
+  width: 112,
+};
+
+const fabButtonBaseSx = {
+  background: "var(--user-theme-fab-bg)",
+  color: "white",
+};
+
+const drawerAddButtonSx = {
+  ...fabButtonBaseSx,
+  flexShrink: 0,
+  height: 40,
+};
+
+const drawerFooterSx = {
+  borderColor: "divider",
+  borderTop: 1,
+  flexShrink: 0,
+  p: 2,
+  pt: 1.5,
+};
+
+const drawerCancelButtonSx = {
+  borderColor: "var(--user-theme-action-text)",
+  color: "var(--user-theme-action-text)",
+  "&:hover": { borderColor: "var(--user-theme-action-text)" },
+};
+
+const drawerDoneButtonSx = {
+  ...fabButtonBaseSx,
+  "&:hover": { background: "var(--user-theme-fab-bg)" },
+};
+
+function formatSummaryDateTime(date: string, time: string) {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!dateMatch) return "\u672a\u9009\u62e9";
+
+  const dateLabel = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`;
+  const timeMatch = /^(\d{2}):(\d{2})(?::(\d{2}))?/.exec(time);
+  const timeLabel = timeMatch
+    ? `${timeMatch[1]}:${timeMatch[2]}:${timeMatch[3] ?? "00"}`
+    : time.slice(0, 8);
+
+  return `${dateLabel} ${timeLabel}`;
 }
 
 function SummaryRow({

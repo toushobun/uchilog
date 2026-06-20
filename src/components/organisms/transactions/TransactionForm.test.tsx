@@ -94,6 +94,7 @@ const tagOptions = [
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });
 
 function renderForm(
@@ -145,6 +146,16 @@ function getSubmittedTagNames(container: HTMLElement) {
   ).map((input) => input.value);
 }
 
+function getSubmittedTransactionAt(container: HTMLElement) {
+  const input = container.querySelector<HTMLInputElement>(
+    'input[name="transactionAt"]',
+  );
+
+  if (!input) throw new Error("发生时间提交字段不存在");
+
+  return input.value;
+}
+
 function createInitialValues(tagNames: string[] = []) {
   return {
     accountId: accountOptions[0].id,
@@ -158,16 +169,17 @@ function createInitialValues(tagNames: string[] = []) {
   };
 }
 
-function formatExpectedDateTimeLocalValue(value: string) {
+function formatExpectedDateTimeParts(value: string) {
   const date = new Date(value);
   const pad = (part: number) => String(part).padStart(2, "0");
-
-  // jsdom は datetime-local の value を正規化してミリ秒（.000）を付与する。
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+  const dateValue = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
     date.getDate(),
-  )}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+  )}`;
+  const timeValue = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
     date.getSeconds(),
-  )}.000`;
+  )}`;
+
+  return { dateValue, timeValue };
 }
 
 describe("TransactionForm", () => {
@@ -195,16 +207,32 @@ describe("TransactionForm", () => {
     ).toBeInTheDocument();
   });
 
-  it("编辑模式下回填发生时间和标签", () => {
+  it("编辑模式下回填发生日期、时间和标签", () => {
     const transactionAt = "2026-06-05T03:20:10.000Z";
+    const expected = formatExpectedDateTimeParts(transactionAt);
     const { container } = renderForm({
       initialValues: createInitialValues(["日常"]),
     });
 
     expect(
-      (within(container).getByLabelText(/发生时间/) as HTMLInputElement).value,
-    ).toBe(formatExpectedDateTimeLocalValue(transactionAt));
+      within(container).getByRole("button", { name: "选择记账时间" }),
+    ).toHaveTextContent(expected.timeValue);
+    expect(getSubmittedTransactionAt(container)).toBe(
+      `${expected.dateValue}T${expected.timeValue}`,
+    );
     expect(getSubmittedTagNames(container)).toEqual(["日常"]);
+  });
+
+  it("时刻默认开启并保留具体时间", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 5, 10, 9, 8, 7));
+
+    const { container } = renderForm();
+
+    expect(getSubmittedTransactionAt(container)).toBe("2026-06-10T09:08:07");
+    expect(
+      within(container).getByRole("button", { name: "选择记账时间" }),
+    ).toHaveTextContent("09:08:07");
   });
 
   it("账户选项中显示币种", () => {
@@ -373,16 +401,15 @@ describe("TransactionForm", () => {
     ).toHaveProperty("disabled", true);
   });
 
-  it("发生时间下面显示保存记账按钮", () => {
+  it("时间字段显示在保存前汇总上面", () => {
     const { container } = renderForm();
 
-    const transactionAt = within(container).getByLabelText(/发生时间/);
-    const submitButton = within(container).getByRole("button", {
-      name: "保存记账",
+    const dateTimeButton = within(container).getByRole("button", {
+      name: "选择记账时间",
     });
+    const summaryHeading = within(container).getByText("保存前汇总");
 
-    expect(transactionAt.compareDocumentPosition(submitButton)).toBe(4);
-    expect(submitButton).toHaveProperty("type", "submit");
+    expect(dateTimeButton.compareDocumentPosition(summaryHeading)).toBe(4);
   });
 
   it("没有账户时保存按钮不可用", () => {

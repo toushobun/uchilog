@@ -107,16 +107,19 @@ describe("TransactionForm regression", () => {
     expect(within(container).getByText("合计 -0.3")).toBeInTheDocument();
   });
 
-  it("打开添加明细时金额默认是 0，并可直接追加 0 元明细", () => {
+  it("打开添加明细时金额默认是空，显式输入 0 可追加", () => {
     const { container } = renderForm();
 
     openSheet(container);
     expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
       "value",
-      "0",
+      "",
     );
 
     fireEvent.click(screen.getByRole("button", { name: "餐饮" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+      target: { value: "0" },
+    });
     clickSheetAddButton();
 
     expect(
@@ -125,7 +128,7 @@ describe("TransactionForm regression", () => {
     expect(screen.getByText("已选明细")).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "金额" })).toHaveProperty(
       "value",
-      "0",
+      "",
     );
   });
 
