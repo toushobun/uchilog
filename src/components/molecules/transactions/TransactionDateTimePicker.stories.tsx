@@ -64,7 +64,9 @@ export const TimePickerOpen: Story = {
   name: "打开时刻选择器",
   play: async ({ canvasElement }) => {
     await openPicker(canvasElement);
-    await userEvent.click(await screen.findByRole("button", { name: "选择时刻" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "选择时刻" }),
+    );
   },
 };
 
