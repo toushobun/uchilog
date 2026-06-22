@@ -138,7 +138,8 @@ describe("loadEditTransactionView 普通交易类型", () => {
 
     const result = await loadEditTransactionView(transactionRecordId);
 
-    if (!('categoryOptions' in result)) throw new Error("Expected normal view");
+    expect("categoryOptions" in result).toBe(true);
+    if (!("categoryOptions" in result)) return;
     expect(result.initialValues.type).toBe("income");
     expect(result.initialValues.items).toEqual([
       { amount: "300000", categoryId: incomeCategoryId },
