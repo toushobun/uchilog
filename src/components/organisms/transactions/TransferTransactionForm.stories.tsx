@@ -66,3 +66,52 @@ export const WithError: Story = {
     errorMessage: "转账失败。请稍后重试。",
   },
 };
+
+export const Edit: Story = {
+  name: "编辑状态（带初始值）",
+  args: {
+    title: "编辑转账",
+    initialValues: {
+      type: "transfer",
+      transactionRecordId: "00000000-0000-4000-8000-000000009001",
+      transactionAt: "2026-06-04T01:30:05.000Z",
+      accountId: jpyAccount1.id,
+      transferTargetAccountId: jpyAccount2.id,
+      transferAmount: "5000",
+      note: "零花钱转账",
+    },
+  },
+};
+
+export const EditSameAccount: Story = {
+  name: "编辑状态（相同账户禁用）",
+  args: {
+    title: "编辑转账",
+    initialValues: {
+      type: "transfer",
+      transactionRecordId: "00000000-0000-4000-8000-000000009002",
+      transactionAt: "2026-06-04T01:30:05.000Z",
+      accountId: jpyAccount1.id,
+      transferTargetAccountId: jpyAccount1.id,
+      transferAmount: "1000",
+      note: "",
+    },
+  },
+};
+
+export const EditDifferentCurrency: Story = {
+  name: "编辑状态（不同币种禁用）",
+  args: {
+    title: "编辑转账",
+    accountOptions: [jpyAccount1, usdAccount],
+    initialValues: {
+      type: "transfer",
+      transactionRecordId: "00000000-0000-4000-8000-000000009003",
+      transactionAt: "2026-06-04T01:30:05.000Z",
+      accountId: jpyAccount1.id,
+      transferTargetAccountId: usdAccount.id,
+      transferAmount: "2000",
+      note: "",
+    },
+  },
+};

@@ -306,4 +306,77 @@ describe("TransferTransactionForm", () => {
     expect(within(container).queryByText(/2024\/01\/01 badtime/)).toBeNull();
     expect(within(container).queryByText(/2024\/01\/01/)).toBeNull();
   });
+
+  it("编辑状态下显示初始值的转出账户、转入账户和金额", () => {
+    const { container } = renderForm({
+      title: "编辑转账",
+      initialValues: {
+        type: "transfer",
+        transactionRecordId: "00000000-0000-4000-8000-000000009001",
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        accountId: jpyAccount1.id,
+        transferTargetAccountId: jpyAccount2.id,
+        transferAmount: "5000",
+        note: "零花钱",
+      },
+    });
+
+    expect(
+      within(container).getByRole("combobox", { name: "转出账户" }),
+    ).toHaveTextContent("日元现金（JPY）");
+    expect(
+      within(container).getByRole("combobox", { name: "转入账户" }),
+    ).toHaveTextContent("三井住友银行（JPY）");
+    expect(
+      within(container).getByRole("textbox", { name: "金额" }),
+    ).toHaveValue("5000");
+    expect(
+      within(container).getByRole("textbox", { name: "备注（选填）" }),
+    ).toHaveValue("零花钱");
+  });
+
+  it("编辑状态下提交时包含 transactionRecordId hidden input", () => {
+    const { container } = renderForm({
+      initialValues: {
+        type: "transfer",
+        transactionRecordId: "00000000-0000-4000-8000-000000009001",
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        accountId: jpyAccount1.id,
+        transferTargetAccountId: jpyAccount2.id,
+        transferAmount: "5000",
+        note: "",
+      },
+    });
+
+    const idInput = container.querySelector<HTMLInputElement>(
+      'input[name="transactionRecordId"]',
+    );
+
+    expect(idInput).not.toBeNull();
+    expect(idInput?.value).toBe("00000000-0000-4000-8000-000000009001");
+  });
+
+  it("新增状态下不包含 transactionRecordId hidden input", () => {
+    const { container } = renderForm();
+
+    expect(
+      container.querySelector('input[name="transactionRecordId"]'),
+    ).toBeNull();
+  });
+
+  it("编辑状态下初始值有效时保存按钮可用", () => {
+    const { container } = renderForm({
+      initialValues: {
+        type: "transfer",
+        transactionRecordId: "00000000-0000-4000-8000-000000009001",
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        accountId: jpyAccount1.id,
+        transferTargetAccountId: jpyAccount2.id,
+        transferAmount: "5000",
+        note: "",
+      },
+    });
+
+    expect(getSaveButton(container)).toHaveProperty("disabled", false);
+  });
 });

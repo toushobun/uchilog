@@ -11,16 +11,19 @@ import {
   transactionsErrorHref,
   transactionsMonthHref,
 } from "config/paths";
+import { isUuid } from "utils/formData";
 import { requireCurrentUserAndLedger } from "server/context/currentLedger";
 import {
   createTransactionService,
   createTransferTransactionService,
   updateTransactionService,
+  updateTransferTransactionService,
   voidTransactionService,
 } from "server/services/transactions";
 import {
   validateTransactionForm,
   validateUpdateTransactionForm,
+  validateUpdateTransferTransactionForm,
   validateVoidTransactionForm,
 } from "server/validators/transactions";
 
@@ -111,6 +114,45 @@ export async function updateTransaction(formData: FormData) {
     transactionAt: values.transactionAt,
     transactionRecordId: values.transactionRecordId,
     type: values.type,
+  });
+
+  if (!result.ok) {
+    redirect(
+      editTransactionErrorHref(values.transactionRecordId, result.error),
+    );
+  }
+
+  revalidatePath(routePaths.accounts);
+  revalidatePath(routePaths.transactions);
+  revalidatePath(transactionEditPagePath, "page");
+  redirect(transactionMonthRedirectHref(values.transactionAt));
+}
+
+export async function updateTransferTransaction(formData: FormData) {
+  const { currentLedger } = await requireCurrentUserAndLedger();
+  const validation = validateUpdateTransferTransactionForm(formData);
+  const rawTransactionRecordId = String(
+    formData.get("transactionRecordId") ?? "",
+  ).trim();
+
+  if (!validation.ok) {
+    redirect(
+      isUuid(rawTransactionRecordId)
+        ? editTransactionErrorHref(rawTransactionRecordId, validation.error)
+        : transactionsErrorHref(validation.error),
+    );
+  }
+
+  const values = validation.value;
+
+  const result = await updateTransferTransactionService({
+    accountId: values.accountId,
+    ledgerId: currentLedger.id,
+    note: values.note,
+    transactionAt: values.transactionAt,
+    transactionRecordId: values.transactionRecordId,
+    transferAmount: values.transferAmount,
+    transferTargetAccountId: values.transferTargetAccountId,
   });
 
   if (!result.ok) {

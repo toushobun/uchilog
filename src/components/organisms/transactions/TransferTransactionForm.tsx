@@ -13,9 +13,11 @@ import Typography from "@mui/material/Typography";
 import { routePaths } from "config/paths";
 import { TransactionFormHeader } from "organisms/transactions/TransactionFormHeader";
 import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
+import type { TransferEditInitialValues } from "server/loaders/transactionForm";
 import type { TransactionAccountOption } from "types/transactions";
 import {
   composeTransactionDateTimeLocalValue,
+  formatDateTimeLocalInputValue,
   getNowDateTimeLocalValue,
   splitDateTimeLocalValue,
 } from "utils/transactions";
@@ -27,31 +29,43 @@ type TransferTransactionFormProps = {
   action: (formData: FormData) => Promise<void>;
   accountOptions: TransactionAccountOption[];
   errorMessage?: string | null;
+  initialValues?: TransferEditInitialValues;
   ledgerName?: string;
+  title?: string;
 };
 
 export function TransferTransactionForm({
   action,
   accountOptions,
   errorMessage,
+  initialValues,
   ledgerName,
+  title = "新增记账",
 }: TransferTransactionFormProps) {
-  const [selectedAccountId, setSelectedAccountId] = useState("");
-  const [selectedTargetAccountId, setSelectedTargetAccountId] = useState("");
-  const [transferAmount, setTransferAmount] = useState("");
-  const [note, setNote] = useState("");
+  const [selectedAccountId, setSelectedAccountId] = useState(
+    initialValues?.accountId ?? "",
+  );
+  const [selectedTargetAccountId, setSelectedTargetAccountId] = useState(
+    initialValues?.transferTargetAccountId ?? "",
+  );
+  const [transferAmount, setTransferAmount] = useState(
+    initialValues?.transferAmount ?? "",
+  );
+  const [note, setNote] = useState(initialValues?.note ?? "");
   const [transactionDate, setTransactionDate] = useState("");
   const [transactionTime, setTransactionTime] = useState("");
   const [timeZoneOffsetMinutes, setTimeZoneOffsetMinutes] = useState("");
 
   useEffect(() => {
-    const localValue = getNowDateTimeLocalValue();
+    const localValue = initialValues?.transactionAt
+      ? formatDateTimeLocalInputValue(initialValues.transactionAt)
+      : getNowDateTimeLocalValue();
     const { date, time } = splitDateTimeLocalValue(localValue);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 客户端挂载后同步本地时区时间，避免服务端水合差异。
     setTransactionDate(date);
     setTransactionTime(time);
     setTimeZoneOffsetMinutes(String(new Date().getTimezoneOffset()));
-  }, []);
+  }, [initialValues?.transactionAt]);
 
   const transactionAtValue = composeTransactionDateTimeLocalValue(
     transactionDate,
@@ -95,7 +109,7 @@ export function TransferTransactionForm({
           closeHref={routePaths.transactions}
           isSubmitDisabled={isSubmitDisabled}
           ledgerName={ledgerName}
-          title="新增记账"
+          title={title}
         />
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
@@ -119,6 +133,14 @@ export function TransferTransactionForm({
           type="hidden"
           value={transactionAtValue}
         />
+        {initialValues?.transactionRecordId ? (
+          <input
+            name="transactionRecordId"
+            readOnly
+            type="hidden"
+            value={initialValues.transactionRecordId}
+          />
+        ) : null}
 
         <TextField
           disabled={hasTooFewAccounts}
