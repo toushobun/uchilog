@@ -83,6 +83,10 @@ export async function loadEditTransactionView(transactionRecordId: string) {
     notFound();
   }
 
+  if (record.type !== "expense" && record.type !== "income") {
+    notFound();
+  }
+
   const selectedTagIds = [...new Set(tagAssignments.map((tag) => tag.tag_id))];
   const selectedTagRows = await loadAssignedTransactionTags(
     supabase,
@@ -105,7 +109,7 @@ export async function loadEditTransactionView(transactionRecordId: string) {
         amount: formatEditableAmount(item.amount),
         categoryId: item.category_id ?? "",
       })),
-      merchantId: record.merchant_id,
+      merchantId: record.merchant_id ?? "",
       note: record.note ?? "",
       tagNames: selectedTagNames,
       transactionAt: record.transaction_at,

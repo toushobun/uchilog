@@ -16,7 +16,7 @@ export type CategorySummaryItem = {
 
 export type TransactionRowItem = {
   id: string;
-  type: TransactionType;
+  type: TransactionRecordType;
   transaction_at: string;
   amount: string;
   account_name: string;

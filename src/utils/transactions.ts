@@ -4,7 +4,7 @@ import type {
   TransactionAmountSummary,
   TransactionDateGroup,
   TransactionListItem,
-  TransactionType,
+  TransactionRecordType,
 } from "types/transactions";
 
 const weekDayLabels = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
@@ -40,10 +40,12 @@ export function formatSignedNumber(amount: string) {
 }
 
 export function formatTransactionRowAmount(
-  type: TransactionType,
+  type: TransactionRecordType,
   amount: string,
   currency = "",
 ) {
+  if (type === "transfer") return formatPlainAmount(amount, currency);
+
   return `${type === "expense" ? "-" : "+"}${formatPlainAmount(
     amount,
     currency,
@@ -74,9 +76,11 @@ export function createTransactionAmountSummary(
 
 export function addTransactionAmount(
   summary: TransactionAmountSummary,
-  type: TransactionType,
+  type: TransactionRecordType,
   amount: string,
 ) {
+  if (type === "transfer") return;
+
   const value = Number(amount);
 
   if (!Number.isFinite(value)) return;

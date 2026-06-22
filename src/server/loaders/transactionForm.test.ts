@@ -403,4 +403,27 @@ describe("loadEditTransactionView", () => {
     );
     expect(mocks.notFound).toHaveBeenCalledTimes(1);
   });
+
+  it("transfer 类型记录调用 notFound 并不进入编辑流程", async () => {
+    setupEditViewData({
+      transaction_record: {
+        data: [
+          {
+            created_at: "2026-06-04T01:00:00.000Z",
+            id: transactionRecordId,
+            merchant_id: null,
+            note: null,
+            transaction_at: "2026-06-04T10:30:05.000Z",
+            type: "transfer",
+          },
+        ],
+        error: null,
+      },
+    });
+
+    await expect(loadEditTransactionView(transactionRecordId)).rejects.toThrow(
+      "NEXT_NOT_FOUND",
+    );
+    expect(mocks.notFound).toHaveBeenCalledTimes(1);
+  });
 });

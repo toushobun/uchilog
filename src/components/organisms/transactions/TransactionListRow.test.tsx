@@ -98,4 +98,51 @@ describe("TransactionListRow", () => {
 
     expect(screen.queryByRole("button", { name: "撤销" })).toBeNull();
   });
+
+  it("转账记录显示转账标签", () => {
+    render(
+      <TransactionListRow
+        item={createItem({
+          type: "transfer",
+          merchant_name: null,
+          categoryItems: [],
+          account_name: "日元现金 → 储蓄账户",
+        })}
+      />,
+    );
+
+    expect(screen.getByText("转账")).toBeInTheDocument();
+  });
+
+  it("转账金额不带正负号", () => {
+    render(
+      <TransactionListRow
+        item={createItem({
+          type: "transfer",
+          amount: "5000",
+          merchant_name: null,
+          categoryItems: [],
+          account_name: "日元现金 → 储蓄账户",
+        })}
+      />,
+    );
+
+    expect(screen.getByText("5,000 JPY")).toBeInTheDocument();
+  });
+
+  it("转账不需要商家/分类", () => {
+    render(
+      <TransactionListRow
+        item={createItem({
+          type: "transfer",
+          merchant_name: null,
+          categoryItems: [],
+          account_name: "日元现金 → 储蓄账户",
+        })}
+      />,
+    );
+
+    expect(screen.queryByText("便利店")).toBeNull();
+    expect(screen.getByText(/日元现金 → 储蓄账户/)).toBeInTheDocument();
+  });
 });

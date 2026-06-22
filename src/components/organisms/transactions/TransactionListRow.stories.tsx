@@ -68,3 +68,19 @@ export const NoMerchant: Story = {
     item: { ...expenseItem, merchant_name: null },
   },
 };
+
+export const Transfer: Story = {
+  name: "转账记录",
+  args: {
+    item: {
+      ...expenseItem,
+      id: "00000000-0000-4000-8000-000000009003",
+      type: "transfer" as const,
+      amount: "5000",
+      account_name: "日元现金 → 储蓄账户",
+      categoryItems: [],
+      merchant_name: null,
+      note: null,
+    },
+  },
+};

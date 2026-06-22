@@ -86,6 +86,15 @@ describe("transactions utils", () => {
     );
   });
 
+  it("转账行金额不带正负号", () => {
+    expect(formatTransactionRowAmount("transfer", "1200", "JPY")).toBe(
+      `${numberFormatter.format(1200)} JPY`,
+    );
+    expect(formatTransactionRowAmount("transfer", "5000")).toBe(
+      numberFormatter.format(5000),
+    );
+  });
+
   it("从分类集计生成代表分类名", () => {
     expect(getCategoryLabel([])).toBeNull();
     expect(
@@ -119,6 +128,21 @@ describe("transactions utils", () => {
     addTransactionAmount(summary, "income", "5000");
     addTransactionAmount(summary, "expense", "1200");
     addTransactionAmount(summary, "expense", "invalid");
+
+    expect(summary).toEqual({
+      balance: "3800",
+      currency: "JPY",
+      expense: "1200",
+      income: "5000",
+    });
+  });
+
+  it("转账不计入收入/支出汇总", () => {
+    const summary = createTransactionAmountSummary("JPY");
+
+    addTransactionAmount(summary, "income", "5000");
+    addTransactionAmount(summary, "transfer", "2000");
+    addTransactionAmount(summary, "expense", "1200");
 
     expect(summary).toEqual({
       balance: "3800",
@@ -224,6 +248,34 @@ describe("transactions utils", () => {
         income: "0",
       },
     });
+  });
+
+  it("分组时转账不计入日别汇总", () => {
+    const groups = groupTransactionItemsByDate(
+      [
+        createTransactionItem({
+          amount: "1200",
+          id: "expense-1",
+          transaction_at: "2026-06-10T01:00:00.000Z",
+          type: "expense",
+        }),
+        createTransactionItem({
+          amount: "3000",
+          id: "transfer-1",
+          transaction_at: "2026-06-10T02:00:00.000Z",
+          type: "transfer",
+        }),
+      ],
+      "JPY",
+    );
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].summary).toMatchObject({
+      balance: "-1200",
+      expense: "1200",
+      income: "0",
+    });
+    expect(groups[0].items).toHaveLength(2);
   });
 
   it("根据 UTC 当前时间生成当前月份范围", () => {

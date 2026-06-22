@@ -1,5 +1,5 @@
 import type { StatisticsRankItem, StatisticsViewData } from "types/statistics";
-import type { TransactionType } from "types/transactions";
+import type { TransactionRecordType } from "types/transactions";
 import {
   addTransactionAmount,
   createTransactionAmountSummary,
@@ -9,8 +9,8 @@ import {
 
 type StatisticsRecordInput = {
   id: string;
-  merchant_id: string;
-  type: TransactionType;
+  merchant_id: string | null;
+  type: TransactionRecordType;
 };
 
 type StatisticsItemInput = {
@@ -78,13 +78,17 @@ export function buildStatisticsViewData({
 
     if (record.type !== "expense") continue;
 
-    addRankingAmount(
-      merchantRankingById,
-      record.merchant_id,
-      merchantById.get(record.merchant_id)?.name ?? "未指定商家",
-      item.amount,
-      record.id,
-    );
+    const merchantId = record.merchant_id;
+
+    if (merchantId) {
+      addRankingAmount(
+        merchantRankingById,
+        merchantId,
+        merchantById.get(merchantId)?.name ?? "未指定商家",
+        item.amount,
+        record.id,
+      );
+    }
 
     const category = item.category_id
       ? categoryById.get(item.category_id)

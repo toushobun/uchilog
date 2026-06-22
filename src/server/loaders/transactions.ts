@@ -47,9 +47,13 @@ async function loadTransactionItems(
 
   const { data: itemData, error: itemError } = await supabase
     .from("transaction_item")
-    .select("transaction_record_id, account_id, category_id, amount, note")
+    .select(
+      "transaction_record_id, account_id, category_id, amount, balance_delta, note",
+    )
     .eq("ledger_id", currentLedger.id)
-    .in("transaction_record_id", recordIds);
+    .in("transaction_record_id", recordIds)
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
 
   if (itemError) {
     throw new Error("Failed to load transaction items");
@@ -163,7 +167,7 @@ export async function loadTransactionMonthView(
     )
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income"])
+    .in("type", ["expense", "income", "transfer"])
     .gte("transaction_at", startIso)
     .lt("transaction_at", endIso)
     .order("transaction_at", { ascending: false })
@@ -215,7 +219,7 @@ export async function loadTransactionMonthPage(
     )
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income"])
+    .in("type", ["expense", "income", "transfer"])
     .gte("transaction_at", startIso)
     .lt("transaction_at", endIso)
     .order("transaction_at", { ascending: false })
@@ -253,7 +257,7 @@ export async function loadTransactionListPage(
     )
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income"])
+    .in("type", ["expense", "income", "transfer"])
     .order("transaction_at", { ascending: false })
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })

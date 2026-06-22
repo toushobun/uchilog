@@ -39,8 +39,20 @@ export function TransactionListRow({
         <Stack spacing={0.8}>
           <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
             <Chip
-              color={item.type === "expense" ? "default" : "success"}
-              label={item.type === "expense" ? "支出" : "收入"}
+              color={
+                item.type === "expense"
+                  ? "default"
+                  : item.type === "income"
+                    ? "success"
+                    : "info"
+              }
+              label={
+                item.type === "expense"
+                  ? "支出"
+                  : item.type === "income"
+                    ? "收入"
+                    : "转账"
+              }
               size="small"
             />
             {categoryLabel ? <Chip label={categoryLabel} size="small" /> : null}
