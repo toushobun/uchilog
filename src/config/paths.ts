@@ -65,8 +65,8 @@ export function transactionsErrorHref(error: string) {
   return routeWithQuery(routePaths.transactions, { error });
 }
 
-export function newTransactionErrorHref(error: string) {
-  return routeWithQuery(routePaths.transactionsNew, { error });
+export function newTransactionErrorHref(error: string, type?: string | null) {
+  return routeWithQuery(routePaths.transactionsNew, { error, type });
 }
 
 export function editTransactionErrorHref(

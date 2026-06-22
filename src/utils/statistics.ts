@@ -1,5 +1,5 @@
 import type { StatisticsRankItem, StatisticsViewData } from "types/statistics";
-import type { TransactionType } from "types/transactions";
+import type { TransactionRecordType } from "types/transactions";
 import {
   addTransactionAmount,
   createTransactionAmountSummary,
@@ -9,8 +9,8 @@ import {
 
 type StatisticsRecordInput = {
   id: string;
-  merchant_id: string;
-  type: TransactionType;
+  merchant_id: string | null;
+  type: TransactionRecordType;
 };
 
 type StatisticsItemInput = {
@@ -78,24 +78,40 @@ export function buildStatisticsViewData({
 
     if (record.type !== "expense") continue;
 
-    addRankingAmount(
-      merchantRankingById,
-      record.merchant_id,
-      merchantById.get(record.merchant_id)?.name ?? "未指定商家",
-      item.amount,
-      record.id,
-    );
+    const amount = Number(item.amount);
+    if (!Number.isFinite(amount)) continue;
 
+    const merchantId = record.merchant_id ?? "__no_merchant__";
+    const merchantName = record.merchant_id
+      ? (merchantById.get(record.merchant_id)?.name ?? "未知商家")
+      : "未指定商家";
+    const merchantAccumulator = merchantRankingById.get(merchantId) ?? {
+      amount: 0,
+      id: merchantId,
+      name: merchantName,
+      transactionIds: new Set<string>(),
+    };
+
+    merchantAccumulator.amount += amount;
+    merchantAccumulator.transactionIds.add(record.id);
+    merchantRankingById.set(merchantId, merchantAccumulator);
+
+    const categoryId = item.category_id ?? noCategoryId;
     const category = item.category_id
       ? categoryById.get(item.category_id)
       : null;
-    addRankingAmount(
-      categoryRankingById,
-      item.category_id ?? noCategoryId,
-      category ? getCategoryDisplayName(category, categoryById) : "未指定分类",
-      item.amount,
-      record.id,
-    );
+    const categoryAccumulator = categoryRankingById.get(categoryId) ?? {
+      amount: 0,
+      id: categoryId,
+      name: category
+        ? getCategoryDisplayName(category, categoryById)
+        : "未指定分类",
+      transactionIds: new Set<string>(),
+    };
+
+    categoryAccumulator.amount += amount;
+    categoryAccumulator.transactionIds.add(record.id);
+    categoryRankingById.set(categoryId, categoryAccumulator);
   }
 
   return {
@@ -108,29 +124,6 @@ export function buildStatisticsViewData({
     previousMonth: shiftMonth(month, -1),
     summary,
   };
-}
-
-function addRankingAmount(
-  rankingById: Map<string, RankingAccumulator>,
-  id: string,
-  name: string,
-  amount: string,
-  transactionId: string,
-) {
-  const value = Number(amount);
-
-  if (!Number.isFinite(value)) return;
-
-  const ranking = rankingById.get(id) ?? {
-    amount: 0,
-    id,
-    name,
-    transactionIds: new Set<string>(),
-  };
-
-  ranking.amount += value;
-  ranking.transactionIds.add(transactionId);
-  rankingById.set(id, ranking);
 }
 
 function getCategoryDisplayName(
@@ -147,14 +140,14 @@ function getCategoryDisplayName(
 }
 
 function toSortedRanking(
-  rankingById: Map<string, RankingAccumulator>,
+  source: Map<string, RankingAccumulator>,
 ): StatisticsRankItem[] {
-  return [...rankingById.values()]
-    .map((ranking) => ({
-      amount: String(ranking.amount),
-      id: ranking.id,
-      name: ranking.name,
-      transactionCount: ranking.transactionIds.size,
+  return [...source.values()]
+    .map((item) => ({
+      amount: String(item.amount),
+      id: item.id,
+      name: item.name,
+      transactionCount: item.transactionIds.size,
     }))
     .sort((a, b) => {
       const amountDiff = Number(b.amount) - Number(a.amount);

@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   validateTransactionForm,
+  validateUpdateTransactionForm,
+  validateUpdateTransferTransactionForm,
   validateVoidTransactionForm,
 } from "./transactions";
 
 const accountId = "00000000-0000-4000-8000-000000000041";
+const transferTargetAccountId = "00000000-0000-4000-8000-000000000042";
 const categoryId = "00000000-0000-4000-8000-000000000101";
 const merchantId = "00000000-0000-4000-8000-000000001001";
 const transactionRecordId = "00000000-0000-4000-8000-000000002001";
@@ -21,6 +24,25 @@ function createFormData(overrides: Record<string, string> = {}) {
   formData.append("itemAmount", "1200");
   formData.set("merchantId", merchantId);
   formData.set("note", "测试记录");
+  formData.set("transactionRecordId", transactionRecordId);
+
+  for (const [key, value] of Object.entries(overrides)) {
+    formData.set(key, value);
+  }
+
+  return formData;
+}
+
+function createTransferFormData(overrides: Record<string, string> = {}) {
+  const formData = new FormData();
+
+  formData.set("type", "transfer");
+  formData.set("transactionAt", "2026-06-04T10:30:05");
+  formData.set("timeZoneOffsetMinutes", "-540");
+  formData.set("accountId", accountId);
+  formData.set("transferTargetAccountId", transferTargetAccountId);
+  formData.set("transferAmount", "1200");
+  formData.set("note", "测试转账");
   formData.set("transactionRecordId", transactionRecordId);
 
   for (const [key, value] of Object.entries(overrides)) {
@@ -51,6 +73,107 @@ describe("transaction validators", () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.type).toBe("income");
+  });
+
+  it("转账交易表单校验通过", () => {
+    expect(validateTransactionForm(createTransferFormData())).toEqual({
+      ok: true,
+      value: {
+        accountId,
+        note: "测试转账",
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        transferAmount: 1200,
+        transferTargetAccountId,
+        type: "transfer",
+      },
+    });
+  });
+
+  it("转账交易不要求商家和明细分类", () => {
+    expect(
+      validateTransactionForm(
+        createTransferFormData({
+          itemCategoryId: "",
+          itemAmount: "",
+          merchantId: "",
+        }),
+      ),
+    ).toEqual({
+      ok: true,
+      value: {
+        accountId,
+        note: "测试转账",
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        transferAmount: 1200,
+        transferTargetAccountId,
+        type: "transfer",
+      },
+    });
+  });
+
+  it("转账交易拒绝未指定转入账户", () => {
+    expect(
+      validateTransactionForm(
+        createTransferFormData({ transferTargetAccountId: "" }),
+      ),
+    ).toEqual({
+      error: "account_invalid",
+      ok: false,
+    });
+  });
+
+  it("转账交易拒绝相同的转出和转入账户", () => {
+    expect(
+      validateTransactionForm(
+        createTransferFormData({ transferTargetAccountId: accountId }),
+      ),
+    ).toEqual({
+      error: "account_invalid",
+      ok: false,
+    });
+  });
+
+  it.each(["0", "-1", "1.234"])(
+    "转账交易拒绝非法金额：%s",
+    (transferAmount) => {
+      expect(
+        validateTransactionForm(createTransferFormData({ transferAmount })),
+      ).toEqual({
+        error: "amount_invalid",
+        ok: false,
+      });
+    },
+  );
+
+  it("更新普通交易表单拒绝转账类型", () => {
+    expect(validateUpdateTransactionForm(createTransferFormData())).toEqual({
+      error: "update_invalid",
+      ok: false,
+    });
+  });
+
+  it("更新转账交易表单校验通过", () => {
+    expect(
+      validateUpdateTransferTransactionForm(createTransferFormData()),
+    ).toEqual({
+      ok: true,
+      value: {
+        accountId,
+        note: "测试转账",
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        transactionRecordId,
+        transferAmount: 1200,
+        transferTargetAccountId,
+        type: "transfer",
+      },
+    });
+  });
+
+  it("更新转账交易表单拒绝非转账类型", () => {
+    expect(validateUpdateTransferTransactionForm(createFormData())).toEqual({
+      error: "update_invalid",
+      ok: false,
+    });
   });
 
   it("允许 0 元明细", () => {

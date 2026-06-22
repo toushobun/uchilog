@@ -14,7 +14,16 @@ export type CreateTransactionParams = {
   note: string | null;
   tagNames: string[];
   transactionAt: string;
-  type: TransactionType;
+  type: Exclude<TransactionType, "transfer">;
+};
+
+export type CreateTransferTransactionParams = {
+  accountId: string;
+  ledgerId: string;
+  note: string | null;
+  transactionAt: string;
+  transferAmount: number;
+  transferTargetAccountId: string;
 };
 
 export type CreateTransactionItemParams = {
@@ -24,6 +33,16 @@ export type CreateTransactionItemParams = {
 
 export type UpdateTransactionParams = CreateTransactionParams & {
   transactionRecordId: string;
+};
+
+export type UpdateTransferTransactionParams = {
+  accountId: string;
+  ledgerId: string;
+  note: string | null;
+  transactionAt: string;
+  transactionRecordId: string;
+  transferAmount: number;
+  transferTargetAccountId: string;
 };
 
 export type VoidTransactionParams = {
@@ -53,6 +72,26 @@ export async function createTransactionService(
   return { ok: true };
 }
 
+export async function createTransferTransactionService(
+  params: CreateTransferTransactionParams,
+): Promise<ServiceResult<TransactionServiceErrorCode>> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("create_transfer_transaction", {
+    p_amount: params.transferAmount,
+    p_from_account_id: params.accountId,
+    p_ledger_id: params.ledgerId,
+    p_note: params.note,
+    p_to_account_id: params.transferTargetAccountId,
+    p_transaction_at: params.transactionAt,
+  });
+
+  if (error) {
+    return { ok: false, error: transactionErrorCodes.createFailed };
+  }
+
+  return { ok: true };
+}
+
 export async function updateTransactionService(
   params: UpdateTransactionParams,
 ): Promise<ServiceResult<TransactionServiceErrorCode>> {
@@ -67,6 +106,27 @@ export async function updateTransactionService(
     p_transaction_at: params.transactionAt,
     p_transaction_record_id: params.transactionRecordId,
     p_type: params.type,
+  });
+
+  if (error) {
+    return { ok: false, error: transactionErrorCodes.updateFailed };
+  }
+
+  return { ok: true };
+}
+
+export async function updateTransferTransactionService(
+  params: UpdateTransferTransactionParams,
+): Promise<ServiceResult<TransactionServiceErrorCode>> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_transfer_transaction", {
+    p_amount: params.transferAmount,
+    p_from_account_id: params.accountId,
+    p_ledger_id: params.ledgerId,
+    p_note: params.note,
+    p_to_account_id: params.transferTargetAccountId,
+    p_transaction_at: params.transactionAt,
+    p_transaction_record_id: params.transactionRecordId,
   });
 
   if (error) {

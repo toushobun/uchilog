@@ -5,10 +5,7 @@ import {
   type UpdateTransactionValidationErrorCode,
   type VoidTransactionValidationErrorCode,
 } from "server/errors/transactions";
-import {
-  transactionTypeOptions,
-  type TransactionType,
-} from "types/transactions";
+import type { TransactionType } from "types/transactions";
 import { getFormText } from "utils/formData";
 import { isTransactionTagNameTooLong } from "utils/transactionTagRules";
 
@@ -25,9 +22,7 @@ import {
 
 export type { TransactionValidationErrorCode };
 
-const transactionTypeValues = transactionTypeOptions.map(
-  (option) => option.value,
-);
+const createTransactionTypeValues = ["expense", "income", "transfer"] as const;
 
 export type TransactionFormValues = {
   type: TransactionType;
@@ -39,6 +34,19 @@ export type TransactionFormValues = {
   tagNames: string[];
 };
 
+export type TransferTransactionFormValues = {
+  type: "transfer";
+  transactionAt: string;
+  accountId: string;
+  transferTargetAccountId: string;
+  transferAmount: number;
+  note: string | null;
+};
+
+export type CreateTransactionFormValues =
+  | TransactionFormValues
+  | TransferTransactionFormValues;
+
 export type TransactionFormItemValues = {
   amount: number;
   categoryId: string;
@@ -48,20 +56,20 @@ export type UpdateTransactionValues = TransactionFormValues & {
   transactionRecordId: string;
 };
 
+export type UpdateTransferTransactionValues = TransferTransactionFormValues & {
+  transactionRecordId: string;
+};
+
 export type VoidTransactionValues = {
   transactionRecordId: string;
 };
 
 function parseTimeZoneOffsetMinutes(value: string) {
-  if (!/^-?\d+$/.test(value)) {
-    return null;
-  }
+  if (!/^-?\d+$/.test(value)) return null;
 
   const offset = Number(value);
 
-  if (!Number.isInteger(offset) || offset < -840 || offset > 840) {
-    return null;
-  }
+  if (!Number.isInteger(offset) || offset < -840 || offset > 840) return null;
 
   return offset;
 }
@@ -71,20 +79,16 @@ function parseTransactionAt(value: string, offsetMinutes: number) {
     /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/,
   );
 
-  if (!match) {
-    return null;
-  }
+  if (!match) return null;
 
   const [, yearText, monthText, dayText, hourText, minuteText, secondText] =
     match;
-
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
   const hour = Number(hourText);
   const minute = Number(minuteText);
   const second = Number(secondText ?? "0");
-
   const utcLikeDate = new Date(
     Date.UTC(year, month - 1, day, hour, minute, second),
   );
@@ -139,9 +143,7 @@ function parseTransactionItems(
       error: transactionErrorCodes.amountInvalid,
     });
 
-    if (!amountResult.ok) {
-      return amountResult;
-    }
+    if (!amountResult.ok) return amountResult;
 
     items.push({
       amount: amountResult.value,
@@ -159,7 +161,6 @@ function parseTransactionTagNames(
 
   for (const value of formData.getAll("tagName")) {
     const tagName = String(value).trim();
-
     if (!tagName) continue;
 
     if (isTransactionTagNameTooLong(tagName)) {
@@ -174,7 +175,6 @@ function parseTransactionTagNames(
       if (tagNames.length >= maxTransactionTagCount) {
         return invalid(transactionErrorCodes.tagInvalid);
       }
-
       tagNames.push(tagName);
     }
   }
@@ -184,33 +184,30 @@ function parseTransactionTagNames(
 
 export function validateTransactionForm(
   formData: FormData,
-): ValidationResult<TransactionFormValues, TransactionValidationErrorCode> {
+): ValidationResult<
+  CreateTransactionFormValues,
+  TransactionValidationErrorCode
+> {
   const typeResult = parseEnumValue(
     getFormText(formData, "type"),
-    transactionTypeValues,
+    createTransactionTypeValues,
     transactionErrorCodes.typeInvalid,
   );
 
-  if (!typeResult.ok) {
-    return typeResult;
-  }
+  if (!typeResult.ok) return typeResult;
 
   const offsetMinutes = parseTimeZoneOffsetMinutes(
     getFormText(formData, "timeZoneOffsetMinutes"),
   );
 
-  if (offsetMinutes === null) {
-    return invalid(transactionErrorCodes.dateInvalid);
-  }
+  if (offsetMinutes === null) return invalid(transactionErrorCodes.dateInvalid);
 
   const transactionAt = parseTransactionAt(
     getFormText(formData, "transactionAt"),
     offsetMinutes,
   );
 
-  if (!transactionAt) {
-    return invalid(transactionErrorCodes.dateInvalid);
-  }
+  if (!transactionAt) return invalid(transactionErrorCodes.dateInvalid);
 
   const accountIdResult = parseRequiredUuidField(
     formData,
@@ -218,25 +215,7 @@ export function validateTransactionForm(
     transactionErrorCodes.accountInvalid,
   );
 
-  if (!accountIdResult.ok) {
-    return accountIdResult;
-  }
-
-  const itemsResult = parseTransactionItems(formData);
-
-  if (!itemsResult.ok) {
-    return itemsResult;
-  }
-
-  const merchantIdResult = parseRequiredUuidField(
-    formData,
-    "merchantId",
-    transactionErrorCodes.merchantInvalid,
-  );
-
-  if (!merchantIdResult.ok) {
-    return merchantIdResult;
-  }
+  if (!accountIdResult.ok) return accountIdResult;
 
   const noteResult = parseOptionalTextField(
     formData,
@@ -245,15 +224,54 @@ export function validateTransactionForm(
     transactionErrorCodes.noteTooLong,
   );
 
-  if (!noteResult.ok) {
-    return noteResult;
+  if (!noteResult.ok) return noteResult;
+
+  if (typeResult.value === "transfer") {
+    const targetAccountIdResult = parseRequiredUuidField(
+      formData,
+      "transferTargetAccountId",
+      transactionErrorCodes.accountInvalid,
+    );
+
+    if (!targetAccountIdResult.ok) return targetAccountIdResult;
+
+    if (targetAccountIdResult.value === accountIdResult.value) {
+      return invalid(transactionErrorCodes.accountInvalid);
+    }
+
+    const transferAmountResult = parseMoneyAmount(
+      formData.get("transferAmount"),
+      {
+        allowNegative: false,
+        allowZero: false,
+        error: transactionErrorCodes.amountInvalid,
+      },
+    );
+
+    if (!transferAmountResult.ok) return transferAmountResult;
+
+    return valid({
+      accountId: accountIdResult.value,
+      note: noteResult.value,
+      transactionAt,
+      transferAmount: transferAmountResult.value,
+      transferTargetAccountId: targetAccountIdResult.value,
+      type: "transfer",
+    });
   }
+
+  const itemsResult = parseTransactionItems(formData);
+  if (!itemsResult.ok) return itemsResult;
+
+  const merchantIdResult = parseRequiredUuidField(
+    formData,
+    "merchantId",
+    transactionErrorCodes.merchantInvalid,
+  );
+  if (!merchantIdResult.ok) return merchantIdResult;
 
   const tagNamesResult = parseTransactionTagNames(formData);
-
-  if (!tagNamesResult.ok) {
-    return tagNamesResult;
-  }
+  if (!tagNamesResult.ok) return tagNamesResult;
 
   return valid({
     accountId: accountIdResult.value,
@@ -278,14 +296,41 @@ export function validateUpdateTransactionForm(
     transactionErrorCodes.updateInvalid,
   );
 
-  if (!transactionRecordIdResult.ok) {
-    return transactionRecordIdResult;
+  if (!transactionRecordIdResult.ok) return transactionRecordIdResult;
+
+  const transactionResult = validateTransactionForm(formData);
+  if (!transactionResult.ok) return transactionResult;
+
+  if (transactionResult.value.type === "transfer") {
+    return invalid(transactionErrorCodes.updateInvalid);
   }
+
+  return valid({
+    ...transactionResult.value,
+    transactionRecordId: transactionRecordIdResult.value,
+  });
+}
+
+export function validateUpdateTransferTransactionForm(
+  formData: FormData,
+): ValidationResult<
+  UpdateTransferTransactionValues,
+  UpdateTransactionValidationErrorCode
+> {
+  const transactionRecordIdResult = parseRequiredUuidField(
+    formData,
+    "transactionRecordId",
+    transactionErrorCodes.updateInvalid,
+  );
+
+  if (!transactionRecordIdResult.ok) return transactionRecordIdResult;
 
   const transactionResult = validateTransactionForm(formData);
 
-  if (!transactionResult.ok) {
-    return transactionResult;
+  if (!transactionResult.ok) return transactionResult;
+
+  if (transactionResult.value.type !== "transfer") {
+    return invalid(transactionErrorCodes.updateInvalid);
   }
 
   return valid({
@@ -303,9 +348,7 @@ export function validateVoidTransactionForm(
     transactionErrorCodes.voidInvalid,
   );
 
-  if (!transactionRecordIdResult.ok) {
-    return transactionRecordIdResult;
-  }
+  if (!transactionRecordIdResult.ok) return transactionRecordIdResult;
 
   return valid({ transactionRecordId: transactionRecordIdResult.value });
 }

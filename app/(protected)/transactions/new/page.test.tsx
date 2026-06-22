@@ -10,8 +10,8 @@ const mocks = vi.hoisted(() => ({
   ),
   loadNewTransactionView: vi.fn(),
   NewTransactionTemplate: vi.fn(() => null),
-  redirect: vi.fn((href: string) => {
-    throw new Error(`NEXT_REDIRECT:${href}`);
+  redirect: vi.fn((path: string) => {
+    throw new Error(`NEXT_REDIRECT:${path}`);
   }),
 }));
 
@@ -42,7 +42,7 @@ describe("TransactionsNewPage", () => {
     vi.clearAllMocks();
   });
 
-  it("带 editId 的旧 URL 会跳转到专用编辑路由", async () => {
+  it("存在 editId 时重定向到编辑页面", async () => {
     await expect(
       TransactionsNewPage({
         searchParams: Promise.resolve({ editId: transactionRecordId }),
@@ -51,13 +51,10 @@ describe("TransactionsNewPage", () => {
       `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit`,
     );
 
-    expect(mocks.redirect).toHaveBeenCalledWith(
-      `/transactions/${transactionRecordId}/edit`,
-    );
     expect(mocks.loadNewTransactionView).not.toHaveBeenCalled();
   });
 
-  it("旧 URL 的 error 参数会带到专用编辑路由", async () => {
+  it("存在 editId 和 error 时重定向到编辑错误页面", async () => {
     await expect(
       TransactionsNewPage({
         searchParams: Promise.resolve({
@@ -69,20 +66,11 @@ describe("TransactionsNewPage", () => {
       `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit?error=update_failed`,
     );
 
-    expect(mocks.redirect).toHaveBeenCalledWith(
-      `/transactions/${transactionRecordId}/edit?error=update_failed`,
-    );
     expect(mocks.loadNewTransactionView).not.toHaveBeenCalled();
   });
 
   it("没有 editId 时显示新增记账画面", async () => {
-    const view = {
-      accountOptions: [],
-      categoryOptions: [],
-      ledgerName: "家庭账本",
-      merchantOptions: [],
-      tagOptions: [],
-    };
+    const view = createView();
     mocks.loadNewTransactionView.mockResolvedValue(view);
 
     const result = await TransactionsNewPage({
@@ -99,6 +87,59 @@ describe("TransactionsNewPage", () => {
       ...view,
       action: mocks.createTransaction,
       errorMessage: "新建错误:create_failed",
+      initialType: "expense",
+    });
+  });
+
+  it("type=income 时以收入类型打开新增记账画面", async () => {
+    const view = createView();
+    mocks.loadNewTransactionView.mockResolvedValue(view);
+
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({ type: "income" }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({
+      initialType: "income",
+    });
+  });
+
+  it("type=transfer 时以转账类型打开新增记账画面", async () => {
+    const view = createView();
+    mocks.loadNewTransactionView.mockResolvedValue(view);
+
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({ type: "transfer" }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({
+      initialType: "transfer",
+    });
+  });
+
+  it("type 不合法时回退为支出类型", async () => {
+    const view = createView();
+    mocks.loadNewTransactionView.mockResolvedValue(view);
+
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({ type: "unknown" }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({
+      initialType: "expense",
     });
   });
 });
+
+function createView() {
+  return {
+    accountOptions: [],
+    categoryOptions: [],
+    ledgerName: "家庭账本",
+    merchantOptions: [],
+    tagOptions: [],
+  };
+}

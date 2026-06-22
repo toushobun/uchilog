@@ -20,6 +20,18 @@ type TransactionListRowProps = {
   voidAction?: ServerAction;
 };
 
+function getTransactionTypeChip(item: TransactionListItem) {
+  if (item.type === "expense") {
+    return <Chip color="default" label="支出" size="small" />;
+  }
+
+  if (item.type === "income") {
+    return <Chip color="success" label="收入" size="small" />;
+  }
+
+  return <Chip color="primary" label="转账" size="small" />;
+}
+
 export function TransactionListRow({
   item,
   voidAction,
@@ -38,12 +50,10 @@ export function TransactionListRow({
       >
         <Stack spacing={0.8}>
           <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
-            <Chip
-              color={item.type === "expense" ? "default" : "success"}
-              label={item.type === "expense" ? "支出" : "收入"}
-              size="small"
-            />
-            {categoryLabel ? <Chip label={categoryLabel} size="small" /> : null}
+            {getTransactionTypeChip(item)}
+            {item.type !== "transfer" && categoryLabel ? (
+              <Chip label={categoryLabel} size="small" />
+            ) : null}
             {item.merchant_name ? (
               <Chip
                 avatar={

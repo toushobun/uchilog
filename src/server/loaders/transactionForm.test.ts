@@ -23,6 +23,7 @@ vi.mock("lib/supabase/server", () => ({
 import {
   buildCategoryOptions,
   loadEditTransactionView,
+  loadEditTransferTransactionView,
 } from "./transactionForm";
 
 const parentId = "00000000-0000-4000-8000-000000005001";
@@ -30,6 +31,7 @@ const childId1 = "00000000-0000-4000-8000-000000005072";
 const childId2 = "00000000-0000-4000-8000-000000005073";
 const ledgerId = "00000000-0000-4000-8000-000000000001";
 const accountId = "00000000-0000-4000-8000-000000000041";
+const transferTargetAccountId = "00000000-0000-4000-8000-000000000042";
 const merchantId = "00000000-0000-4000-8000-000000001001";
 const tagId = "00000000-0000-4000-8000-000000003001";
 const transactionRecordId = "00000000-0000-4000-8000-000000009001";
@@ -162,6 +164,50 @@ function setupEditViewData(overrides: QueryResults = {}) {
         error: null,
       },
     ],
+    ...overrides,
+  });
+}
+
+function setupTransferEditViewData(overrides: QueryResults = {}) {
+  return setupSupabase({
+    account: {
+      data: [
+        { currency: "JPY", id: accountId, name: "日元现金" },
+        { currency: "JPY", id: transferTargetAccountId, name: "银行卡" },
+      ],
+      error: null,
+    },
+    transaction_item: {
+      data: [
+        {
+          account_id: accountId,
+          amount: "500.00",
+          balance_delta: "-500.00",
+          category_id: null,
+          stat_type: "transfer",
+          transaction_record_id: transactionRecordId,
+        },
+        {
+          account_id: transferTargetAccountId,
+          amount: "500.00",
+          balance_delta: "500.00",
+          category_id: null,
+          stat_type: "transfer",
+          transaction_record_id: transactionRecordId,
+        },
+      ],
+      error: null,
+    },
+    transaction_record: {
+      data: [
+        {
+          id: transactionRecordId,
+          note: "还信用卡",
+          transaction_at: "2026-06-04T10:30:05.000Z",
+        },
+      ],
+      error: null,
+    },
     ...overrides,
   });
 }
@@ -352,6 +398,10 @@ describe("loadEditTransactionView", () => {
 
     const result = await loadEditTransactionView(transactionRecordId);
 
+    if (result === null) {
+      throw new Error("编辑视图不应为空");
+    }
+
     expect(result.tagOptions).toEqual([]);
     expect(result.initialValues.tagNames).toEqual(["旧标签"]);
   });
@@ -387,6 +437,10 @@ describe("loadEditTransactionView", () => {
 
     const result = await loadEditTransactionView(transactionRecordId);
 
+    if (result === null) {
+      throw new Error("编辑视图不应为空");
+    }
+
     expect(result.initialValues.merchantId).toBe(merchantId);
     expect(result.initialValues.items).toEqual([
       { amount: "0", categoryId: childId1 },
@@ -401,6 +455,69 @@ describe("loadEditTransactionView", () => {
     await expect(loadEditTransactionView(transactionRecordId)).rejects.toThrow(
       "NEXT_NOT_FOUND",
     );
+    expect(mocks.notFound).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("loadEditTransferTransactionView", () => {
+  it("将既有转账记录转换为编辑表单初始值", async () => {
+    setupTransferEditViewData();
+
+    await expect(
+      loadEditTransferTransactionView(transactionRecordId),
+    ).resolves.toEqual({
+      accountOptions: [
+        { currency: "JPY", id: accountId, name: "日元现金" },
+        { currency: "JPY", id: transferTargetAccountId, name: "银行卡" },
+      ],
+      initialValues: {
+        accountId,
+        note: "还信用卡",
+        transactionAt: "2026-06-04T10:30:05.000Z",
+        transactionRecordId,
+        transferAmount: "500",
+        transferTargetAccountId,
+      },
+      ledgerName: "家庭账本",
+    });
+  });
+
+  it("旧转账明细结构异常时调用 notFound", async () => {
+    setupTransferEditViewData({
+      transaction_item: {
+        data: [
+          {
+            account_id: accountId,
+            amount: "500.00",
+            balance_delta: "-500.00",
+            category_id: null,
+            stat_type: "transfer",
+            transaction_record_id: transactionRecordId,
+          },
+          {
+            account_id: transferTargetAccountId,
+            amount: "500.00",
+            balance_delta: "500.00",
+            category_id: null,
+            stat_type: "transfer",
+            transaction_record_id: transactionRecordId,
+          },
+          {
+            account_id: transferTargetAccountId,
+            amount: "100.00",
+            balance_delta: "100.00",
+            category_id: null,
+            stat_type: "income",
+            transaction_record_id: transactionRecordId,
+          },
+        ],
+        error: null,
+      },
+    });
+
+    await expect(
+      loadEditTransferTransactionView(transactionRecordId),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(mocks.notFound).toHaveBeenCalledTimes(1);
   });
 });

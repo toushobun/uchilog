@@ -26,7 +26,6 @@ export function buildTransactionListItem({
   recordItems: TransactionItemDbRow[];
 }): TransactionListItem {
   const firstItem = recordItems[0];
-  const account = firstItem ? accountById.get(firstItem.account_id) : undefined;
   const merchant = record.merchant_id
     ? merchantById.get(record.merchant_id)
     : undefined;
@@ -34,6 +33,40 @@ export function buildTransactionListItem({
     record.created_by && recorderById
       ? recorderById.get(record.created_by)
       : undefined;
+
+  if (record.type === "transfer") {
+    const fromItem =
+      recordItems.find((item) => Number(item.balance_delta ?? 0) < 0) ??
+      firstItem;
+    const toItem = recordItems.find(
+      (item) => Number(item.balance_delta ?? 0) > 0,
+    );
+    const fromAccount = fromItem
+      ? accountById.get(fromItem.account_id)
+      : undefined;
+    const toAccount = toItem ? accountById.get(toItem.account_id) : undefined;
+
+    return {
+      account_currency:
+        fromAccount?.currency ?? toAccount?.currency ?? fallbackCurrency,
+      account_name:
+        fromAccount && toAccount
+          ? `${fromAccount.name} → ${toAccount.name}`
+          : (fromAccount?.name ?? toAccount?.name ?? "未知账户"),
+      amount: fromItem?.amount ?? "0",
+      categoryItems: [],
+      created_at: record.created_at,
+      id: record.id,
+      merchant_icon_url: null,
+      merchant_name: null,
+      note: record.note ?? firstItem?.note ?? null,
+      recorder_name: recorder?.display_name ?? null,
+      transaction_at: record.transaction_at,
+      type: record.type,
+    };
+  }
+
+  const account = firstItem ? accountById.get(firstItem.account_id) : undefined;
   const totalAmount = recordItems.reduce(
     (sum, item) => sum + Number(item.amount),
     0,

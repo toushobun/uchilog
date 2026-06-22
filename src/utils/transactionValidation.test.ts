@@ -95,10 +95,8 @@ describe("validateTransactionForm", () => {
     expect(result).toEqual({ ok: false, error: "amount_invalid" });
   });
 
-  it("类型不是支出或收入时校验失败", () => {
-    const result = validateTransactionForm(
-      createFormData({ type: "transfer" }),
-    );
+  it("类型不合法时校验失败", () => {
+    const result = validateTransactionForm(createFormData({ type: "unknown" }));
 
     expect(result).toEqual({ ok: false, error: "type_invalid" });
   });

@@ -259,9 +259,18 @@ describe("TransactionForm", () => {
   });
 
   it("收入弹框只显示收入分类", () => {
-    const { container } = renderForm();
+    const { container } = renderForm({
+      initialValues: {
+        accountId: "",
+        items: [],
+        merchantId: "",
+        note: "",
+        tagNames: [],
+        transactionAt: "",
+        type: "income",
+      },
+    });
 
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
     openSheet(container);
 
     expect(

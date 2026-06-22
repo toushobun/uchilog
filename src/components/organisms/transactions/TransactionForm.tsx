@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 import CloseIcon from "@mui/icons-material/Close";
 import Alert from "@mui/material/Alert";
@@ -15,8 +22,6 @@ import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 
@@ -28,7 +33,6 @@ import { routePaths } from "config/paths";
 import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
 import { designTokens } from "theme/theme";
 import {
-  transactionTypeOptions,
   type TransactionAccountOption,
   type TransactionCategoryOption,
   type TransactionMerchantOption,
@@ -68,12 +72,14 @@ type TransactionFormProps = {
   closeHref?: string;
   errorMessage?: string | null;
   formId?: string;
+  hideHeader?: boolean;
   initialValues?: TransactionFormInitialValues;
   ledgerName?: string;
   merchantOptions: TransactionMerchantOption[];
   submitLabel?: string;
   tagOptions: TransactionTagOption[];
   title?: string;
+  typeNavigation?: ReactNode;
 };
 
 type TransactionFormItem = {
@@ -100,12 +106,14 @@ export function TransactionForm({
   closeHref = routePaths.transactions,
   errorMessage,
   formId = "new-transaction-form",
+  hideHeader = false,
   initialValues,
   ledgerName,
   merchantOptions,
   submitLabel = "保存记账",
   tagOptions,
   title = "新增记账",
+  typeNavigation,
 }: TransactionFormProps) {
   const nextItemIdRef = useRef((initialValues?.items.length ?? 0) + 1);
   const merchantFieldRef = useRef<HTMLDivElement>(null);
@@ -317,18 +325,6 @@ export function TransactionForm({
     setIsSheetOpen(false);
   }
 
-  function handleTypeChange(value: TransactionType | null) {
-    if (!value || value === selectedType) return;
-
-    setSelectedType(value);
-    setIsSheetOpen(false);
-    setPickerCategoryId("");
-    setPickerAmount("");
-    setPickerErrors({});
-    setSelectedCategoryGroupId("");
-    setFieldErrors((prev) => ({ ...prev, items: undefined }));
-  }
-
   function handlePickerGroupSelect(groupId: string) {
     setSelectedCategoryGroupId(groupId);
     setPickerCategoryId("");
@@ -409,47 +405,51 @@ export function TransactionForm({
   return (
     <form id={formId} action={action} onSubmit={handleSubmit}>
       <Stack spacing={2.5}>
-        <Stack spacing={1}>
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
-          >
-            <Button
-              component={Link}
-              href={closeHref}
-              variant="text"
-              sx={{ color: "var(--user-theme-action-text)" }}
+        {!hideHeader && (
+          <Stack spacing={1}>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ alignItems: "center", justifyContent: "space-between" }}
             >
-              关闭
-            </Button>
-            <Typography component="h1" variant="h5" sx={{ fontWeight: 700 }}>
-              {title}
-            </Typography>
-            <Button
-              disabled={isSubmitDisabled}
-              type="submit"
-              variant="contained"
-              sx={{
-                "&:not(.Mui-disabled)": {
-                  background: "var(--user-theme-fab-bg)",
-                  color: "white",
-                },
-              }}
-            >
-              保存
-            </Button>
+              <Button
+                component={Link}
+                href={closeHref}
+                variant="text"
+                sx={{ color: "var(--user-theme-action-text)" }}
+              >
+                关闭
+              </Button>
+              <Typography component="h1" variant="h5" sx={{ fontWeight: 700 }}>
+                {title}
+              </Typography>
+              <Button
+                disabled={isSubmitDisabled}
+                type="submit"
+                variant="contained"
+                sx={{
+                  "&:not(.Mui-disabled)": {
+                    background: "var(--user-theme-fab-bg)",
+                    color: "white",
+                  },
+                }}
+              >
+                保存
+              </Button>
+            </Stack>
+            {ledgerName ? (
+              <Typography
+                color="text.secondary"
+                sx={{ textAlign: "center" }}
+                variant="body2"
+              >
+                当前账本：{ledgerName}
+              </Typography>
+            ) : null}
           </Stack>
-          {ledgerName ? (
-            <Typography
-              color="text.secondary"
-              sx={{ textAlign: "center" }}
-              variant="body2"
-            >
-              当前账本：{ledgerName}
-            </Typography>
-          ) : null}
-        </Stack>
+        )}
+
+        {typeNavigation}
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
@@ -476,23 +476,6 @@ export function TransactionForm({
         {selectedTagNames.map((tagName) => (
           <input key={tagName} name="tagName" type="hidden" value={tagName} />
         ))}
-
-        <ToggleButtonGroup
-          aria-label="类型"
-          exclusive
-          fullWidth
-          onChange={(_, value: TransactionType | null) =>
-            handleTypeChange(value)
-          }
-          value={selectedType}
-          sx={selectedToggleButtonGroupSx}
-        >
-          {transactionTypeOptions.map((option) => (
-            <ToggleButton key={option.value} value={option.value}>
-              {option.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
 
         <TextField
           ref={merchantFieldRef}
@@ -1153,16 +1136,6 @@ function isValidMoneyText(value: string) {
 
   return Number.isFinite(amount) && amount >= 0;
 }
-
-const selectedToggleButtonGroupSx = {
-  "& .MuiToggleButton-root.Mui-selected": {
-    backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
-    color: "var(--user-theme-action-text)",
-  },
-  "& .MuiToggleButton-root.Mui-selected:hover": {
-    backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
-  },
-};
 
 const subtlePaperSx = {
   bgcolor: designTokens.color.background.subtle,
