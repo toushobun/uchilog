@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -264,7 +265,10 @@ describe("RegisterForm", () => {
     render(<RegisterForm {...props} />);
 
     await fillRegisterFields();
-    fireEvent.click(screen.getByRole("button", { name: "获取验证码" }));
+    // requestOtpAction 是异步的，需要 act 包裹以避免 suspension 警告
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "获取验证码" }));
+    });
     const otpField = await screen.findByLabelText(/验证码/);
     fireEvent.change(otpField, { target: { value: "123" } });
 

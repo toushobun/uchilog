@@ -1,3 +1,5 @@
+import type { TransactionRecordType } from "types/transactions";
+
 export const routePaths = {
   accounts: "/accounts",
   categories: "/categories",
@@ -65,8 +67,11 @@ export function transactionsErrorHref(error: string) {
   return routeWithQuery(routePaths.transactions, { error });
 }
 
-export function newTransactionErrorHref(error: string) {
-  return routeWithQuery(routePaths.transactionsNew, { error });
+export function newTransactionErrorHref(
+  error: string,
+  type?: TransactionRecordType | null,
+) {
+  return routeWithQuery(routePaths.transactionsNew, { error, type });
 }
 
 export function editTransactionErrorHref(

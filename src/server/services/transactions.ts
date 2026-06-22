@@ -17,6 +17,15 @@ export type CreateTransactionParams = {
   type: TransactionType;
 };
 
+export type CreateTransferTransactionParams = {
+  accountId: string;
+  ledgerId: string;
+  note: string | null;
+  transactionAt: string;
+  transferAmount: number;
+  transferTargetAccountId: string;
+};
+
 export type CreateTransactionItemParams = {
   amount: number;
   categoryId: string;
@@ -44,6 +53,26 @@ export async function createTransactionService(
     p_tag_names: params.tagNames,
     p_transaction_at: params.transactionAt,
     p_type: params.type,
+  });
+
+  if (error) {
+    return { ok: false, error: transactionErrorCodes.createFailed };
+  }
+
+  return { ok: true };
+}
+
+export async function createTransferTransactionService(
+  params: CreateTransferTransactionParams,
+): Promise<ServiceResult<TransactionServiceErrorCode>> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("create_transfer_transaction", {
+    p_amount: params.transferAmount,
+    p_from_account_id: params.accountId,
+    p_ledger_id: params.ledgerId,
+    p_note: params.note,
+    p_to_account_id: params.transferTargetAccountId,
+    p_transaction_at: params.transactionAt,
   });
 
   if (error) {
