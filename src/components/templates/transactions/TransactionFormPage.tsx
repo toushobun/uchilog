@@ -11,6 +11,7 @@ import {
 import { TransactionAmountKeypadLauncher } from "organisms/transactions/TransactionAmountKeypadLauncher";
 import { TransferTransactionForm } from "organisms/transactions/TransferTransactionForm";
 import { TransactionTypeNavigation } from "molecules/transactions/TransactionTypeNavigation";
+import type { TransferEditInitialValues } from "server/loaders/transactionForm";
 import type {
   TransactionAccountOption,
   TransactionCategoryOption,
@@ -36,6 +37,14 @@ type EditTransactionTemplateProps = Omit<
   "initialType"
 > & {
   initialValues: TransactionFormInitialValues;
+};
+
+type EditTransferTransactionTemplateProps = {
+  accountOptions: TransactionAccountOption[];
+  action: (formData: FormData) => Promise<void>;
+  errorMessage: string | null;
+  initialValues: TransferEditInitialValues;
+  ledgerName: string;
 };
 
 export function NewTransactionTemplate(props: TransactionFormTemplateProps) {
@@ -87,6 +96,28 @@ function NewTransactionFormView({
         />
       )}
     </Stack>
+  );
+}
+
+export function EditTransferTransactionTemplate({
+  accountOptions,
+  action,
+  errorMessage,
+  initialValues,
+  ledgerName,
+}: EditTransferTransactionTemplateProps) {
+  return (
+    <PageShell>
+      <TransferTransactionForm
+        action={action}
+        accountOptions={accountOptions}
+        errorMessage={errorMessage}
+        initialValues={initialValues}
+        ledgerName={ledgerName}
+        title="编辑转账"
+      />
+      <TransactionAmountKeypadLauncher />
+    </PageShell>
   );
 }
 

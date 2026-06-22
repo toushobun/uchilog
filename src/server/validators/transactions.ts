@@ -65,6 +65,10 @@ export type UpdateTransactionValues = TransactionFormValues & {
   transactionRecordId: string;
 };
 
+export type UpdateTransferTransactionValues = TransferTransactionFormValues & {
+  transactionRecordId: string;
+};
+
 export type VoidTransactionValues = {
   transactionRecordId: string;
 };
@@ -368,6 +372,43 @@ export function validateUpdateTransactionForm(
 
   return valid({
     ...transactionResult.value,
+    transactionRecordId: transactionRecordIdResult.value,
+  });
+}
+
+export function validateUpdateTransferTransactionForm(
+  formData: FormData,
+): ValidationResult<
+  UpdateTransferTransactionValues,
+  UpdateTransactionValidationErrorCode
+> {
+  const transactionRecordIdResult = parseRequiredUuidField(
+    formData,
+    "transactionRecordId",
+    transactionErrorCodes.updateInvalid,
+  );
+
+  if (!transactionRecordIdResult.ok) {
+    return transactionRecordIdResult;
+  }
+
+  if (String(formData.get("type") ?? "").trim() !== "transfer") {
+    return invalid(transactionErrorCodes.updateInvalid);
+  }
+
+  const formResult = validateTransactionForm(formData);
+
+  if (!formResult.ok) {
+    return formResult;
+  }
+
+  // 已确认 type=transfer，这里用于收窄 union 类型。
+  if (formResult.value.type !== "transfer") {
+    return invalid(transactionErrorCodes.updateInvalid);
+  }
+
+  return valid({
+    ...formResult.value,
     transactionRecordId: transactionRecordIdResult.value,
   });
 }

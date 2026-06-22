@@ -166,6 +166,35 @@ function setupEditViewData(overrides: QueryResults = {}) {
   });
 }
 
+function setupTransferEditViewData(transactionItems: unknown[]) {
+  return setupSupabase({
+    account: {
+      data: [{ currency: "JPY", id: accountId, name: "日元现金" }],
+      error: null,
+    },
+    category: { data: [], error: null },
+    merchant: { data: [], error: null },
+    transaction_item: {
+      data: transactionItems,
+      error: null,
+    },
+    transaction_record: {
+      data: [
+        {
+          created_at: "2026-06-04T01:00:00.000Z",
+          id: transactionRecordId,
+          merchant_id: null,
+          note: null,
+          transaction_at: "2026-06-04T10:30:05.000Z",
+          type: "transfer",
+        },
+      ],
+      error: null,
+    },
+    transaction_tag: { data: [], error: null },
+  });
+}
+
 describe("buildCategoryOptions", () => {
   it("只返回子分类，顶级分类不出现在结果中", () => {
     const rows = [
@@ -352,6 +381,7 @@ describe("loadEditTransactionView", () => {
 
     const result = await loadEditTransactionView(transactionRecordId);
 
+    if (!("tagOptions" in result)) throw new Error("Expected expense view");
     expect(result.tagOptions).toEqual([]);
     expect(result.initialValues.tagNames).toEqual(["旧标签"]);
   });
@@ -387,6 +417,8 @@ describe("loadEditTransactionView", () => {
 
     const result = await loadEditTransactionView(transactionRecordId);
 
+    if (!("categoryOptions" in result))
+      throw new Error("Expected expense view");
     expect(result.initialValues.merchantId).toBe(merchantId);
     expect(result.initialValues.items).toEqual([
       { amount: "0", categoryId: childId1 },
@@ -404,8 +436,95 @@ describe("loadEditTransactionView", () => {
     expect(mocks.notFound).toHaveBeenCalledTimes(1);
   });
 
-  it("transfer 类型记录调用 notFound 并不进入编辑流程", async () => {
-    setupEditViewData({
+  it("能加载 transfer 编辑初始值", async () => {
+    const fromAccountId = "00000000-0000-4000-8000-000000000041";
+    const toAccountId = "00000000-0000-4000-8000-000000000042";
+
+    setupSupabase({
+      account: {
+        data: [
+          { currency: "JPY", id: fromAccountId, name: "日元现金" },
+          { currency: "JPY", id: toAccountId, name: "储蓄账户" },
+        ],
+        error: null,
+      },
+      category: { data: [], error: null },
+      merchant: { data: [], error: null },
+      transaction_item: {
+        data: [
+          {
+            account_id: fromAccountId,
+            amount: "5000.00",
+            balance_delta: "-5000.00",
+          },
+          {
+            account_id: toAccountId,
+            amount: "5000.00",
+            balance_delta: "5000.00",
+          },
+        ],
+        error: null,
+      },
+      transaction_record: {
+        data: [
+          {
+            created_at: "2026-06-04T01:00:00.000Z",
+            id: transactionRecordId,
+            merchant_id: null,
+            note: "转账备注",
+            transaction_at: "2026-06-04T10:30:05.000Z",
+            type: "transfer",
+          },
+        ],
+        error: null,
+      },
+      transaction_tag: { data: [], error: null },
+    });
+
+    const result = await loadEditTransactionView(transactionRecordId);
+
+    expect(result.initialValues).toEqual({
+      accountId: fromAccountId,
+      note: "转账备注",
+      transactionAt: "2026-06-04T10:30:05.000Z",
+      transactionRecordId,
+      transferAmount: "5000",
+      transferTargetAccountId: toAccountId,
+      type: "transfer",
+    });
+    expect(result.accountOptions).toHaveLength(2);
+    expect(result.ledgerName).toBe("家庭账本");
+  });
+
+  it("正确识别转出账户（balance_delta < 0）和转入账户（balance_delta > 0）", async () => {
+    const fromAccountId = "00000000-0000-4000-8000-000000000041";
+    const toAccountId = "00000000-0000-4000-8000-000000000042";
+
+    setupSupabase({
+      account: {
+        data: [
+          { currency: "JPY", id: fromAccountId, name: "日元现金" },
+          { currency: "JPY", id: toAccountId, name: "储蓄账户" },
+        ],
+        error: null,
+      },
+      category: { data: [], error: null },
+      merchant: { data: [], error: null },
+      transaction_item: {
+        data: [
+          {
+            account_id: toAccountId,
+            amount: "1200.00",
+            balance_delta: "1200.00",
+          },
+          {
+            account_id: fromAccountId,
+            amount: "1200.00",
+            balance_delta: "-1200.00",
+          },
+        ],
+        error: null,
+      },
       transaction_record: {
         data: [
           {
@@ -419,7 +538,114 @@ describe("loadEditTransactionView", () => {
         ],
         error: null,
       },
+      transaction_tag: { data: [], error: null },
     });
+
+    const result = await loadEditTransactionView(transactionRecordId);
+
+    if ("categoryOptions" in result) throw new Error("Expected transfer view");
+    expect(result.initialValues.accountId).toBe(fromAccountId);
+    expect(result.initialValues.transferTargetAccountId).toBe(toAccountId);
+  });
+
+  it("transfer item 结构异常时调用 notFound", async () => {
+    setupSupabase({
+      account: {
+        data: [{ currency: "JPY", id: accountId, name: "日元现金" }],
+        error: null,
+      },
+      category: { data: [], error: null },
+      merchant: { data: [], error: null },
+      transaction_item: {
+        data: [
+          {
+            account_id: accountId,
+            amount: "1200.00",
+            balance_delta: "-1200.00",
+          },
+        ],
+        error: null,
+      },
+      transaction_record: {
+        data: [
+          {
+            created_at: "2026-06-04T01:00:00.000Z",
+            id: transactionRecordId,
+            merchant_id: null,
+            note: null,
+            transaction_at: "2026-06-04T10:30:05.000Z",
+            type: "transfer",
+          },
+        ],
+        error: null,
+      },
+      transaction_tag: { data: [], error: null },
+    });
+
+    await expect(loadEditTransactionView(transactionRecordId)).rejects.toThrow(
+      "NEXT_NOT_FOUND",
+    );
+    expect(mocks.notFound).toHaveBeenCalledTimes(1);
+  });
+
+  it("transfer item 有 3 条时调用 notFound", async () => {
+    setupTransferEditViewData([
+      {
+        account_id: accountId,
+        amount: "1200.00",
+        balance_delta: "-1200.00",
+      },
+      {
+        account_id: "00000000-0000-4000-8000-000000000042",
+        amount: "1200.00",
+        balance_delta: "1200.00",
+      },
+      {
+        account_id: "00000000-0000-4000-8000-000000000043",
+        amount: "0.00",
+        balance_delta: "0.00",
+      },
+    ]);
+
+    await expect(loadEditTransactionView(transactionRecordId)).rejects.toThrow(
+      "NEXT_NOT_FOUND",
+    );
+    expect(mocks.notFound).toHaveBeenCalledTimes(1);
+  });
+
+  it("transfer 的转出与转入金额不一致时调用 notFound", async () => {
+    setupTransferEditViewData([
+      {
+        account_id: accountId,
+        amount: "1200.00",
+        balance_delta: "-1200.00",
+      },
+      {
+        account_id: "00000000-0000-4000-8000-000000000042",
+        amount: "800.00",
+        balance_delta: "800.00",
+      },
+    ]);
+
+    await expect(loadEditTransactionView(transactionRecordId)).rejects.toThrow(
+      "NEXT_NOT_FOUND",
+    );
+    expect(mocks.notFound).toHaveBeenCalledTimes(1);
+  });
+
+  it("transfer 的 amount 与 balance_delta 绝对值不一致时调用 notFound", async () => {
+    setupTransferEditViewData([
+      {
+        account_id: accountId,
+        amount: "1200.00",
+        balance_delta: "-1200.00",
+      },
+      {
+        account_id: "00000000-0000-4000-8000-000000000042",
+        amount: "1200.00",
+        balance_delta: "800.00",
+      },
+    ]);
 
     await expect(loadEditTransactionView(transactionRecordId)).rejects.toThrow(
       "NEXT_NOT_FOUND",

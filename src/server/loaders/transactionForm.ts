@@ -17,6 +17,16 @@ import type {
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+export type TransferEditInitialValues = {
+  type: "transfer";
+  transactionRecordId: string;
+  transactionAt: string;
+  accountId: string;
+  transferTargetAccountId: string;
+  transferAmount: string;
+  note: string;
+};
+
 export async function loadNewTransactionView() {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const supabase = await createClient();
@@ -35,36 +45,108 @@ export async function loadEditTransactionView(transactionRecordId: string) {
 
   const currentLedger = await getCurrentLedgerOrRedirect();
   const supabase = await createClient();
-  const [options, recordResult, itemResult, tagAssignmentResult] =
-    await Promise.all([
-      loadTransactionFormOptions(supabase, currentLedger.id),
-      supabase
-        .from("transaction_record")
-        .select("id, type, transaction_at, merchant_id, note, created_at")
-        .eq("ledger_id", currentLedger.id)
-        .eq("id", transactionRecordId)
-        .eq("status", "active")
-        .in("type", ["expense", "income"])
-        .limit(1),
-      supabase
-        .from("transaction_item")
-        .select("transaction_record_id, account_id, category_id, amount, note")
-        .eq("ledger_id", currentLedger.id)
-        .eq("transaction_record_id", transactionRecordId)
-        .in("stat_type", ["expense", "income"])
-        .order("sort_order", { ascending: true })
-        .order("id", { ascending: true }),
-      supabase
-        .from("transaction_record_tag")
-        .select("tag_id")
-        .eq("ledger_id", currentLedger.id)
-        .eq("transaction_record_id", transactionRecordId)
-        .order("sort_order", { ascending: true }),
-    ]);
+  const [options, recordResult] = await Promise.all([
+    loadTransactionFormOptions(supabase, currentLedger.id),
+    supabase
+      .from("transaction_record")
+      .select("id, type, transaction_at, merchant_id, note, created_at")
+      .eq("ledger_id", currentLedger.id)
+      .eq("id", transactionRecordId)
+      .eq("status", "active")
+      .in("type", ["expense", "income", "transfer"])
+      .limit(1),
+  ]);
 
   if (recordResult.error) {
     throw new Error("Failed to load transaction record for edit");
   }
+
+  const record = ((recordResult.data ?? []) as TransactionRecordDbRow[])[0];
+
+  if (!record) {
+    notFound();
+  }
+
+  if (record.type === "transfer") {
+    const itemResult = await supabase
+      .from("transaction_item")
+      .select("account_id, amount, balance_delta")
+      .eq("ledger_id", currentLedger.id)
+      .eq("transaction_record_id", transactionRecordId)
+      .eq("stat_type", "transfer");
+
+    if (itemResult.error) {
+      throw new Error("Failed to load transfer items for edit");
+    }
+
+    const items = (itemResult.data ?? []) as Pick<
+      TransactionItemDbRow,
+      "account_id" | "amount" | "balance_delta"
+    >[];
+    const fromItems = items.filter((item) => Number(item.balance_delta) < 0);
+    const toItems = items.filter((item) => Number(item.balance_delta) > 0);
+    const fromItem = fromItems[0];
+    const toItem = toItems[0];
+
+    if (
+      items.length !== 2 ||
+      fromItems.length !== 1 ||
+      toItems.length !== 1 ||
+      !fromItem ||
+      !toItem
+    ) {
+      notFound();
+    }
+
+    const fromAmount = Number(fromItem.amount);
+    const toAmount = Number(toItem.amount);
+    const fromBalanceDelta = Number(fromItem.balance_delta);
+    const toBalanceDelta = Number(toItem.balance_delta);
+
+    if (
+      fromAmount !== toAmount ||
+      fromAmount !== Math.abs(fromBalanceDelta) ||
+      toAmount !== Math.abs(toBalanceDelta) ||
+      fromBalanceDelta + toBalanceDelta !== 0
+    ) {
+      notFound();
+    }
+
+    return {
+      accountOptions: options.accountOptions,
+      initialValues: {
+        accountId: fromItem.account_id,
+        note: record.note ?? "",
+        transactionAt: record.transaction_at,
+        transactionRecordId: record.id,
+        transferAmount: formatEditableAmount(fromItem.amount),
+        transferTargetAccountId: toItem.account_id,
+        type: "transfer" as const,
+      } satisfies TransferEditInitialValues,
+      ledgerName: currentLedger.name,
+    };
+  }
+
+  if (record.type !== "expense" && record.type !== "income") {
+    notFound();
+  }
+
+  const [itemResult, tagAssignmentResult] = await Promise.all([
+    supabase
+      .from("transaction_item")
+      .select("transaction_record_id, account_id, category_id, amount, note")
+      .eq("ledger_id", currentLedger.id)
+      .eq("transaction_record_id", transactionRecordId)
+      .in("stat_type", ["expense", "income"])
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true }),
+    supabase
+      .from("transaction_record_tag")
+      .select("tag_id")
+      .eq("ledger_id", currentLedger.id)
+      .eq("transaction_record_id", transactionRecordId)
+      .order("sort_order", { ascending: true }),
+  ]);
 
   if (itemResult.error) {
     throw new Error("Failed to load transaction items for edit");
@@ -74,16 +156,11 @@ export async function loadEditTransactionView(transactionRecordId: string) {
     throw new Error("Failed to load transaction tags for edit");
   }
 
-  const record = ((recordResult.data ?? []) as TransactionRecordDbRow[])[0];
   const items = (itemResult.data ?? []) as TransactionItemDbRow[];
   const tagAssignments = (tagAssignmentResult.data ??
     []) as TransactionRecordTagDbRow[];
 
-  if (!record || items.length === 0) {
-    notFound();
-  }
-
-  if (record.type !== "expense" && record.type !== "income") {
+  if (items.length === 0) {
     notFound();
   }
 

@@ -35,6 +35,16 @@ export type UpdateTransactionParams = CreateTransactionParams & {
   transactionRecordId: string;
 };
 
+export type UpdateTransferTransactionParams = {
+  ledgerId: string;
+  transactionRecordId: string;
+  accountId: string;
+  transferTargetAccountId: string;
+  transferAmount: number;
+  transactionAt: string;
+  note: string | null;
+};
+
 export type VoidTransactionParams = {
   ledgerId: string;
   transactionRecordId: string;
@@ -96,6 +106,27 @@ export async function updateTransactionService(
     p_transaction_at: params.transactionAt,
     p_transaction_record_id: params.transactionRecordId,
     p_type: params.type,
+  });
+
+  if (error) {
+    return { ok: false, error: transactionErrorCodes.updateFailed };
+  }
+
+  return { ok: true };
+}
+
+export async function updateTransferTransactionService(
+  params: UpdateTransferTransactionParams,
+): Promise<ServiceResult<TransactionServiceErrorCode>> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_transfer_transaction", {
+    p_amount: params.transferAmount,
+    p_from_account_id: params.accountId,
+    p_ledger_id: params.ledgerId,
+    p_note: params.note,
+    p_to_account_id: params.transferTargetAccountId,
+    p_transaction_at: params.transactionAt,
+    p_transaction_record_id: params.transactionRecordId,
   });
 
   if (error) {
