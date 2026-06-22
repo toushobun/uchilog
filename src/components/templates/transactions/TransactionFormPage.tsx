@@ -1,14 +1,21 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useState } from "react";
+
+import Stack from "@mui/material/Stack";
 
 import {
   TransactionForm,
   type TransactionFormInitialValues,
 } from "organisms/transactions/TransactionForm";
 import { TransactionAmountKeypadLauncher } from "organisms/transactions/TransactionAmountKeypadLauncher";
+import { TransferTransactionForm } from "organisms/transactions/TransferTransactionForm";
+import { TransactionTypeNavigation } from "molecules/transactions/TransactionTypeNavigation";
 import type {
   TransactionAccountOption,
   TransactionCategoryOption,
   TransactionMerchantOption,
+  TransactionRecordType,
   TransactionTagOption,
 } from "types/transactions";
 import { PageShell } from "templates/layout/PageShell";
@@ -18,36 +25,68 @@ export type TransactionFormTemplateProps = {
   action: (formData: FormData) => Promise<void>;
   categoryOptions: TransactionCategoryOption[];
   errorMessage: string | null;
+  initialType?: TransactionRecordType;
   ledgerName: string;
   merchantOptions: TransactionMerchantOption[];
   tagOptions: TransactionTagOption[];
 };
 
-type EditTransactionTemplateProps = TransactionFormTemplateProps & {
+type EditTransactionTemplateProps = Omit<
+  TransactionFormTemplateProps,
+  "initialType"
+> & {
   initialValues: TransactionFormInitialValues;
 };
 
-export function NewTransactionTemplate({
+export function NewTransactionTemplate(props: TransactionFormTemplateProps) {
+  return (
+    <PageShell>
+      <NewTransactionFormView {...props} />
+      <TransactionAmountKeypadLauncher />
+    </PageShell>
+  );
+}
+
+function NewTransactionFormView({
   accountOptions,
   action,
   categoryOptions,
   errorMessage,
+  initialType,
   ledgerName,
   merchantOptions,
   tagOptions,
 }: TransactionFormTemplateProps) {
+  const [activeType, setActiveType] = useState<TransactionRecordType>(
+    initialType ?? "expense",
+  );
+
   return (
-    <TransactionFormShell>
-      <TransactionForm
-        action={action}
-        accountOptions={accountOptions}
-        categoryOptions={categoryOptions}
-        errorMessage={errorMessage}
-        ledgerName={ledgerName}
-        merchantOptions={merchantOptions}
-        tagOptions={tagOptions}
+    <Stack spacing={2}>
+      <TransactionTypeNavigation
+        activeType={activeType}
+        onChange={setActiveType}
       />
-    </TransactionFormShell>
+      {activeType === "transfer" ? (
+        <TransferTransactionForm
+          action={action}
+          accountOptions={accountOptions}
+          errorMessage={errorMessage}
+          ledgerName={ledgerName}
+        />
+      ) : (
+        <TransactionForm
+          action={action}
+          accountOptions={accountOptions}
+          categoryOptions={categoryOptions}
+          errorMessage={errorMessage}
+          initialType={activeType}
+          ledgerName={ledgerName}
+          merchantOptions={merchantOptions}
+          tagOptions={tagOptions}
+        />
+      )}
+    </Stack>
   );
 }
 
@@ -62,7 +101,7 @@ export function EditTransactionTemplate({
   tagOptions,
 }: EditTransactionTemplateProps) {
   return (
-    <TransactionFormShell>
+    <PageShell>
       <TransactionForm
         action={action}
         accountOptions={accountOptions}
@@ -76,14 +115,6 @@ export function EditTransactionTemplate({
         tagOptions={tagOptions}
         title="编辑记账"
       />
-    </TransactionFormShell>
-  );
-}
-
-function TransactionFormShell({ children }: { children: ReactNode }) {
-  return (
-    <PageShell>
-      {children}
       <TransactionAmountKeypadLauncher />
     </PageShell>
   );

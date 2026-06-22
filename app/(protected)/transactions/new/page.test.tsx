@@ -37,9 +37,18 @@ vi.mock("utils/pageErrors", () => ({
 
 import TransactionsNewPage from "./page";
 
+const baseView = {
+  accountOptions: [],
+  categoryOptions: [],
+  ledgerName: "家庭账本",
+  merchantOptions: [],
+  tagOptions: [],
+};
+
 describe("TransactionsNewPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.loadNewTransactionView.mockResolvedValue(baseView);
   });
 
   it("带 editId 的旧 URL 会跳转到专用编辑路由", async () => {
@@ -75,16 +84,67 @@ describe("TransactionsNewPage", () => {
     expect(mocks.loadNewTransactionView).not.toHaveBeenCalled();
   });
 
-  it("没有 editId 时显示新增记账画面", async () => {
-    const view = {
-      accountOptions: [],
-      categoryOptions: [],
-      ledgerName: "家庭账本",
-      merchantOptions: [],
-      tagOptions: [],
-    };
-    mocks.loadNewTransactionView.mockResolvedValue(view);
+  it("没有 type 时默认 expense", async () => {
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({}),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
 
+    expect(element.props).toMatchObject({ initialType: "expense" });
+  });
+
+  it("type=expense 时传递 expense", async () => {
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({ type: "expense" }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({ initialType: "expense" });
+  });
+
+  it("type=income 时传递 income", async () => {
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({ type: "income" }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({ initialType: "income" });
+  });
+
+  it("type=transfer 时传递 transfer", async () => {
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({ type: "transfer" }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({ initialType: "transfer" });
+  });
+
+  it("非法 type 时默认 expense", async () => {
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({ type: "invalid" }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({ initialType: "expense" });
+  });
+
+  it("error=xxx&type=transfer 时保持转账类型", async () => {
+    const result = await TransactionsNewPage({
+      searchParams: Promise.resolve({
+        error: "create_failed",
+        type: "transfer",
+      }),
+    });
+    const element = result as ReactElement<Record<string, unknown>>;
+
+    expect(element.props).toMatchObject({
+      initialType: "transfer",
+      errorMessage: "新建错误:create_failed",
+    });
+  });
+
+  it("没有 editId 时显示新增记账画面", async () => {
     const result = await TransactionsNewPage({
       searchParams: Promise.resolve({ error: "create_failed" }),
     });
@@ -96,7 +156,7 @@ describe("TransactionsNewPage", () => {
     );
     expect(element.type).toBe(mocks.NewTransactionTemplate);
     expect(element.props).toMatchObject({
-      ...view,
+      ...baseView,
       action: mocks.createTransaction,
       errorMessage: "新建错误:create_failed",
     });
