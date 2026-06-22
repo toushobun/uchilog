@@ -18,13 +18,12 @@ import TextField from "@mui/material/TextField";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
-import Link from "next/link";
-
 import {
   maxTransactionTagCount,
   maxTransactionTagNameLength,
 } from "@/constants/transactions";
 import { routePaths } from "config/paths";
+import { TransactionFormHeader } from "organisms/transactions/TransactionFormHeader";
 import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
 import { designTokens } from "theme/theme";
 import {
@@ -68,6 +67,7 @@ type TransactionFormProps = {
   closeHref?: string;
   errorMessage?: string | null;
   formId?: string;
+  initialType?: TransactionType;
   initialValues?: TransactionFormInitialValues;
   ledgerName?: string;
   merchantOptions: TransactionMerchantOption[];
@@ -100,6 +100,7 @@ export function TransactionForm({
   closeHref = routePaths.transactions,
   errorMessage,
   formId = "new-transaction-form",
+  initialType,
   initialValues,
   ledgerName,
   merchantOptions,
@@ -112,8 +113,9 @@ export function TransactionForm({
   const accountFieldRef = useRef<HTMLDivElement>(null);
   const itemsFieldRef = useRef<HTMLDivElement>(null);
   const tagsFieldRef = useRef<HTMLDivElement>(null);
+  const isFirstRenderRef = useRef(true);
   const [selectedType, setSelectedType] = useState<TransactionType>(
-    initialValues?.type ?? "expense",
+    initialValues?.type ?? initialType ?? "expense",
   );
   const [selectedAccountId, setSelectedAccountId] = useState(
     initialValues?.accountId ?? "",
@@ -159,6 +161,17 @@ export function TransactionForm({
     setTransactionTime(nextDateTime.time);
     setTimeZoneOffsetMinutes(String(new Date().getTimezoneOffset()));
   }, [initialValues?.transactionAt]);
+
+  useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      return;
+    }
+    if (!initialValues && initialType) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 新增页外层 tab 切换时同步内部类型，编辑页有 initialValues 时忽略。
+      setSelectedType(initialType);
+    }
+  }, [initialType, initialValues]);
 
   const filteredCategoryOptions = useMemo(
     () => categoryOptions.filter((category) => category.type === selectedType),
@@ -409,47 +422,12 @@ export function TransactionForm({
   return (
     <form id={formId} action={action} onSubmit={handleSubmit}>
       <Stack spacing={2.5}>
-        <Stack spacing={1}>
-          <Stack
-            direction="row"
-            spacing={2}
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
-          >
-            <Button
-              component={Link}
-              href={closeHref}
-              variant="text"
-              sx={{ color: "var(--user-theme-action-text)" }}
-            >
-              关闭
-            </Button>
-            <Typography component="h1" variant="h5" sx={{ fontWeight: 700 }}>
-              {title}
-            </Typography>
-            <Button
-              disabled={isSubmitDisabled}
-              type="submit"
-              variant="contained"
-              sx={{
-                "&:not(.Mui-disabled)": {
-                  background: "var(--user-theme-fab-bg)",
-                  color: "white",
-                },
-              }}
-            >
-              保存
-            </Button>
-          </Stack>
-          {ledgerName ? (
-            <Typography
-              color="text.secondary"
-              sx={{ textAlign: "center" }}
-              variant="body2"
-            >
-              当前账本：{ledgerName}
-            </Typography>
-          ) : null}
-        </Stack>
+        <TransactionFormHeader
+          closeHref={closeHref}
+          isSubmitDisabled={isSubmitDisabled}
+          ledgerName={ledgerName}
+          title={title}
+        />
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
@@ -1266,11 +1244,9 @@ function formatSummaryDateTime(date: string, time: string) {
 
   const dateLabel = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`;
   const timeMatch = /^(\d{2}):(\d{2})(?::(\d{2}))?/.exec(time);
-  const timeLabel = timeMatch
-    ? `${timeMatch[1]}:${timeMatch[2]}:${timeMatch[3] ?? "00"}`
-    : time.slice(0, 8);
+  if (!timeMatch) return "未选择";
 
-  return `${dateLabel} ${timeLabel}`;
+  return `${dateLabel} ${timeMatch[1]}:${timeMatch[2]}:${timeMatch[3] ?? "00"}`;
 }
 
 function SummaryRow({

@@ -431,4 +431,36 @@ describe("TransactionForm", () => {
     expect(screen.getByText("请选择商家")).toBeInTheDocument();
     expect(screen.getByText("便利店")).toBeInTheDocument();
   });
+
+  it("initialType=income 时，hidden type 应为 income", () => {
+    const { container } = renderForm({ initialType: "income" });
+
+    const typeInput =
+      container.querySelector<HTMLInputElement>('input[name="type"]');
+
+    expect(typeInput?.value).toBe("income");
+  });
+
+  it("点击收入 tab 后，hidden type 应为 income", () => {
+    const { container } = renderForm();
+
+    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
+
+    const typeInput =
+      container.querySelector<HTMLInputElement>('input[name="type"]');
+
+    expect(typeInput?.value).toBe("income");
+  });
+
+  it("切换收入后再切换支出，hidden type 应为 expense", () => {
+    const { container } = renderForm();
+
+    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
+    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
+
+    const typeInput =
+      container.querySelector<HTMLInputElement>('input[name="type"]');
+
+    expect(typeInput?.value).toBe("expense");
+  });
 });
