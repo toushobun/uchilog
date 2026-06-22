@@ -183,7 +183,6 @@ grant execute on function public.create_transfer_transaction(
     uuid, timestamptz, numeric, uuid, uuid, text
 ) to authenticated;
 
--- transfer 记录必须只有两条明细：一条转出、一条转入，且 amount 与 balance_delta 保持一致。
 create or replace function public.void_transaction(
     p_ledger_id uuid,
     p_transaction_record_id uuid
@@ -241,6 +240,7 @@ begin
     order by a.id
     for update;
 
+    -- transfer 记录必须只有两条明细：一条转出、一条转入，且 amount 与 balance_delta 保持一致。
     if v_record.type = 'transfer' then
         perform 1
         from public.transaction_item ti
