@@ -28,6 +28,10 @@ export type { TransactionValidationErrorCode };
 const transactionTypeValues = transactionTypeOptions.map(
   (option) => option.value,
 );
+const createTransactionTypeValues = [
+  ...transactionTypeValues,
+  "transfer",
+] as const;
 
 export type TransactionFormValues = {
   type: TransactionType;
@@ -38,6 +42,19 @@ export type TransactionFormValues = {
   note: string | null;
   tagNames: string[];
 };
+
+export type TransferTransactionFormValues = {
+  type: "transfer";
+  transactionAt: string;
+  accountId: string;
+  transferTargetAccountId: string;
+  transferAmount: number;
+  note: string | null;
+};
+
+export type CreateTransactionFormValues =
+  | TransactionFormValues
+  | TransferTransactionFormValues;
 
 export type TransactionFormItemValues = {
   amount: number;
@@ -184,10 +201,13 @@ function parseTransactionTagNames(
 
 export function validateTransactionForm(
   formData: FormData,
-): ValidationResult<TransactionFormValues, TransactionValidationErrorCode> {
+): ValidationResult<
+  CreateTransactionFormValues,
+  TransactionValidationErrorCode
+> {
   const typeResult = parseEnumValue(
     getFormText(formData, "type"),
-    transactionTypeValues,
+    createTransactionTypeValues,
     transactionErrorCodes.typeInvalid,
   );
 
@@ -220,6 +240,55 @@ export function validateTransactionForm(
 
   if (!accountIdResult.ok) {
     return accountIdResult;
+  }
+
+  if (typeResult.value === "transfer") {
+    const targetAccountIdResult = parseRequiredUuidField(
+      formData,
+      "transferTargetAccountId",
+      transactionErrorCodes.accountInvalid,
+    );
+
+    if (!targetAccountIdResult.ok) {
+      return targetAccountIdResult;
+    }
+
+    if (targetAccountIdResult.value === accountIdResult.value) {
+      return invalid(transactionErrorCodes.accountInvalid);
+    }
+
+    const transferAmountResult = parseMoneyAmount(
+      formData.get("transferAmount"),
+      {
+        allowNegative: false,
+        allowZero: false,
+        error: transactionErrorCodes.amountInvalid,
+      },
+    );
+
+    if (!transferAmountResult.ok) {
+      return transferAmountResult;
+    }
+
+    const noteResult = parseOptionalTextField(
+      formData,
+      "note",
+      2000,
+      transactionErrorCodes.noteTooLong,
+    );
+
+    if (!noteResult.ok) {
+      return noteResult;
+    }
+
+    return valid({
+      accountId: accountIdResult.value,
+      note: noteResult.value,
+      transactionAt,
+      transferAmount: transferAmountResult.value,
+      transferTargetAccountId: targetAccountIdResult.value,
+      type: "transfer",
+    });
   }
 
   const itemsResult = parseTransactionItems(formData);
@@ -282,10 +351,19 @@ export function validateUpdateTransactionForm(
     return transactionRecordIdResult;
   }
 
+  if (String(formData.get("type") ?? "").trim() === "transfer") {
+    return invalid(transactionErrorCodes.updateInvalid);
+  }
+
   const transactionResult = validateTransactionForm(formData);
 
   if (!transactionResult.ok) {
     return transactionResult;
+  }
+
+  // raw type=transfer 已提前拒绝；这里保留用于将 validateTransactionForm 的 union 返回值缩窄为普通交易。
+  if (transactionResult.value.type === "transfer") {
+    return invalid(transactionErrorCodes.updateInvalid);
   }
 
   return valid({

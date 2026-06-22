@@ -14,6 +14,7 @@ import {
 import { requireCurrentUserAndLedger } from "server/context/currentLedger";
 import {
   createTransactionService,
+  createTransferTransactionService,
   updateTransactionService,
   voidTransactionService,
 } from "server/services/transactions";
@@ -27,28 +28,55 @@ function transactionMonthRedirectHref(transactionAt: string) {
   return transactionsMonthHref(transactionAt.slice(0, 7));
 }
 
+function isRawTransferType(formData: FormData) {
+  return String(formData.get("type") ?? "").trim() === "transfer";
+}
+
+function newTransactionValidationErrorHref(error: string, formData: FormData) {
+  return newTransactionErrorHref(
+    error,
+    isRawTransferType(formData) ? "transfer" : null,
+  );
+}
+
 export async function createTransaction(formData: FormData) {
   const { currentLedger } = await requireCurrentUserAndLedger();
   const validation = validateTransactionForm(formData);
 
   if (!validation.ok) {
-    redirect(newTransactionErrorHref(validation.error));
+    redirect(newTransactionValidationErrorHref(validation.error, formData));
   }
 
   const values = validation.value;
+  const result =
+    values.type === "transfer"
+      ? await createTransferTransactionService({
+          accountId: values.accountId,
+          ledgerId: currentLedger.id,
+          note: values.note,
+          transactionAt: values.transactionAt,
+          transferAmount: values.transferAmount,
+          transferTargetAccountId: values.transferTargetAccountId,
+        })
+      : await createTransactionService({
+          accountId: values.accountId,
+          items: values.items,
+          ledgerId: currentLedger.id,
+          merchantId: values.merchantId,
+          note: values.note,
+          tagNames: values.tagNames,
+          transactionAt: values.transactionAt,
+          type: values.type,
+        });
 
-  const result = await createTransactionService({
-    accountId: values.accountId,
-    items: values.items,
-    ledgerId: currentLedger.id,
-    merchantId: values.merchantId,
-    note: values.note,
-    tagNames: values.tagNames,
-    transactionAt: values.transactionAt,
-    type: values.type,
-  });
-
-  if (!result.ok) redirect(newTransactionErrorHref(result.error));
+  if (!result.ok) {
+    redirect(
+      newTransactionErrorHref(
+        result.error,
+        values.type === "transfer" ? values.type : null,
+      ),
+    );
+  }
 
   revalidatePath(routePaths.accounts);
   revalidatePath(routePaths.transactions);
