@@ -543,7 +543,8 @@ describe("loadEditTransactionView", () => {
 
     const result = await loadEditTransactionView(transactionRecordId);
 
-    if ("categoryOptions" in result) throw new Error("Expected transfer view");
+    if (result.initialValues.type !== "transfer")
+      throw new Error("Expected transfer view");
     expect(result.initialValues.accountId).toBe(fromAccountId);
     expect(result.initialValues.transferTargetAccountId).toBe(toAccountId);
   });

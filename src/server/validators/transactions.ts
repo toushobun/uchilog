@@ -71,11 +71,12 @@ export type UpdateTransferTransactionValues = TransferTransactionFormValues & {
   transactionRecordId: string;
 };
 
-export type ConvertTransactionToTransferValues = TransferTransactionFormValues & {
-  sourceType: TransactionRecordType;
-  targetType: "transfer";
-  transactionRecordId: string;
-};
+export type ConvertTransactionToTransferValues =
+  TransferTransactionFormValues & {
+    sourceType: TransactionRecordType;
+    targetType: "transfer";
+    transactionRecordId: string;
+  };
 
 export type ConvertTransactionToNormalValues = TransactionFormValues & {
   sourceType: TransactionRecordType;

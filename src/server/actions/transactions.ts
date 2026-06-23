@@ -49,7 +49,9 @@ function rawTransactionRecordId(formData: FormData) {
 }
 
 function rawTargetType(formData: FormData) {
-  return String(formData.get("targetType") ?? formData.get("type") ?? "").trim();
+  return String(
+    formData.get("targetType") ?? formData.get("type") ?? "",
+  ).trim();
 }
 
 function isTransactionRecordType(value: string) {

@@ -32,6 +32,7 @@ describe("EditTransferTransactionTemplate", () => {
           },
         ]}
         action={vi.fn(async () => undefined)}
+        categoryOptions={[]}
         errorMessage={null}
         initialValues={{
           accountId: "00000000-0000-4000-8000-000000000045",
@@ -43,6 +44,8 @@ describe("EditTransferTransactionTemplate", () => {
           type: "transfer",
         }}
         ledgerName="家庭账本"
+        merchantOptions={[]}
+        tagOptions={[]}
       />,
     );
 
