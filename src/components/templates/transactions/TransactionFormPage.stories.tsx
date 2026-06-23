@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { NewTransactionTemplate } from "./TransactionFormPage";
+import {
+  EditTransactionTemplate,
+  EditTransferTransactionTemplate,
+  NewTransactionTemplate,
+} from "./TransactionFormPage";
 
 const accountOptions = [
   {
@@ -53,18 +57,22 @@ const tagOptions = [
   },
 ];
 
+async function noopAction() {}
+
+const baseArgs = {
+  accountOptions,
+  action: noopAction,
+  categoryOptions,
+  errorMessage: null,
+  ledgerName: "家庭账本",
+  merchantOptions,
+  tagOptions,
+};
+
 const meta = {
   title: "Templates/Transactions/TransactionFormPage",
   component: NewTransactionTemplate,
-  args: {
-    accountOptions,
-    action: async () => {},
-    categoryOptions,
-    errorMessage: null,
-    ledgerName: "家庭账本",
-    merchantOptions,
-    tagOptions,
-  },
+  args: baseArgs,
 } satisfies Meta<typeof NewTransactionTemplate>;
 
 export default meta;
@@ -89,4 +97,46 @@ export const EmptyOptions: Story = {
     merchantOptions: [],
     tagOptions: [],
   },
+};
+
+export const EditExpenseConvert: Story = {
+  name: "编辑支出：可切换到转账",
+  render: () => (
+    <EditTransactionTemplate
+      {...baseArgs}
+      initialValues={{
+        accountId: "00000000-0000-4000-8000-000000000045",
+        items: [
+          {
+            amount: "1200",
+            categoryId: "00000000-0000-4000-8000-000000005072",
+          },
+        ],
+        merchantId: "00000000-0000-4000-8000-000000001001",
+        note: "普通交易编辑示例",
+        tagNames: ["日常"],
+        transactionAt: "2026-06-05T03:20:10.000Z",
+        transactionRecordId: "00000000-0000-4000-8000-000000009001",
+        type: "expense",
+      }}
+    />
+  ),
+};
+
+export const EditTransferConvert: Story = {
+  name: "编辑转账：可切换到支出或收入",
+  render: () => (
+    <EditTransferTransactionTemplate
+      {...baseArgs}
+      initialValues={{
+        accountId: "00000000-0000-4000-8000-000000000045",
+        note: "转账编辑示例",
+        transactionAt: "2026-06-05T03:20:10.000Z",
+        transactionRecordId: "00000000-0000-4000-8000-000000009003",
+        transferAmount: "5000",
+        transferTargetAccountId: "00000000-0000-4000-8000-000000000046",
+        type: "transfer",
+      }}
+    />
+  ),
 };
