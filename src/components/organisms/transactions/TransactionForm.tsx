@@ -37,13 +37,13 @@ import {
 
 import { TransactionItemPickerDrawer } from "./TransactionItemPickerDrawer";
 import { TransactionItemsSection } from "./TransactionItemsSection";
-import {
-  type TransactionFieldErrors,
-  type TransactionFormInitialValues,
-  type TransactionFormItem,
-  type TransactionPickerErrors,
+import type {
+  TransactionFieldErrors,
+  TransactionFormInitialValues,
+  TransactionFormItem,
+  TransactionItemSummary,
+  TransactionPickerErrors,
 } from "./TransactionForm.types";
-import type { TransactionItemSummary } from "./TransactionForm.types";
 import {
   buildCategoryPickerGroups,
   isValidMoneyText,
@@ -439,7 +439,9 @@ export function TransactionForm({
           aria-label="类型"
           exclusive
           fullWidth
-          onChange={(_, value: TransactionType | null) => handleTypeChange(value)}
+          onChange={(_, value: TransactionType | null) =>
+            handleTypeChange(value)
+          }
           value={selectedType}
           sx={selectedToggleButtonGroupSx}
         >
@@ -477,7 +479,11 @@ export function TransactionForm({
           </MenuItem>
           {merchantOptions.map((merchant) => (
             <MenuItem key={merchant.id} value={merchant.id}>
-              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+              <Stack
+                direction="row"
+                spacing={1.5}
+                sx={{ alignItems: "center" }}
+              >
                 <Avatar
                   alt={merchant.name}
                   src={merchant.icon_url ?? undefined}
@@ -537,9 +543,7 @@ export function TransactionForm({
 
         <TransactionTagSection
           fieldError={fieldErrors.tags}
-          helperText={
-            fieldErrors.tags ?? transactionTagValidationMessages.hint
-          }
+          helperText={fieldErrors.tags ?? transactionTagValidationMessages.hint}
           newTagName={newTagName}
           onAddTag={addTag}
           onNewTagNameChange={(tagName) => {

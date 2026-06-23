@@ -14,6 +14,7 @@ import type {
   TransactionFormItem,
   TransactionItemSummary,
 } from "./TransactionForm.types";
+import { smallIconButtonSx } from "./TransactionForm.styles";
 import { formatCategoryName } from "./TransactionForm.utils";
 
 type TransactionItemsSectionProps = {
@@ -162,12 +163,6 @@ const amountFieldSx = {
     fontSize: "1.25rem",
     fontWeight: 800,
   },
-};
-
-const smallIconButtonSx = {
-  color: "text.secondary",
-  height: 40,
-  width: 40,
 };
 
 const addItemButtonSx = {

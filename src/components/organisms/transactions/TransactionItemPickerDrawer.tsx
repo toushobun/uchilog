@@ -20,6 +20,7 @@ import type {
   TransactionItemSummary,
   TransactionPickerErrors,
 } from "./TransactionForm.types";
+import { smallIconButtonSx } from "./TransactionForm.styles";
 import { formatCategoryName } from "./TransactionForm.utils";
 
 type TransactionItemPickerDrawerProps = {
@@ -74,7 +75,9 @@ export function TransactionItemPickerDrawer({
           pt: 1.5,
         }}
       >
-        <Box sx={{ bgcolor: "divider", borderRadius: 99, height: 4, width: 40 }} />
+        <Box
+          sx={{ bgcolor: "divider", borderRadius: 99, height: 4, width: 40 }}
+        />
       </Box>
 
       <Typography
@@ -93,9 +96,15 @@ export function TransactionItemPickerDrawer({
             <Stack spacing={0.75} sx={{ mb: 2 }}>
               {itemSummaries.map((item) => (
                 <Paper key={item.id} variant="outlined" sx={{ px: 1.5, py: 1 }}>
-                  <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ alignItems: "center" }}
+                  >
                     <Typography noWrap sx={{ flex: 1, fontSize: 14 }}>
-                      {item.category ? formatCategoryName(item.category) : "未选择分类"}
+                      {item.category
+                        ? formatCategoryName(item.category)
+                        : "未选择分类"}
                     </Typography>
                     <Typography sx={{ fontSize: 14, fontWeight: 700 }}>
                       {item.amount || "—"}
@@ -188,7 +197,11 @@ export function TransactionItemPickerDrawer({
                 ) : null}
               </Stack>
 
-              <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: "flex-start" }}
+              >
                 <TextField
                   error={!!pickerErrors.amount}
                   helperText={pickerErrors.amount}
@@ -246,12 +259,6 @@ export function TransactionItemPickerDrawer({
     </Drawer>
   );
 }
-
-const smallIconButtonSx = {
-  color: "text.secondary",
-  height: 40,
-  width: 40,
-};
 
 const sheetItemIconButtonSx = {
   ...smallIconButtonSx,
