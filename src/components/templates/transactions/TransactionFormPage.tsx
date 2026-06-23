@@ -291,7 +291,10 @@ export function EditTransferTransactionTemplate({
             )}
             merchantOptions={merchantOptions}
             onSubmitDisabledChange={(disabled) =>
-              setSubmitDisabledByType((prev) => ({ ...prev, expense: disabled }))
+              setSubmitDisabledByType((prev) => ({
+                ...prev,
+                expense: disabled,
+              }))
             }
             submitLabel="保存修改"
             tagOptions={tagOptions}
@@ -418,7 +421,10 @@ export function EditTransactionTemplate({
             )}
             merchantOptions={merchantOptions}
             onSubmitDisabledChange={(disabled) =>
-              setSubmitDisabledByType((prev) => ({ ...prev, expense: disabled }))
+              setSubmitDisabledByType((prev) => ({
+                ...prev,
+                expense: disabled,
+              }))
             }
             submitLabel="保存修改"
             tagOptions={tagOptions}
