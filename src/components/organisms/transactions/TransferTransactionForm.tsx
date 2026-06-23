@@ -14,7 +14,10 @@ import { routePaths } from "config/paths";
 import { TransactionFormHeader } from "organisms/transactions/TransactionFormHeader";
 import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
 import type { TransferEditInitialValues } from "server/loaders/transactionForm";
-import type { TransactionAccountOption } from "types/transactions";
+import type {
+  TransactionAccountOption,
+  TransactionRecordType,
+} from "types/transactions";
 import {
   composeTransactionDateTimeLocalValue,
   formatDateTimeLocalInputValue,
@@ -29,8 +32,10 @@ type TransferTransactionFormProps = {
   action: (formData: FormData) => Promise<void>;
   accountOptions: TransactionAccountOption[];
   errorMessage?: string | null;
+  formId?: string;
   initialValues?: TransferEditInitialValues;
   ledgerName?: string;
+  sourceType?: TransactionRecordType;
   title?: string;
 };
 
@@ -38,8 +43,10 @@ export function TransferTransactionForm({
   action,
   accountOptions,
   errorMessage,
+  formId,
   initialValues,
   ledgerName,
+  sourceType,
   title = "新增记账",
 }: TransferTransactionFormProps) {
   const [selectedAccountId, setSelectedAccountId] = useState(
@@ -103,7 +110,7 @@ export function TransferTransactionForm({
     : undefined;
 
   return (
-    <form action={action}>
+    <form id={formId} action={action}>
       <Stack spacing={2.5}>
         <TransactionFormHeader
           closeHref={routePaths.transactions}
@@ -121,6 +128,10 @@ export function TransferTransactionForm({
         ) : null}
 
         <input name="type" readOnly type="hidden" value="transfer" />
+        <input name="targetType" readOnly type="hidden" value="transfer" />
+        {sourceType ? (
+          <input name="sourceType" readOnly type="hidden" value={sourceType} />
+        ) : null}
         <input
           name="timeZoneOffsetMinutes"
           readOnly
