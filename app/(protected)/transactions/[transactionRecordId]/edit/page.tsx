@@ -19,15 +19,16 @@ export default async function TransactionEditPage({
   ]);
   const view = await loadEditTransactionView(transactionRecordId);
   const errorMessage = getEditTransactionErrorMessage(query.error);
+  const initialValues = view.initialValues;
 
-  if (view.initialValues.type === "transfer") {
+  if (initialValues.type === "transfer") {
     return (
       <EditTransferTransactionTemplate
         accountOptions={view.accountOptions}
         action={saveEditTransaction}
         categoryOptions={view.categoryOptions}
         errorMessage={errorMessage}
-        initialValues={view.initialValues}
+        initialValues={initialValues}
         ledgerName={view.ledgerName}
         merchantOptions={view.merchantOptions}
         tagOptions={view.tagOptions}
@@ -41,7 +42,7 @@ export default async function TransactionEditPage({
       action={saveEditTransaction}
       categoryOptions={view.categoryOptions}
       errorMessage={errorMessage}
-      initialValues={view.initialValues}
+      initialValues={initialValues}
       ledgerName={view.ledgerName}
       merchantOptions={view.merchantOptions}
       tagOptions={view.tagOptions}
