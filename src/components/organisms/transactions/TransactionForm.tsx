@@ -64,10 +64,12 @@ type TransactionFormProps = {
   closeHref?: string;
   errorMessage?: string | null;
   formId?: string;
+  hideHeader?: boolean;
   initialType?: TransactionType;
   initialValues?: TransactionFormInitialValues;
   ledgerName?: string;
   merchantOptions: TransactionMerchantOption[];
+  onSubmitDisabledChange?: (disabled: boolean) => void;
   submitLabel?: string;
   tagOptions: TransactionTagOption[];
   title?: string;
@@ -86,10 +88,12 @@ export function TransactionForm({
   closeHref = routePaths.transactions,
   errorMessage,
   formId = "new-transaction-form",
+  hideHeader = false,
   initialType,
   initialValues,
   ledgerName,
   merchantOptions,
+  onSubmitDisabledChange,
   submitLabel = "保存记账",
   tagOptions,
   title = "新增记账",
@@ -218,6 +222,11 @@ export function TransactionForm({
     filteredCategoryOptions.length === 0 ||
     !transactionAtValue ||
     !hasValidTags;
+
+  useEffect(() => {
+    onSubmitDisabledChange?.(isSubmitDisabled);
+  }, [isSubmitDisabled, onSubmitDisabledChange]);
+
   const signedTotalAmount =
     items.length > 0
       ? formatSignedAmount(selectedType, totalAmount)
@@ -402,12 +411,14 @@ export function TransactionForm({
   return (
     <form id={formId} action={action} onSubmit={handleSubmit}>
       <Stack spacing={2.5}>
-        <TransactionFormHeader
-          closeHref={closeHref}
-          isSubmitDisabled={isSubmitDisabled}
-          ledgerName={ledgerName}
-          title={title}
-        />
+        {hideHeader ? null : (
+          <TransactionFormHeader
+            closeHref={closeHref}
+            isSubmitDisabled={isSubmitDisabled}
+            ledgerName={ledgerName}
+            title={title}
+          />
+        )}
 
         {typeNavigation}
 

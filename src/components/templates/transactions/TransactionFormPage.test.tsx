@@ -8,38 +8,31 @@ vi.mock("organisms/transactions/TransactionForm", () => ({
   TransactionForm: ({
     errorMessage,
     initialType,
-    ledgerName,
-    typeNavigation,
   }: {
     errorMessage: string | null;
-    initialType?: string;
-    ledgerName?: string;
-    typeNavigation?: ReactNode;
-  }): ReactNode => (
-    <div data-testid="transaction-form">
-      <h1>新增记账</h1>
-      {typeNavigation}
-      <input name="type" type="hidden" value={initialType ?? "expense"} />
-      {ledgerName ? <p>当前账本：{ledgerName}</p> : null}
-      {errorMessage ? <div role="alert">{errorMessage}</div> : null}
-    </div>
-  ),
+    initialType?: "expense" | "income";
+  }): ReactNode => {
+    const type = initialType ?? "expense";
+    const label = type === "income" ? "收入" : "支出";
+
+    return (
+      <div data-testid={`transaction-form-${type}`}>
+        <input aria-label={`${label}临时输入`} defaultValue="" />
+        <input name="type" type="hidden" value={type} />
+        {errorMessage ? <div role="alert">{errorMessage}</div> : null}
+      </div>
+    );
+  },
 }));
 
 vi.mock("organisms/transactions/TransferTransactionForm", () => ({
   TransferTransactionForm: ({
     errorMessage,
-    ledgerName,
-    typeNavigation,
   }: {
     errorMessage: string | null;
-    ledgerName?: string;
-    typeNavigation?: ReactNode;
   }): ReactNode => (
     <div data-testid="transfer-transaction-form">
-      <h1>新增记账</h1>
-      {typeNavigation}
-      {ledgerName ? <p>当前账本：{ledgerName}</p> : null}
+      <input aria-label="转账临时输入" defaultValue="" />
       {errorMessage ? <div role="alert">{errorMessage}</div> : null}
     </div>
   ),
@@ -53,7 +46,11 @@ vi.mock("molecules/transactions/TransactionTypeNavigation", () => ({
     activeType: string;
     onChange: (type: string) => void;
   }): ReactNode => (
-    <div data-testid="transaction-type-navigation">
+    <div
+      aria-label="记账类型"
+      data-testid="transaction-type-navigation"
+      role="group"
+    >
       <button
         onClick={() => onChange("expense")}
         aria-pressed={activeType === "expense"}
@@ -72,6 +69,26 @@ vi.mock("molecules/transactions/TransactionTypeNavigation", () => ({
       >
         转账
       </button>
+    </div>
+  ),
+}));
+
+vi.mock("organisms/transactions/TransactionAmountKeypadLauncher", () => ({
+  TransactionAmountKeypadLauncher: (): ReactNode => null,
+}));
+
+vi.mock("organisms/transactions/TransactionFormHeader", () => ({
+  TransactionFormHeader: ({
+    ledgerName,
+    title,
+  }: {
+    ledgerName?: string;
+    title: string;
+  }): ReactNode => (
+    <div data-testid="transaction-form-header">
+      <h1>{title}</h1>
+      {ledgerName ? <p>当前账本：{ledgerName}</p> : null}
+      <button type="submit">保存</button>
     </div>
   ),
 }));
@@ -107,77 +124,87 @@ describe("NewTransactionTemplate", () => {
     ).toBeInTheDocument();
   });
 
-  it("只渲染一套包含转账的记账类型导航", () => {
+  it("只显示一套包含转账的记账类型导航", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     expect(
-      within(container).getAllByTestId("transaction-type-navigation"),
+      within(container).getAllByRole("group", { name: "记账类型" }),
     ).toHaveLength(1);
     expect(
       within(container).getByRole("button", { name: "转账" }),
     ).toBeInTheDocument();
   });
 
-  it("默认渲染支出表单", () => {
+  it("默认激活支出表单并保留其他类型面板", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     expect(
-      within(container).getByTestId("transaction-form"),
+      within(container).getByTestId("transaction-form-expense"),
     ).toBeInTheDocument();
     expect(
-      within(container).queryByTestId("transfer-transaction-form"),
-    ).toBeNull();
+      within(container).getByTestId("transaction-form-income"),
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByTestId("transfer-transaction-form"),
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "false");
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-transfer"),
+    ).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("initialType=expense 时渲染支出表单", () => {
+  it("initialType=expense 时激活支出表单", () => {
     const { container } = render(
       <NewTransactionTemplate {...baseProps} initialType="expense" />,
     );
 
     expect(
-      within(container).getByTestId("transaction-form"),
-    ).toBeInTheDocument();
-    expect(
-      within(container).queryByTestId("transfer-transaction-form"),
-    ).toBeNull();
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "false");
   });
 
-  it("initialType=income 时渲染收入表单", () => {
+  it("initialType=income 时激活收入表单", () => {
     const { container } = render(
       <NewTransactionTemplate {...baseProps} initialType="income" />,
     );
 
     expect(
-      within(container).getByTestId("transaction-form"),
-    ).toBeInTheDocument();
+      within(container).getByTestId("transaction-type-slide-panel-income"),
+    ).toHaveAttribute("aria-hidden", "false");
     expect(
-      within(container).queryByTestId("transfer-transaction-form"),
-    ).toBeNull();
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("initialType=transfer 时渲染转账表单", () => {
+  it("initialType=transfer 时激活转账表单", () => {
     const { container } = render(
       <NewTransactionTemplate {...baseProps} initialType="transfer" />,
     );
 
     expect(
-      within(container).getByTestId("transfer-transaction-form"),
-    ).toBeInTheDocument();
-    expect(within(container).queryByTestId("transaction-form")).toBeNull();
+      within(container).getByTestId("transaction-type-slide-panel-transfer"),
+    ).toHaveAttribute("aria-hidden", "false");
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("点击转账 tab 切换到转账表单", () => {
+  it("点击转账 tab 切换到转账面板", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     fireEvent.click(within(container).getByRole("button", { name: "转账" }));
 
     expect(
-      within(container).getByTestId("transfer-transaction-form"),
-    ).toBeInTheDocument();
-    expect(within(container).queryByTestId("transaction-form")).toBeNull();
+      within(container).getByTestId("transaction-type-slide-panel-transfer"),
+    ).toHaveAttribute("aria-hidden", "false");
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("点击支出 tab 切换到支出表单", () => {
+  it("点击支出 tab 切换到支出面板", () => {
     const { container } = render(
       <NewTransactionTemplate {...baseProps} initialType="transfer" />,
     );
@@ -185,24 +212,44 @@ describe("NewTransactionTemplate", () => {
     fireEvent.click(within(container).getByRole("button", { name: "支出" }));
 
     expect(
-      within(container).getByTestId("transaction-form"),
-    ).toBeInTheDocument();
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "false");
     expect(
-      within(container).queryByTestId("transfer-transaction-form"),
-    ).toBeNull();
+      within(container).getByTestId("transaction-type-slide-panel-transfer"),
+    ).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("传入错误信息时表单内显示错误提示", () => {
+  it("切换类型后保留已挂载表单的输入状态", () => {
+    const { container } = render(<NewTransactionTemplate {...baseProps} />);
+
+    fireEvent.change(within(container).getByLabelText("支出临时输入"), {
+      target: { value: "保留支出输入" },
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "转账" }));
+    fireEvent.change(within(container).getByLabelText("转账临时输入"), {
+      target: { value: "保留转账输入" },
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
+
+    expect(within(container).getByLabelText("支出临时输入")).toHaveValue(
+      "保留支出输入",
+    );
+  });
+
+  it("传入错误信息时当前表单内显示错误提示", () => {
     const { container } = render(
       <NewTransactionTemplate
         {...baseProps}
         errorMessage="新增记账失败。请稍后重试。"
       />,
     );
+    const activePanel = within(container).getByTestId(
+      "transaction-type-slide-panel-expense",
+    );
 
-    expect(within(container).getByRole("alert")).toBeInTheDocument();
+    expect(within(activePanel).getByRole("alert")).toBeInTheDocument();
     expect(
-      within(container).getByText("新增记账失败。请稍后重试。"),
+      within(activePanel).getByText("新增记账失败。请稍后重试。"),
     ).toBeInTheDocument();
   });
 
@@ -214,39 +261,49 @@ describe("NewTransactionTemplate", () => {
         errorMessage="转账失败。请稍后重试。"
       />,
     );
+    const activePanel = within(container).getByTestId(
+      "transaction-type-slide-panel-transfer",
+    );
 
-    expect(
-      within(container).getByTestId("transfer-transaction-form"),
-    ).toBeInTheDocument();
-    expect(within(container).getByRole("alert")).toBeInTheDocument();
+    expect(activePanel).toHaveAttribute("aria-hidden", "false");
+    expect(within(activePanel).getByRole("alert")).toBeInTheDocument();
   });
 
-  it("默认渲染时普通表单 hidden type 为 expense", () => {
+  it("默认渲染时当前普通表单 hidden type 为 expense", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
+    const activePanel = within(container).getByTestId(
+      "transaction-type-slide-panel-expense",
+    );
 
-    const hiddenInput = within(container).getByDisplayValue("expense");
+    const hiddenInput = within(activePanel).getByDisplayValue("expense");
 
     expect(hiddenInput).toHaveAttribute("name", "type");
     expect(hiddenInput).toHaveAttribute("type", "hidden");
   });
 
-  it("点击收入 tab 后普通表单 hidden type 变为 income", () => {
+  it("点击收入 tab 后当前普通表单 hidden type 变为 income", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
 
-    const hiddenInput = within(container).getByDisplayValue("income");
+    const activePanel = within(container).getByTestId(
+      "transaction-type-slide-panel-income",
+    );
+    const hiddenInput = within(activePanel).getByDisplayValue("income");
     expect(hiddenInput).toHaveAttribute("name", "type");
     expect(hiddenInput).toHaveAttribute("type", "hidden");
   });
 
-  it("点击收入 tab 后再点击支出 tab 普通表单 hidden type 变回 expense", () => {
+  it("点击收入 tab 后再点击支出 tab 当前普通表单 hidden type 变回 expense", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
     fireEvent.click(within(container).getByRole("button", { name: "支出" }));
 
-    const hiddenInput = within(container).getByDisplayValue("expense");
+    const activePanel = within(container).getByTestId(
+      "transaction-type-slide-panel-expense",
+    );
+    const hiddenInput = within(activePanel).getByDisplayValue("expense");
 
     expect(hiddenInput).toHaveAttribute("name", "type");
     expect(hiddenInput).toHaveAttribute("type", "hidden");

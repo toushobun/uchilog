@@ -7,6 +7,7 @@ import Link from "next/link";
 
 type TransactionFormHeaderProps = {
   closeHref: string;
+  formId?: string;
   isSubmitDisabled: boolean;
   ledgerName?: string;
   title: string;
@@ -14,6 +15,7 @@ type TransactionFormHeaderProps = {
 
 export function TransactionFormHeader({
   closeHref,
+  formId,
   isSubmitDisabled,
   ledgerName,
   title,
@@ -38,6 +40,7 @@ export function TransactionFormHeader({
         </Typography>
         <Button
           disabled={isSubmitDisabled}
+          form={formId}
           type="submit"
           variant="contained"
           sx={{

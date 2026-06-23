@@ -1,4 +1,4 @@
-import { cleanup, render, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -7,36 +7,72 @@ import { EditTransactionTemplate } from "./TransactionFormPage";
 vi.mock("organisms/transactions/TransactionForm", () => ({
   TransactionForm: ({
     initialValues,
-    typeNavigation,
   }: {
     initialValues: { type: "expense" | "income" };
-    typeNavigation?: ReactNode;
-  }): ReactNode => (
-    <form>
-      {typeNavigation}
-      <div data-testid="transaction-form">
-        <input name="type" type="hidden" value={initialValues.type} />
-      </div>
-    </form>
+  }): ReactNode => {
+    const label = initialValues.type === "income" ? "收入" : "支出";
+
+    return (
+      <form>
+        <div data-testid={`transaction-form-${initialValues.type}`}>
+          <input aria-label={`${label}编辑临时输入`} defaultValue="" />
+          <input name="type" type="hidden" value={initialValues.type} />
+        </div>
+      </form>
+    );
+  },
+}));
+
+vi.mock("organisms/transactions/TransferTransactionForm", () => ({
+  TransferTransactionForm: (): ReactNode => (
+    <div data-testid="transfer-transaction-form">
+      <input aria-label="转账编辑临时输入" defaultValue="" />
+    </div>
   ),
 }));
 
 vi.mock("molecules/transactions/TransactionTypeNavigation", () => ({
   TransactionTypeNavigation: ({
     activeType,
+    onChange,
   }: {
     activeType: string;
+    onChange: (type: string) => void;
   }): ReactNode => (
     <div aria-label="类型" role="group">
-      <button aria-pressed={activeType === "expense"}>支出</button>
-      <button aria-pressed={activeType === "income"}>收入</button>
-      <button aria-pressed={activeType === "transfer"}>转账</button>
+      <button
+        onClick={() => onChange("expense")}
+        aria-pressed={activeType === "expense"}
+      >
+        支出
+      </button>
+      <button
+        onClick={() => onChange("income")}
+        aria-pressed={activeType === "income"}
+      >
+        收入
+      </button>
+      <button
+        onClick={() => onChange("transfer")}
+        aria-pressed={activeType === "transfer"}
+      >
+        转账
+      </button>
     </div>
   ),
 }));
 
 vi.mock("organisms/transactions/TransactionAmountKeypadLauncher", () => ({
   TransactionAmountKeypadLauncher: (): ReactNode => null,
+}));
+
+vi.mock("organisms/transactions/TransactionFormHeader", () => ({
+  TransactionFormHeader: ({ title }: { title: string }): ReactNode => (
+    <div data-testid="transaction-form-header">
+      <h1>{title}</h1>
+      <button type="submit">保存</button>
+    </div>
+  ),
 }));
 
 afterEach(() => {
@@ -117,6 +153,9 @@ describe("EditTransactionTemplate", () => {
     expect(
       within(container).getAllByRole("button", { name: "转账" }),
     ).toHaveLength(1);
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "false");
   });
 
   it("普通收入编辑页只渲染一套支出 / 收入 / 转账切换", () => {
@@ -139,6 +178,9 @@ describe("EditTransactionTemplate", () => {
     expect(
       within(container).getAllByRole("button", { name: "转账" }),
     ).toHaveLength(1);
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-income"),
+    ).toHaveAttribute("aria-hidden", "false");
   });
 
   it("普通编辑页显示转账切换 tab", () => {
@@ -150,7 +192,41 @@ describe("EditTransactionTemplate", () => {
       within(container).getByRole("button", { name: "转账" }),
     ).toHaveAttribute("aria-pressed", "false");
     expect(
-      within(container).getByTestId("transaction-form"),
+      within(container).getByTestId("transaction-form-expense"),
     ).toBeInTheDocument();
+    expect(
+      within(container).getByTestId("transfer-transaction-form"),
+    ).toBeInTheDocument();
+  });
+
+  it("点击转账 tab 后激活转账编辑面板", () => {
+    const { container } = render(
+      <EditTransactionTemplate {...createProps()} />,
+    );
+
+    fireEvent.click(within(container).getByRole("button", { name: "转账" }));
+
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-transfer"),
+    ).toHaveAttribute("aria-hidden", "false");
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
+    ).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("普通编辑切换类型后保留已挂载表单输入状态", () => {
+    const { container } = render(
+      <EditTransactionTemplate {...createProps()} />,
+    );
+
+    fireEvent.change(within(container).getByLabelText("支出编辑临时输入"), {
+      target: { value: "保留普通编辑输入" },
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "转账" }));
+    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
+
+    expect(within(container).getByLabelText("支出编辑临时输入")).toHaveValue(
+      "保留普通编辑输入",
+    );
   });
 });

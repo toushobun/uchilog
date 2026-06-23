@@ -33,8 +33,10 @@ type TransferTransactionFormProps = {
   accountOptions: TransactionAccountOption[];
   errorMessage?: string | null;
   formId?: string;
+  hideHeader?: boolean;
   initialValues?: TransferEditInitialValues;
   ledgerName?: string;
+  onSubmitDisabledChange?: (disabled: boolean) => void;
   sourceType?: TransactionRecordType;
   title?: string;
   typeNavigation?: ReactNode;
@@ -45,8 +47,10 @@ export function TransferTransactionForm({
   accountOptions,
   errorMessage,
   formId,
+  hideHeader = false,
   initialValues,
   ledgerName,
+  onSubmitDisabledChange,
   sourceType,
   title = "新增记账",
   typeNavigation,
@@ -107,6 +111,10 @@ export function TransferTransactionForm({
     !transactionAtValue ||
     !timeZoneOffsetMinutes;
 
+  useEffect(() => {
+    onSubmitDisabledChange?.(isSubmitDisabled);
+  }, [isSubmitDisabled, onSubmitDisabledChange]);
+
   const accountHelperText = hasTooFewAccounts
     ? "请先新增至少两个账户。"
     : undefined;
@@ -114,12 +122,14 @@ export function TransferTransactionForm({
   return (
     <form id={formId} action={action}>
       <Stack spacing={2.5}>
-        <TransactionFormHeader
-          closeHref={routePaths.transactions}
-          isSubmitDisabled={isSubmitDisabled}
-          ledgerName={ledgerName}
-          title={title}
-        />
+        {hideHeader ? null : (
+          <TransactionFormHeader
+            closeHref={routePaths.transactions}
+            isSubmitDisabled={isSubmitDisabled}
+            ledgerName={ledgerName}
+            title={title}
+          />
+        )}
 
         {typeNavigation}
 
