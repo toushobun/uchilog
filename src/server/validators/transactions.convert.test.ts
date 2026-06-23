@@ -104,6 +104,28 @@ describe("validateConvertTransactionTypeForm", () => {
     });
   });
 
+  it("转账 → 收入 校验通过并返回正确参数", () => {
+    expect(
+      validateConvertTransactionTypeForm(
+        createNormalFormData({ type: "income" }),
+      ),
+    ).toEqual({
+      ok: true,
+      value: {
+        accountId,
+        items: [{ amount: 1200, categoryId }],
+        merchantId,
+        note: "转换记录",
+        tagNames: [],
+        transactionAt: "2026-06-04T01:30:05.000Z",
+        transactionRecordId,
+        type: "income",
+        sourceType: "transfer",
+        targetType: "income",
+      },
+    });
+  });
+
   it("普通交易 → 转账 校验通过并返回正确参数", () => {
     expect(
       validateConvertTransactionTypeForm(createTransferFormData()),

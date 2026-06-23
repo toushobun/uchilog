@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { saveEditTransaction } from "server/actions/transactions";
+import {
+  convertTransactionType,
+  saveEditTransaction,
+} from "server/actions/transactions";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
@@ -197,5 +200,87 @@ describe("saveEditTransaction", () => {
 
     expect(mocks.getCurrentLedgerContext).toHaveBeenCalledTimes(1);
     expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("convertTransactionType", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupActionMocks();
+  });
+
+  it("校验失败时 redirect 到编辑页错误路径", async () => {
+    await expect(
+      convertTransactionType(createNormalEditFormData()),
+    ).rejects.toThrow(
+      `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit?error=update_invalid`,
+    );
+
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("transactionRecordId 缺失时 redirect 到列表页错误路径", async () => {
+    const formData = new FormData();
+    formData.set("sourceType", "expense");
+
+    await expect(convertTransactionType(formData)).rejects.toThrow(
+      "NEXT_REDIRECT:/transactions?error=update_invalid",
+    );
+
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("转换为 transfer 成功时 revalidate 并 redirect", async () => {
+    await expect(
+      convertTransactionType(
+        createTransferEditFormData({ sourceType: "expense" }),
+      ),
+    ).rejects.toThrow("NEXT_REDIRECT:/transactions?month=2026-06");
+
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "convert_transaction_type",
+      expect.objectContaining({
+        p_from_account_id: accountId,
+        p_ledger_id: ledgerId,
+        p_target_type: "transfer",
+        p_to_account_id: toAccountId,
+        p_transaction_record_id: transactionRecordId,
+        p_transfer_amount: 5000,
+      }),
+    );
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/accounts");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/transactions/[transactionRecordId]/edit",
+      "page",
+    );
+  });
+
+  it("转换为普通交易成功时 revalidate 并 redirect", async () => {
+    await expect(
+      convertTransactionType(
+        createNormalEditFormData({ sourceType: "transfer" }),
+      ),
+    ).rejects.toThrow("NEXT_REDIRECT:/transactions?month=2026-06");
+
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "convert_transaction_type",
+      expect.objectContaining({
+        p_account_id: accountId,
+        p_items: [{ amount: 1200, categoryId }],
+        p_ledger_id: ledgerId,
+        p_merchant_id: merchantId,
+        p_target_type: "expense",
+        p_transaction_record_id: transactionRecordId,
+      }),
+    );
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/accounts");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/transactions");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/transactions/[transactionRecordId]/edit",
+      "page",
+    );
   });
 });
