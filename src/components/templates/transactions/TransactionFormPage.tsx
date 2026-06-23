@@ -109,7 +109,9 @@ export function EditTransferTransactionTemplate({
   merchantOptions,
   tagOptions,
 }: EditTransferTransactionTemplateProps) {
-  const [activeType, setActiveType] = useState<TransactionRecordType>("transfer");
+  const [activeType, setActiveType] = useState<TransactionRecordType>(
+    "transfer",
+  );
   const formId =
     activeType === "transfer"
       ? "edit-transfer-transaction-form"
