@@ -153,7 +153,7 @@ export const EditIncomeConvert: Story = {
 };
 
 export const EditTransferConvert: Story = {
-  name: "编辑转账：可切换到支出或收入",
+  name: "编辑记账：转账类型可切换到支出或收入",
   render: () => (
     <EditTransferTransactionTemplate
       {...baseArgs}

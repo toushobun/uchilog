@@ -251,6 +251,44 @@ function NewTransactionFormView({
   );
 }
 
+type EditTransactionShellProps = {
+  activeFormId: string;
+  activeType: TransactionRecordType;
+  ledgerName: string;
+  panels: Record<TransactionRecordType, ReactNode>;
+  setActiveType: (type: TransactionRecordType) => void;
+  submitDisabledByType: Record<TransactionRecordType, boolean>;
+};
+
+function EditTransactionShell({
+  activeFormId,
+  activeType,
+  ledgerName,
+  panels,
+  setActiveType,
+  submitDisabledByType,
+}: EditTransactionShellProps) {
+  return (
+    <PageShell>
+      <Stack spacing={0}>
+        <TransactionFormHeader
+          closeHref={routePaths.transactions}
+          formId={activeFormId}
+          isSubmitDisabled={submitDisabledByType[activeType]}
+          ledgerName={ledgerName}
+          title="编辑记账"
+        />
+        <TransactionTypeNavigation
+          activeType={activeType}
+          onChange={setActiveType}
+        />
+        <TransactionTypeSlidePanels activeType={activeType} panels={panels} />
+      </Stack>
+      <TransactionAmountKeypadLauncher />
+    </PageShell>
+  );
+}
+
 export function EditTransferTransactionTemplate({
   accountOptions,
   action,
@@ -357,26 +395,16 @@ export function EditTransferTransactionTemplate({
   );
 
   const activeFormId = `edit-${activeType}-transaction-form`;
-  const activeTitle = activeType === "transfer" ? "编辑转账" : "编辑记账";
 
   return (
-    <PageShell>
-      <Stack spacing={0}>
-        <TransactionFormHeader
-          closeHref={routePaths.transactions}
-          formId={activeFormId}
-          isSubmitDisabled={submitDisabledByType[activeType]}
-          ledgerName={ledgerName}
-          title={activeTitle}
-        />
-        <TransactionTypeNavigation
-          activeType={activeType}
-          onChange={setActiveType}
-        />
-        <TransactionTypeSlidePanels activeType={activeType} panels={panels} />
-      </Stack>
-      <TransactionAmountKeypadLauncher />
-    </PageShell>
+    <EditTransactionShell
+      activeFormId={activeFormId}
+      activeType={activeType}
+      ledgerName={ledgerName}
+      panels={panels}
+      setActiveType={setActiveType}
+      submitDisabledByType={submitDisabledByType}
+    />
   );
 }
 
@@ -490,26 +518,16 @@ export function EditTransactionTemplate({
   );
 
   const activeFormId = `edit-${activeType}-transaction-form`;
-  const activeTitle = activeType === "transfer" ? "编辑转账" : "编辑记账";
 
   return (
-    <PageShell>
-      <Stack spacing={0}>
-        <TransactionFormHeader
-          closeHref={routePaths.transactions}
-          formId={activeFormId}
-          isSubmitDisabled={submitDisabledByType[activeType]}
-          ledgerName={ledgerName}
-          title={activeTitle}
-        />
-        <TransactionTypeNavigation
-          activeType={activeType}
-          onChange={setActiveType}
-        />
-        <TransactionTypeSlidePanels activeType={activeType} panels={panels} />
-      </Stack>
-      <TransactionAmountKeypadLauncher />
-    </PageShell>
+    <EditTransactionShell
+      activeFormId={activeFormId}
+      activeType={activeType}
+      ledgerName={ledgerName}
+      panels={panels}
+      setActiveType={setActiveType}
+      submitDisabledByType={submitDisabledByType}
+    />
   );
 }
 

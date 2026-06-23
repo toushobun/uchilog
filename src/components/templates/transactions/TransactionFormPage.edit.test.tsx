@@ -133,6 +133,16 @@ function createProps(type: "expense" | "income" = "expense") {
 }
 
 describe("EditTransactionTemplate", () => {
+  it("普通编辑页默认显示编辑记账标题", () => {
+    const { container } = render(
+      <EditTransactionTemplate {...createProps()} />,
+    );
+
+    expect(
+      within(container).getByRole("heading", { name: "编辑记账" }),
+    ).toBeInTheDocument();
+  });
+
   it("普通支出编辑页只渲染一套支出 / 收入 / 转账切换", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps()} />,
@@ -199,13 +209,16 @@ describe("EditTransactionTemplate", () => {
     ).toBeInTheDocument();
   });
 
-  it("点击转账 tab 后激活转账编辑面板", () => {
+  it("点击转账 tab 后激活转账编辑面板，并保持编辑记账标题", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps()} />,
     );
 
     fireEvent.click(within(container).getByRole("button", { name: "转账" }));
 
+    expect(
+      within(container).getByRole("heading", { name: "编辑记账" }),
+    ).toBeInTheDocument();
     expect(
       within(container).getByTestId("transaction-type-slide-panel-transfer"),
     ).toHaveAttribute("aria-hidden", "false");

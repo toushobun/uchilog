@@ -106,9 +106,12 @@ function renderTemplate() {
 }
 
 describe("EditTransferTransactionTemplate", () => {
-  it("转账编辑页默认激活转账编辑表单", () => {
+  it("转账编辑页默认激活转账编辑表单，并显示编辑记账标题", () => {
     const { container } = renderTemplate();
 
+    expect(
+      within(container).getByRole("heading", { name: "编辑记账" }),
+    ).toBeInTheDocument();
     expect(
       within(container).getByTestId("transfer-transaction-form"),
     ).toBeInTheDocument();
@@ -137,6 +140,9 @@ describe("EditTransferTransactionTemplate", () => {
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
 
+    expect(
+      within(container).getByRole("heading", { name: "编辑记账" }),
+    ).toBeInTheDocument();
     expect(
       within(container).getByTestId("transaction-type-slide-panel-income"),
     ).toHaveAttribute("aria-hidden", "false");

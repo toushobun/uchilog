@@ -70,7 +70,7 @@ export const WithError: Story = {
 export const Edit: Story = {
   name: "编辑状态（带初始值）",
   args: {
-    title: "编辑转账",
+    title: "编辑记账",
     initialValues: {
       type: "transfer",
       transactionRecordId: "00000000-0000-4000-8000-000000009001",
@@ -86,7 +86,7 @@ export const Edit: Story = {
 export const EditSameAccount: Story = {
   name: "编辑状态（相同账户禁用）",
   args: {
-    title: "编辑转账",
+    title: "编辑记账",
     initialValues: {
       type: "transfer",
       transactionRecordId: "00000000-0000-4000-8000-000000009002",
@@ -102,7 +102,7 @@ export const EditSameAccount: Story = {
 export const EditDifferentCurrency: Story = {
   name: "编辑状态（不同币种禁用）",
   args: {
-    title: "编辑转账",
+    title: "编辑记账",
     accountOptions: [jpyAccount1, usdAccount],
     initialValues: {
       type: "transfer",

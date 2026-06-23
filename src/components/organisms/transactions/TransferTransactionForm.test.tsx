@@ -309,7 +309,7 @@ describe("TransferTransactionForm", () => {
 
   it("编辑状态下显示初始值的转出账户、转入账户和金额", () => {
     const { container } = renderForm({
-      title: "编辑转账",
+      title: "编辑记账",
       initialValues: {
         type: "transfer",
         transactionRecordId: "00000000-0000-4000-8000-000000009001",
