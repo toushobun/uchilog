@@ -276,7 +276,8 @@ function createNormalInitialValuesFromTransfer(
   initialValues: TransferEditInitialValues,
   targetType: TransactionRecordType,
 ): TransactionFormInitialValues {
-  const normalType: TransactionType = targetType === "income" ? "income" : "expense";
+  const normalType: TransactionType =
+    targetType === "income" ? "income" : "expense";
 
   return {
     accountId: initialValues.accountId,
@@ -308,7 +309,9 @@ function findTransferTargetAccountId(
   accountOptions: TransactionAccountOption[],
   accountId: string,
 ) {
-  const sourceAccount = accountOptions.find((account) => account.id === accountId);
+  const sourceAccount = accountOptions.find(
+    (account) => account.id === accountId,
+  );
   const sameCurrencyAccount = accountOptions.find(
     (account) =>
       account.id !== accountId && account.currency === sourceAccount?.currency,
