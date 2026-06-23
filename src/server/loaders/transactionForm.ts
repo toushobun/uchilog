@@ -113,7 +113,7 @@ export async function loadEditTransactionView(transactionRecordId: string) {
     }
 
     return {
-      accountOptions: options.accountOptions,
+      ...options,
       initialValues: {
         accountId: fromItem.account_id,
         note: record.note ?? "",
