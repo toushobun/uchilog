@@ -9,13 +9,16 @@ vi.mock("organisms/transactions/TransactionForm", () => ({
     errorMessage,
     initialType,
     ledgerName,
+    typeNavigation,
   }: {
     errorMessage: string | null;
     initialType?: string;
     ledgerName?: string;
+    typeNavigation?: ReactNode;
   }): ReactNode => (
     <div data-testid="transaction-form">
       <h1>新增记账</h1>
+      {typeNavigation}
       <input name="type" type="hidden" value={initialType ?? "expense"} />
       {ledgerName ? <p>当前账本：{ledgerName}</p> : null}
       {errorMessage ? <div role="alert">{errorMessage}</div> : null}
@@ -27,12 +30,15 @@ vi.mock("organisms/transactions/TransferTransactionForm", () => ({
   TransferTransactionForm: ({
     errorMessage,
     ledgerName,
+    typeNavigation,
   }: {
     errorMessage: string | null;
     ledgerName?: string;
+    typeNavigation?: ReactNode;
   }): ReactNode => (
     <div data-testid="transfer-transaction-form">
       <h1>新增记账</h1>
+      {typeNavigation}
       {ledgerName ? <p>当前账本：{ledgerName}</p> : null}
       {errorMessage ? <div role="alert">{errorMessage}</div> : null}
     </div>
@@ -101,11 +107,14 @@ describe("NewTransactionTemplate", () => {
     ).toBeInTheDocument();
   });
 
-  it("渲染记账类型导航", () => {
+  it("只渲染一套包含转账的记账类型导航", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     expect(
-      within(container).getByTestId("transaction-type-navigation"),
+      within(container).getAllByTestId("transaction-type-navigation"),
+    ).toHaveLength(1);
+    expect(
+      within(container).getByRole("button", { name: "转账" }),
     ).toBeInTheDocument();
   });
 
@@ -221,18 +230,17 @@ describe("NewTransactionTemplate", () => {
     expect(hiddenInput).toHaveAttribute("type", "hidden");
   });
 
-  it("点击外层收入 tab 后普通表单 hidden type 变为 income", () => {
+  it("点击收入 tab 后普通表单 hidden type 变为 income", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
 
     const hiddenInput = within(container).getByDisplayValue("income");
-
     expect(hiddenInput).toHaveAttribute("name", "type");
     expect(hiddenInput).toHaveAttribute("type", "hidden");
   });
 
-  it("点击外层收入 tab 后再点击支出 tab 普通表单 hidden type 变回 expense", () => {
+  it("点击收入 tab 后再点击支出 tab 普通表单 hidden type 变回 expense", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
