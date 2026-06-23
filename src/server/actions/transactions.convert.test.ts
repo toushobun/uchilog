@@ -36,7 +36,9 @@ const categoryId = "00000000-0000-4000-8000-000000005072";
 const merchantId = "00000000-0000-4000-8000-000000001001";
 const transactionRecordId = "00000000-0000-4000-8000-000000009001";
 
-function createConvertToTransferFormData(overrides: Record<string, string> = {}) {
+function createConvertToTransferFormData(
+  overrides: Record<string, string> = {},
+) {
   const formData = new FormData();
 
   formData.set("sourceType", "expense");
@@ -56,7 +58,9 @@ function createConvertToTransferFormData(overrides: Record<string, string> = {})
   return formData;
 }
 
-function createConvertToNormalFormData(overrides: Record<string, string> = {}) {
+function createConvertToNormalFormData(
+  overrides: Record<string, string> = {},
+) {
   const formData = new FormData();
 
   formData.set("sourceType", "transfer");
