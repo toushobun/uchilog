@@ -106,7 +106,9 @@ describe("validateConvertTransactionTypeForm", () => {
 
   it("转账 → 收入 校验通过并返回正确参数", () => {
     expect(
-      validateConvertTransactionTypeForm(createNormalFormData({ type: "income" })),
+      validateConvertTransactionTypeForm(
+        createNormalFormData({ type: "income" }),
+      ),
     ).toEqual({
       ok: true,
       value: {
