@@ -5,9 +5,24 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { EditTransferTransactionTemplate } from "./TransactionFormPage";
 
 vi.mock("organisms/transactions/TransferTransactionForm", () => ({
-  TransferTransactionForm: (): ReactNode => (
+  TransferTransactionForm: ({
+    typeNavigation,
+  }: {
+    typeNavigation?: ReactNode;
+  }): ReactNode => (
     <div data-testid="transfer-transaction-form">
       <h1>编辑转账</h1>
+      {typeNavigation}
+    </div>
+  ),
+}));
+
+vi.mock("molecules/transactions/TransactionTypeNavigation", () => ({
+  TransactionTypeNavigation: ({ activeType }: { activeType: string }): ReactNode => (
+    <div aria-label="类型" role="group">
+      <button aria-pressed={activeType === "expense"}>支出</button>
+      <button aria-pressed={activeType === "income"}>收入</button>
+      <button aria-pressed={activeType === "transfer"}>转账</button>
     </div>
   ),
 }));
@@ -60,6 +75,6 @@ describe("EditTransferTransactionTemplate", () => {
     ).toBeInTheDocument();
     expect(
       within(container).getByRole("button", { name: "转账" }),
-    ).toBeInTheDocument();
+    ).toHaveAttribute("aria-pressed", "true");
   });
 });
