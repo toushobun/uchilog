@@ -211,11 +211,21 @@ describe("convertTransactionType", () => {
 
   it("校验失败时 redirect 到编辑页错误路径", async () => {
     await expect(
-      convertTransactionType(
-        createNormalEditFormData({ sourceType: "expense" }),
-      ),
+      convertTransactionType(createNormalEditFormData()),
     ).rejects.toThrow(
       `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit?error=update_invalid`,
+    );
+
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("transactionRecordId 缺失时 redirect 到列表页错误路径", async () => {
+    const formData = new FormData();
+    formData.set("sourceType", "expense");
+
+    await expect(convertTransactionType(formData)).rejects.toThrow(
+      "NEXT_REDIRECT:/transactions?error=update_invalid",
     );
 
     expect(mocks.rpc).not.toHaveBeenCalled();
