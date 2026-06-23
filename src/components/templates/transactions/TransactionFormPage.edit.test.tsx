@@ -10,9 +10,17 @@ vi.mock("organisms/transactions/TransactionForm", () => ({
   }: {
     initialValues: { type: "expense" | "income" };
   }): ReactNode => (
-    <div data-testid="transaction-form">
-      <input name="type" type="hidden" value={initialValues.type} />
-    </div>
+    <form>
+      <div className="MuiStack-root">
+        <div className="MuiToggleButtonGroup-root">
+          <button aria-pressed={initialValues.type === "expense"}>支出</button>
+          <button aria-pressed={initialValues.type === "income"}>收入</button>
+        </div>
+        <div data-testid="transaction-form">
+          <input name="type" type="hidden" value={initialValues.type} />
+        </div>
+      </div>
+    </form>
   ),
 }));
 
@@ -78,27 +86,39 @@ function createProps(type: "expense" | "income" = "expense") {
 }
 
 describe("EditTransactionTemplate", () => {
-  it("普通支出编辑页渲染支出 / 收入切换", () => {
+  it("普通支出编辑页只渲染一套支出 / 收入切换", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps()} />,
     );
 
     expect(
+      within(container).getAllByRole("button", { name: "支出" }),
+    ).toHaveLength(1);
+    expect(
       within(container).getByRole("button", { name: "支出" }),
     ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(container).getAllByRole("button", { name: "收入" }),
+    ).toHaveLength(1);
     expect(
       within(container).getByRole("button", { name: "收入" }),
     ).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("普通收入编辑页渲染支出 / 收入切换", () => {
+  it("普通收入编辑页只渲染一套支出 / 收入切换", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps("income")} />,
     );
 
     expect(
+      within(container).getAllByRole("button", { name: "支出" }),
+    ).toHaveLength(1);
+    expect(
       within(container).getByRole("button", { name: "支出" }),
     ).toHaveAttribute("aria-pressed", "false");
+    expect(
+      within(container).getAllByRole("button", { name: "收入" }),
+    ).toHaveLength(1);
     expect(
       within(container).getByRole("button", { name: "收入" }),
     ).toHaveAttribute("aria-pressed", "true");
