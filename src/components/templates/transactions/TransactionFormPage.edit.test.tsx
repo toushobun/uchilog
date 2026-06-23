@@ -7,18 +7,27 @@ import { EditTransactionTemplate } from "./TransactionFormPage";
 vi.mock("organisms/transactions/TransactionForm", () => ({
   TransactionForm: ({
     initialValues,
+    typeNavigation,
   }: {
     initialValues: { type: "expense" | "income" };
+    typeNavigation?: ReactNode;
   }): ReactNode => (
     <form>
-      <div aria-label="类型" role="group">
-        <button aria-pressed={initialValues.type === "expense"}>支出</button>
-        <button aria-pressed={initialValues.type === "income"}>收入</button>
-      </div>
+      {typeNavigation}
       <div data-testid="transaction-form">
         <input name="type" type="hidden" value={initialValues.type} />
       </div>
     </form>
+  ),
+}));
+
+vi.mock("molecules/transactions/TransactionTypeNavigation", () => ({
+  TransactionTypeNavigation: ({ activeType }: { activeType: string }): ReactNode => (
+    <div aria-label="类型" role="group">
+      <button aria-pressed={activeType === "expense"}>支出</button>
+      <button aria-pressed={activeType === "income"}>收入</button>
+      <button aria-pressed={activeType === "transfer"}>转账</button>
+    </div>
   ),
 }));
 
@@ -84,7 +93,7 @@ function createProps(type: "expense" | "income" = "expense") {
 }
 
 describe("EditTransactionTemplate", () => {
-  it("普通支出编辑页只渲染一套支出 / 收入切换", () => {
+  it("普通支出编辑页只渲染一套支出 / 收入 / 转账切换", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps()} />,
     );
@@ -101,9 +110,12 @@ describe("EditTransactionTemplate", () => {
     expect(
       within(container).getByRole("button", { name: "收入" }),
     ).toHaveAttribute("aria-pressed", "false");
+    expect(
+      within(container).getAllByRole("button", { name: "转账" }),
+    ).toHaveLength(1);
   });
 
-  it("普通收入编辑页只渲染一套支出 / 收入切换", () => {
+  it("普通收入编辑页只渲染一套支出 / 收入 / 转账切换", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps("income")} />,
     );
@@ -120,6 +132,9 @@ describe("EditTransactionTemplate", () => {
     expect(
       within(container).getByRole("button", { name: "收入" }),
     ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(container).getAllByRole("button", { name: "转账" }),
+    ).toHaveLength(1);
   });
 
   it("普通编辑页显示转账切换 tab", () => {
