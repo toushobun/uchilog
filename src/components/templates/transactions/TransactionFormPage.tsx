@@ -47,6 +47,12 @@ type EditTransferTransactionTemplateProps = Omit<
   initialValues: TransferEditInitialValues;
 };
 
+function isNormalTransactionType(
+  type: TransactionRecordType,
+): type is TransactionType {
+  return type !== "transfer";
+}
+
 export function NewTransactionTemplate(props: TransactionFormTemplateProps) {
   return (
     <PageShell>
@@ -76,14 +82,7 @@ function NewTransactionFormView({
         activeType={activeType}
         onChange={setActiveType}
       />
-      {activeType === "transfer" ? (
-        <TransferTransactionForm
-          action={action}
-          accountOptions={accountOptions}
-          errorMessage={errorMessage}
-          ledgerName={ledgerName}
-        />
-      ) : (
+      {isNormalTransactionType(activeType) ? (
         <TransactionForm
           action={action}
           accountOptions={accountOptions}
@@ -93,6 +92,13 @@ function NewTransactionFormView({
           ledgerName={ledgerName}
           merchantOptions={merchantOptions}
           tagOptions={tagOptions}
+        />
+      ) : (
+        <TransferTransactionForm
+          action={action}
+          accountOptions={accountOptions}
+          errorMessage={errorMessage}
+          ledgerName={ledgerName}
         />
       )}
     </Stack>
@@ -124,18 +130,7 @@ export function EditTransferTransactionTemplate({
           activeType={activeType}
           onChange={setActiveType}
         />
-        {activeType === "transfer" ? (
-          <TransferTransactionForm
-            action={action}
-            accountOptions={accountOptions}
-            errorMessage={errorMessage}
-            formId={formId}
-            initialValues={initialValues}
-            ledgerName={ledgerName}
-            sourceType="transfer"
-            title="编辑转账"
-          />
-        ) : (
+        {isNormalTransactionType(activeType) ? (
           <>
             <input
               form={formId}
@@ -162,6 +157,17 @@ export function EditTransferTransactionTemplate({
               title="编辑记账"
             />
           </>
+        ) : (
+          <TransferTransactionForm
+            action={action}
+            accountOptions={accountOptions}
+            errorMessage={errorMessage}
+            formId={formId}
+            initialValues={initialValues}
+            ledgerName={ledgerName}
+            sourceType="transfer"
+            title="编辑转账"
+          />
         )}
       </Stack>
       <TransactionAmountKeypadLauncher />
@@ -194,21 +200,7 @@ export function EditTransactionTemplate({
           activeType={activeType}
           onChange={setActiveType}
         />
-        {activeType === "transfer" ? (
-          <TransferTransactionForm
-            action={action}
-            accountOptions={accountOptions}
-            errorMessage={errorMessage}
-            formId={formId}
-            initialValues={createTransferInitialValuesFromNormal(
-              initialValues,
-              accountOptions,
-            )}
-            ledgerName={ledgerName}
-            sourceType={initialValues.type}
-            title="编辑转账"
-          />
-        ) : (
+        {isNormalTransactionType(activeType) ? (
           <>
             <input
               form={formId}
@@ -235,6 +227,20 @@ export function EditTransactionTemplate({
               title="编辑记账"
             />
           </>
+        ) : (
+          <TransferTransactionForm
+            action={action}
+            accountOptions={accountOptions}
+            errorMessage={errorMessage}
+            formId={formId}
+            initialValues={createTransferInitialValuesFromNormal(
+              initialValues,
+              accountOptions,
+            )}
+            ledgerName={ledgerName}
+            sourceType={initialValues.type}
+            title="编辑转账"
+          />
         )}
       </Stack>
       <TransactionAmountKeypadLauncher />
@@ -244,9 +250,8 @@ export function EditTransactionTemplate({
 
 function createNormalInitialValuesFromNormal(
   initialValues: TransactionFormInitialValues,
-  targetType: TransactionRecordType,
+  targetType: TransactionType,
 ): TransactionFormInitialValues {
-  if (targetType === "transfer") return initialValues;
   if (targetType === initialValues.type) return initialValues;
 
   return {
@@ -276,11 +281,8 @@ function createTransferInitialValuesFromNormal(
 
 function createNormalInitialValuesFromTransfer(
   initialValues: TransferEditInitialValues,
-  targetType: TransactionRecordType,
+  targetType: TransactionType,
 ): TransactionFormInitialValues {
-  const normalType: TransactionType =
-    targetType === "income" ? "income" : "expense";
-
   return {
     accountId: initialValues.accountId,
     items: [],
@@ -289,7 +291,7 @@ function createNormalInitialValuesFromTransfer(
     tagNames: [],
     transactionAt: initialValues.transactionAt,
     transactionRecordId: initialValues.transactionRecordId,
-    type: normalType,
+    type: targetType,
   };
 }
 
