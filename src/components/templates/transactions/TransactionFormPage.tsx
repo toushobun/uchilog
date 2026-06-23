@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import {
@@ -138,23 +139,25 @@ export function EditTransferTransactionTemplate({
               type="hidden"
               value="transfer"
             />
-            <TransactionForm
-              key={activeType}
-              action={action}
-              accountOptions={accountOptions}
-              categoryOptions={categoryOptions}
-              errorMessage={errorMessage}
-              formId={formId}
-              initialValues={createNormalInitialValuesFromTransfer(
-                initialValues,
-                activeType,
-              )}
-              ledgerName={ledgerName}
-              merchantOptions={merchantOptions}
-              submitLabel="保存修改"
-              tagOptions={tagOptions}
-              title="编辑记账"
-            />
+            <Box sx={editTransactionInnerTypeNavigationHiddenSx}>
+              <TransactionForm
+                key={activeType}
+                action={action}
+                accountOptions={accountOptions}
+                categoryOptions={categoryOptions}
+                errorMessage={errorMessage}
+                formId={formId}
+                initialValues={createNormalInitialValuesFromTransfer(
+                  initialValues,
+                  activeType,
+                )}
+                ledgerName={ledgerName}
+                merchantOptions={merchantOptions}
+                submitLabel="保存修改"
+                tagOptions={tagOptions}
+                title="编辑记账"
+              />
+            </Box>
           </>
         ) : (
           <TransferTransactionForm
@@ -208,23 +211,25 @@ export function EditTransactionTemplate({
               type="hidden"
               value={initialValues.type}
             />
-            <TransactionForm
-              key={activeType}
-              action={action}
-              accountOptions={accountOptions}
-              categoryOptions={categoryOptions}
-              errorMessage={errorMessage}
-              formId={formId}
-              initialValues={createNormalInitialValuesFromNormal(
-                initialValues,
-                activeType,
-              )}
-              ledgerName={ledgerName}
-              merchantOptions={merchantOptions}
-              submitLabel="保存修改"
-              tagOptions={tagOptions}
-              title="编辑记账"
-            />
+            <Box sx={editTransactionInnerTypeNavigationHiddenSx}>
+              <TransactionForm
+                key={activeType}
+                action={action}
+                accountOptions={accountOptions}
+                categoryOptions={categoryOptions}
+                errorMessage={errorMessage}
+                formId={formId}
+                initialValues={createNormalInitialValuesFromNormal(
+                  initialValues,
+                  activeType,
+                )}
+                ledgerName={ledgerName}
+                merchantOptions={merchantOptions}
+                submitLabel="保存修改"
+                tagOptions={tagOptions}
+                title="编辑记账"
+              />
+            </Box>
           </>
         ) : (
           <TransferTransactionForm
@@ -322,3 +327,9 @@ function findTransferTargetAccountId(
 
   return sameCurrencyAccount?.id ?? "";
 }
+
+const editTransactionInnerTypeNavigationHiddenSx = {
+  "& form > .MuiStack-root > .MuiToggleButtonGroup-root": {
+    display: "none",
+  },
+};
