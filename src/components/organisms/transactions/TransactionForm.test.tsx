@@ -259,9 +259,8 @@ describe("TransactionForm", () => {
   });
 
   it("收入弹框只显示收入分类", () => {
-    const { container } = renderForm();
+    const { container } = renderForm({ initialType: "income" });
 
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
     openSheet(container);
 
     expect(
@@ -441,10 +440,20 @@ describe("TransactionForm", () => {
     expect(typeInput?.value).toBe("income");
   });
 
-  it("点击收入 tab 后，hidden type 应为 income", () => {
-    const { container } = renderForm();
+  it("initialType 从 expense 切换为 income 后，hidden type 应为 income", () => {
+    const action = vi.fn(async () => undefined);
+    const baseProps = {
+      action,
+      accountOptions,
+      categoryOptions,
+      merchantOptions,
+      tagOptions,
+    };
+    const { container, rerender } = render(
+      <TransactionForm {...baseProps} initialType="expense" />,
+    );
 
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
+    rerender(<TransactionForm {...baseProps} initialType="income" />);
 
     const typeInput =
       container.querySelector<HTMLInputElement>('input[name="type"]');
@@ -452,11 +461,21 @@ describe("TransactionForm", () => {
     expect(typeInput?.value).toBe("income");
   });
 
-  it("切换收入后再切换支出，hidden type 应为 expense", () => {
-    const { container } = renderForm();
+  it("initialType income 再切换回 expense 后，hidden type 应为 expense", () => {
+    const action = vi.fn(async () => undefined);
+    const baseProps = {
+      action,
+      accountOptions,
+      categoryOptions,
+      merchantOptions,
+      tagOptions,
+    };
+    const { container, rerender } = render(
+      <TransactionForm {...baseProps} initialType="expense" />,
+    );
 
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
-    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
+    rerender(<TransactionForm {...baseProps} initialType="income" />);
+    rerender(<TransactionForm {...baseProps} initialType="expense" />);
 
     const typeInput =
       container.querySelector<HTMLInputElement>('input[name="type"]');

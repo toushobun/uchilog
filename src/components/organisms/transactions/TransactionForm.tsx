@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
@@ -8,8 +15,6 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import {
   maxTransactionTagCount,
   maxTransactionTagNameLength,
@@ -17,13 +22,12 @@ import {
 import { routePaths } from "config/paths";
 import { TransactionFormHeader } from "organisms/transactions/TransactionFormHeader";
 import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
-import {
-  transactionTypeOptions,
-  type TransactionAccountOption,
-  type TransactionCategoryOption,
-  type TransactionMerchantOption,
-  type TransactionTagOption,
-  type TransactionType,
+import type {
+  TransactionAccountOption,
+  TransactionCategoryOption,
+  TransactionMerchantOption,
+  TransactionTagOption,
+  TransactionType,
 } from "types/transactions";
 import { getMerchantInitial } from "utils/merchants";
 import { transactionFormValidationMessages } from "utils/transactionMessages";
@@ -67,6 +71,7 @@ type TransactionFormProps = {
   submitLabel?: string;
   tagOptions: TransactionTagOption[];
   title?: string;
+  typeNavigation?: ReactNode;
 };
 
 const emptyItemsByType: Record<TransactionType, TransactionFormItem[]> = {
@@ -88,6 +93,7 @@ export function TransactionForm({
   submitLabel = "保存记账",
   tagOptions,
   title = "新增记账",
+  typeNavigation,
 }: TransactionFormProps) {
   const nextItemIdRef = useRef((initialValues?.items.length ?? 0) + 1);
   const merchantFieldRef = useRef<HTMLDivElement>(null);
@@ -143,6 +149,12 @@ export function TransactionForm({
     if (!initialValues && initialType) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 新增页外层 tab 切换时同步内部类型，编辑页有 initialValues 时忽略。
       setSelectedType(initialType);
+      setIsSheetOpen(false);
+      setPickerCategoryId("");
+      setPickerAmount("");
+      setPickerErrors({});
+      setSelectedCategoryGroupId("");
+      setFieldErrors((prev) => ({ ...prev, items: undefined }));
     }
   }, [initialType, initialValues]);
 
@@ -303,18 +315,6 @@ export function TransactionForm({
     setIsSheetOpen(false);
   }
 
-  function handleTypeChange(value: TransactionType | null) {
-    if (!value || value === selectedType) return;
-
-    setSelectedType(value);
-    setIsSheetOpen(false);
-    setPickerCategoryId("");
-    setPickerAmount("");
-    setPickerErrors({});
-    setSelectedCategoryGroupId("");
-    setFieldErrors((prev) => ({ ...prev, items: undefined }));
-  }
-
   function handlePickerGroupSelect(groupId: string) {
     setSelectedCategoryGroupId(groupId);
     setPickerCategoryId("");
@@ -409,6 +409,8 @@ export function TransactionForm({
           title={title}
         />
 
+        {typeNavigation}
+
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 
         <input
@@ -434,23 +436,6 @@ export function TransactionForm({
         {selectedTagNames.map((tagName) => (
           <input key={tagName} name="tagName" type="hidden" value={tagName} />
         ))}
-
-        <ToggleButtonGroup
-          aria-label="类型"
-          exclusive
-          fullWidth
-          onChange={(_, value: TransactionType | null) =>
-            handleTypeChange(value)
-          }
-          value={selectedType}
-          sx={selectedToggleButtonGroupSx}
-        >
-          {transactionTypeOptions.map((option) => (
-            <ToggleButton key={option.value} value={option.value}>
-              {option.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
 
         <TextField
           ref={merchantFieldRef}
@@ -686,13 +671,3 @@ function hasTagName(tagNames: string[], tagName: string) {
     (currentTagName) => currentTagName.toLowerCase() === tagName.toLowerCase(),
   );
 }
-
-const selectedToggleButtonGroupSx = {
-  "& .MuiToggleButton-root.Mui-selected": {
-    backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
-    color: "var(--user-theme-action-text)",
-  },
-  "& .MuiToggleButton-root.Mui-selected:hover": {
-    backgroundColor: "var(--user-theme-bottom-nav-active-bg)",
-  },
-};

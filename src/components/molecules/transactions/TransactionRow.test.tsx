@@ -59,6 +59,23 @@ describe("TransactionRow", () => {
     expect(screen.getByText("+260,000")).toBeInTheDocument();
   });
 
+  it("转账记录显示账户周转和转账图标", () => {
+    render(
+      <TransactionRow
+        item={createItem({
+          categoryItems: [],
+          merchant_icon_url: null,
+          merchant_name: null,
+          type: "transfer",
+        })}
+      />,
+    );
+
+    expect(screen.getByText("账户周转")).toBeInTheDocument();
+    expect(screen.queryByText("未指定商家")).toBeNull();
+    expect(screen.getByTestId("SyncAltIcon")).toBeInTheDocument();
+  });
+
   it("showType 为 true 时显示支出标签", () => {
     render(<TransactionRow item={createItem()} showType />);
 
@@ -69,6 +86,12 @@ describe("TransactionRow", () => {
     render(<TransactionRow item={createItem({ type: "income" })} showType />);
 
     expect(screen.getByText("收入")).toBeInTheDocument();
+  });
+
+  it("showType 为 true 时显示转账标签", () => {
+    render(<TransactionRow item={createItem({ type: "transfer" })} showType />);
+
+    expect(screen.getByText("转账")).toBeInTheDocument();
   });
 
   it("showNote 为 true 时显示备注", () => {

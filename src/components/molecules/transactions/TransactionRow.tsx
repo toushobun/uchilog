@@ -1,5 +1,6 @@
 "use client";
 
+import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
@@ -46,9 +47,15 @@ export function TransactionRow({
   showType = false,
   voidAction,
 }: TransactionRowProps) {
-  const merchantName = item.merchant_name ?? "未指定商家";
-  const amountColor =
-    item.type === "income" ? transactionIncomeColor : transactionExpenseColor;
+  const isTransfer = item.type === "transfer";
+  const merchantName = isTransfer
+    ? "账户周转"
+    : (item.merchant_name ?? "未指定商家");
+  const amountColor = isTransfer
+    ? transactionAccentColor
+    : item.type === "income"
+      ? transactionIncomeColor
+      : transactionExpenseColor;
   const timeZone = useSyncExternalStore(
     subscribeToTimeZone,
     getBrowserTimeZone,
@@ -70,7 +77,7 @@ export function TransactionRow({
     <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", py: 1.4 }}>
       <Avatar
         alt={merchantName}
-        src={item.merchant_icon_url ?? undefined}
+        src={isTransfer ? undefined : (item.merchant_icon_url ?? undefined)}
         sx={{
           bgcolor: transactionAvatarBackgroundColor,
           color: transactionAccentColor,
@@ -81,14 +88,18 @@ export function TransactionRow({
           width: 42,
         }}
       >
-        {getMerchantInitial(item.merchant_name, "记")}
+        {isTransfer ? (
+          <SyncAltIcon fontSize="small" />
+        ) : (
+          getMerchantInitial(item.merchant_name, "记")
+        )}
       </Avatar>
 
       <Stack spacing={0.3} sx={{ flex: 1, minWidth: 0 }}>
         {showType ? (
           <Chip
-            color={item.type === "expense" ? "default" : "success"}
-            label={item.type === "expense" ? "支出" : "收入"}
+            color={getTypeChipColor(item.type)}
+            label={getTypeLabel(item.type)}
             size="small"
             sx={{ alignSelf: "flex-start" }}
           />
@@ -176,6 +187,18 @@ export function TransactionRow({
       </Stack>
     </Stack>
   );
+}
+
+function getTypeLabel(type: TransactionRowItem["type"]) {
+  if (type === "expense") return "支出";
+  if (type === "income") return "收入";
+  return "转账";
+}
+
+function getTypeChipColor(type: TransactionRowItem["type"]) {
+  if (type === "expense") return "default";
+  if (type === "income") return "success";
+  return "info";
 }
 
 function subscribeToTimeZone() {

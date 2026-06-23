@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
@@ -37,6 +37,7 @@ type TransferTransactionFormProps = {
   ledgerName?: string;
   sourceType?: TransactionRecordType;
   title?: string;
+  typeNavigation?: ReactNode;
 };
 
 export function TransferTransactionForm({
@@ -48,6 +49,7 @@ export function TransferTransactionForm({
   ledgerName,
   sourceType,
   title = "新增记账",
+  typeNavigation,
 }: TransferTransactionFormProps) {
   const [selectedAccountId, setSelectedAccountId] = useState(
     initialValues?.accountId ?? "",
@@ -118,6 +120,8 @@ export function TransferTransactionForm({
           ledgerName={ledgerName}
           title={title}
         />
+
+        {typeNavigation}
 
         {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
 

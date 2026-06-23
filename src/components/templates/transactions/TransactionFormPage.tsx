@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 
 import {
@@ -76,13 +75,15 @@ function NewTransactionFormView({
   const [activeType, setActiveType] = useState<TransactionRecordType>(
     initialType ?? "expense",
   );
+  const typeNavigation = (
+    <TransactionTypeNavigation
+      activeType={activeType}
+      onChange={setActiveType}
+    />
+  );
 
   return (
     <Stack spacing={2}>
-      <TransactionTypeNavigation
-        activeType={activeType}
-        onChange={setActiveType}
-      />
       {isNormalTransactionType(activeType) ? (
         <TransactionForm
           action={action}
@@ -93,6 +94,7 @@ function NewTransactionFormView({
           ledgerName={ledgerName}
           merchantOptions={merchantOptions}
           tagOptions={tagOptions}
+          typeNavigation={typeNavigation}
         />
       ) : (
         <TransferTransactionForm
@@ -100,6 +102,7 @@ function NewTransactionFormView({
           accountOptions={accountOptions}
           errorMessage={errorMessage}
           ledgerName={ledgerName}
+          typeNavigation={typeNavigation}
         />
       )}
     </Stack>
@@ -122,14 +125,16 @@ export function EditTransferTransactionTemplate({
     activeType === "transfer"
       ? "edit-transfer-transaction-form"
       : "edit-transaction-form";
+  const typeNavigation = (
+    <TransactionTypeNavigation
+      activeType={activeType}
+      onChange={setActiveType}
+    />
+  );
 
   return (
     <PageShell>
       <Stack spacing={2}>
-        <TransactionTypeNavigation
-          activeType={activeType}
-          onChange={setActiveType}
-        />
         {isNormalTransactionType(activeType) ? (
           <>
             <input
@@ -139,25 +144,24 @@ export function EditTransferTransactionTemplate({
               type="hidden"
               value="transfer"
             />
-            <Box sx={editTransactionInnerTypeNavigationHiddenSx}>
-              <TransactionForm
-                key={activeType}
-                action={action}
-                accountOptions={accountOptions}
-                categoryOptions={categoryOptions}
-                errorMessage={errorMessage}
-                formId={formId}
-                initialValues={createNormalInitialValuesFromTransfer(
-                  initialValues,
-                  activeType,
-                )}
-                ledgerName={ledgerName}
-                merchantOptions={merchantOptions}
-                submitLabel="保存修改"
-                tagOptions={tagOptions}
-                title="编辑记账"
-              />
-            </Box>
+            <TransactionForm
+              key={activeType}
+              action={action}
+              accountOptions={accountOptions}
+              categoryOptions={categoryOptions}
+              errorMessage={errorMessage}
+              formId={formId}
+              initialValues={createNormalInitialValuesFromTransfer(
+                initialValues,
+                activeType,
+              )}
+              ledgerName={ledgerName}
+              merchantOptions={merchantOptions}
+              submitLabel="保存修改"
+              tagOptions={tagOptions}
+              title="编辑记账"
+              typeNavigation={typeNavigation}
+            />
           </>
         ) : (
           <TransferTransactionForm
@@ -169,6 +173,7 @@ export function EditTransferTransactionTemplate({
             ledgerName={ledgerName}
             sourceType="transfer"
             title="编辑转账"
+            typeNavigation={typeNavigation}
           />
         )}
       </Stack>
@@ -194,14 +199,16 @@ export function EditTransactionTemplate({
     activeType === "transfer"
       ? "edit-transfer-transaction-form"
       : "edit-transaction-form";
+  const typeNavigation = (
+    <TransactionTypeNavigation
+      activeType={activeType}
+      onChange={setActiveType}
+    />
+  );
 
   return (
     <PageShell>
       <Stack spacing={2}>
-        <TransactionTypeNavigation
-          activeType={activeType}
-          onChange={setActiveType}
-        />
         {isNormalTransactionType(activeType) ? (
           <>
             <input
@@ -211,25 +218,24 @@ export function EditTransactionTemplate({
               type="hidden"
               value={initialValues.type}
             />
-            <Box sx={editTransactionInnerTypeNavigationHiddenSx}>
-              <TransactionForm
-                key={activeType}
-                action={action}
-                accountOptions={accountOptions}
-                categoryOptions={categoryOptions}
-                errorMessage={errorMessage}
-                formId={formId}
-                initialValues={createNormalInitialValuesFromNormal(
-                  initialValues,
-                  activeType,
-                )}
-                ledgerName={ledgerName}
-                merchantOptions={merchantOptions}
-                submitLabel="保存修改"
-                tagOptions={tagOptions}
-                title="编辑记账"
-              />
-            </Box>
+            <TransactionForm
+              key={activeType}
+              action={action}
+              accountOptions={accountOptions}
+              categoryOptions={categoryOptions}
+              errorMessage={errorMessage}
+              formId={formId}
+              initialValues={createNormalInitialValuesFromNormal(
+                initialValues,
+                activeType,
+              )}
+              ledgerName={ledgerName}
+              merchantOptions={merchantOptions}
+              submitLabel="保存修改"
+              tagOptions={tagOptions}
+              title="编辑记账"
+              typeNavigation={typeNavigation}
+            />
           </>
         ) : (
           <TransferTransactionForm
@@ -244,6 +250,7 @@ export function EditTransactionTemplate({
             ledgerName={ledgerName}
             sourceType={initialValues.type}
             title="编辑转账"
+            typeNavigation={typeNavigation}
           />
         )}
       </Stack>
@@ -327,9 +334,3 @@ function findTransferTargetAccountId(
 
   return sameCurrencyAccount?.id ?? "";
 }
-
-const editTransactionInnerTypeNavigationHiddenSx = {
-  "& [aria-label='类型']": {
-    display: "none",
-  },
-};

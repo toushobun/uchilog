@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { useState } from "react";
 
 import {
   TransactionForm,
@@ -91,6 +92,53 @@ function renderForm(
   );
 }
 
+/**
+ * 模拟 EditTransactionTemplate 的行为：typeNavigation 由外部传入，
+ * 切换类型时以 key={activeType} 重新挂载 TransactionForm 并清空 items。
+ */
+function renderEditFormWithTypeSwitch(
+  baseInitialValues: TransactionFormInitialValues,
+) {
+  function Wrapper() {
+    const [activeType, setActiveType] = useState<"expense" | "income">(
+      baseInitialValues.type,
+    );
+    const currentInitialValues: TransactionFormInitialValues =
+      activeType === baseInitialValues.type
+        ? baseInitialValues
+        : { ...baseInitialValues, type: activeType, items: [] };
+    const typeNavigation = (
+      <div>
+        <button
+          onClick={() => setActiveType("expense")}
+          aria-pressed={activeType === "expense"}
+        >
+          支出
+        </button>
+        <button
+          onClick={() => setActiveType("income")}
+          aria-pressed={activeType === "income"}
+        >
+          收入
+        </button>
+      </div>
+    );
+    return (
+      <TransactionForm
+        key={activeType}
+        action={vi.fn(async () => undefined)}
+        accountOptions={accountOptions}
+        categoryOptions={categoryOptions}
+        merchantOptions={merchantOptions}
+        tagOptions={tagOptions}
+        initialValues={currentInitialValues}
+        typeNavigation={typeNavigation}
+      />
+    );
+  }
+  return render(<Wrapper />);
+}
+
 function createInitialValues(
   type: "expense" | "income" = "expense",
 ): TransactionFormInitialValues {
@@ -166,7 +214,7 @@ describe("TransactionForm 编辑类型切换", () => {
   });
 
   it("编辑支出点击收入后 hidden type 变为 income，且旧支出分类不会继续提交", () => {
-    const { container } = renderForm({ initialValues: createInitialValues() });
+    const { container } = renderEditFormWithTypeSwitch(createInitialValues());
 
     expect(getSubmittedCategoryIds(container)).toEqual([expenseCategoryId]);
 
@@ -177,9 +225,9 @@ describe("TransactionForm 编辑类型切换", () => {
   });
 
   it("编辑收入点击支出后 hidden type 变为 expense，且旧收入分类不会继续提交", () => {
-    const { container } = renderForm({
-      initialValues: createInitialValues("income"),
-    });
+    const { container } = renderEditFormWithTypeSwitch(
+      createInitialValues("income"),
+    );
 
     expect(getSubmittedCategoryIds(container)).toEqual([incomeCategoryId]);
 
@@ -190,7 +238,7 @@ describe("TransactionForm 编辑类型切换", () => {
   });
 
   it("切换到收入后可选择收入分类", () => {
-    const { container } = renderForm({ initialValues: createInitialValues() });
+    const { container } = renderEditFormWithTypeSwitch(createInitialValues());
 
     fireEvent.click(within(container).getByRole("button", { name: "收入" }));
     openSheet(container);
@@ -207,9 +255,9 @@ describe("TransactionForm 编辑类型切换", () => {
   });
 
   it("切换到支出后可选择支出分类", () => {
-    const { container } = renderForm({
-      initialValues: createInitialValues("income"),
-    });
+    const { container } = renderEditFormWithTypeSwitch(
+      createInitialValues("income"),
+    );
 
     fireEvent.click(within(container).getByRole("button", { name: "支出" }));
     openSheet(container);
@@ -223,15 +271,5 @@ describe("TransactionForm 编辑类型切换", () => {
     addItemViaSheet("餐饮", "800");
 
     expect(getSubmittedCategoryIds(container)).toEqual([expenseCategoryId]);
-  });
-
-  it("新增页 initialType 行为不受编辑切换覆盖影响", () => {
-    const { container } = renderForm({ initialType: "income" });
-
-    expect(getHiddenInput(container, "type").value).toBe("income");
-
-    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
-
-    expect(getHiddenInput(container, "type").value).toBe("expense");
   });
 });
