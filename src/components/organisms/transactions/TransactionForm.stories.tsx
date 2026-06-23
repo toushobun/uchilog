@@ -156,6 +156,29 @@ export const EditMode: Story = {
   },
 };
 
+export const EditIncomeMode: Story = {
+  args: {
+    formId: "edit-transaction-form",
+    initialValues: {
+      accountId: "00000000-0000-4000-8000-000000000046",
+      items: [
+        {
+          amount: "300000",
+          categoryId: "00000000-0000-4000-8000-000000005074",
+        },
+      ],
+      merchantId: "00000000-0000-4000-8000-000000001002",
+      note: "编辑前已有收入备注",
+      tagNames: ["公司"],
+      transactionAt: "2026-06-05T03:20:10.000Z",
+      transactionRecordId: "00000000-0000-4000-8000-000000009002",
+      type: "income",
+    },
+    submitLabel: "保存修改",
+    title: "编辑记账",
+  },
+};
+
 export const WithError: Story = {
   args: {
     errorMessage: "新增记账失败。请稍后重试。",
