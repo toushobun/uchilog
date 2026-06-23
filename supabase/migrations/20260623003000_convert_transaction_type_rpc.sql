@@ -190,7 +190,7 @@ begin
             v_item_amount := (v_new_item ->> 'amount')::numeric(14,2);
             v_item_category_id := (v_new_item ->> 'categoryId')::uuid;
 
-            if v_item_amount is null or v_item_amount <= 0 or v_item_amount <> round(v_item_amount, 2) then
+            if v_item_amount is null or v_item_amount < 0 or v_item_amount <> round(v_item_amount, 2) then
                 raise exception 'amount_invalid' using errcode = '22023';
             end if;
 
