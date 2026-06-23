@@ -123,7 +123,9 @@ function getHiddenInput(container: HTMLElement, name: string) {
 
 function getSubmittedCategoryIds(container: HTMLElement) {
   return Array.from(
-    container.querySelectorAll<HTMLInputElement>('input[name="itemCategoryId"]'),
+    container.querySelectorAll<HTMLInputElement>(
+      'input[name="itemCategoryId"]',
+    ),
   ).map((input) => input.value);
 }
 

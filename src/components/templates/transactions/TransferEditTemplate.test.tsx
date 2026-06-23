@@ -49,7 +49,11 @@ describe("EditTransferTransactionTemplate", () => {
     expect(
       within(container).getByTestId("transfer-transaction-form"),
     ).toBeInTheDocument();
-    expect(within(container).queryByRole("button", { name: "支出" })).toBeNull();
-    expect(within(container).queryByRole("button", { name: "收入" })).toBeNull();
+    expect(
+      within(container).queryByRole("button", { name: "支出" }),
+    ).toBeNull();
+    expect(
+      within(container).queryByRole("button", { name: "收入" }),
+    ).toBeNull();
   });
 });

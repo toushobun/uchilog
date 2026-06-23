@@ -81,7 +81,9 @@ function createProps(type: "expense" | "income" = "expense") {
 
 describe("EditTransactionTemplate", () => {
   it("普通支出编辑页渲染支出 / 收入切换", () => {
-    const { container } = render(<EditTransactionTemplate {...createProps()} />);
+    const { container } = render(
+      <EditTransactionTemplate {...createProps()} />,
+    );
 
     expect(
       within(container).getByRole("button", { name: "支出" }),
@@ -105,7 +107,9 @@ describe("EditTransactionTemplate", () => {
   });
 
   it("普通编辑页不显示转账 tab", () => {
-    const { container } = render(<EditTransactionTemplate {...createProps()} />);
+    const { container } = render(
+      <EditTransactionTemplate {...createProps()} />,
+    );
 
     expect(
       within(container).queryByRole("button", { name: "转账" }),

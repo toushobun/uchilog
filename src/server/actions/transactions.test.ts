@@ -212,6 +212,16 @@ describe("updateTransaction", () => {
     );
   });
 
+  it("update 普通交易传入 type=transfer 时拒绝并不调用 RPC", async () => {
+    await expect(
+      updateTransaction(createValidUpdateFormData({ type: "transfer" })),
+    ).rejects.toThrow(
+      `NEXT_REDIRECT:/transactions/${transactionRecordId}/edit?error=update_invalid`,
+    );
+
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
   it("从支出改为收入后，也跳转到发生月份以刷新收入汇总", async () => {
     await expect(
       updateTransaction(createValidUpdateFormData({ type: "income" })),
