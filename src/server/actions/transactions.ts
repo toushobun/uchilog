@@ -231,7 +231,10 @@ export async function saveEditTransaction(formData: FormData) {
   const sourceType = String(formData.get("sourceType") ?? "").trim();
   const targetType = rawTargetType(formData);
 
-  if (!isTransactionRecordType(sourceType) || !isTransactionRecordType(targetType)) {
+  if (
+    !isTransactionRecordType(sourceType) ||
+    !isTransactionRecordType(targetType)
+  ) {
     const transactionRecordId = rawTransactionRecordId(formData);
     redirect(
       isUuid(transactionRecordId)
