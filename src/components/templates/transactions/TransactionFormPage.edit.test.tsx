@@ -12,8 +12,6 @@ vi.mock("organisms/transactions/TransactionForm", () => ({
   }): ReactNode => (
     <div data-testid="transaction-form">
       <input name="type" type="hidden" value={initialValues.type} />
-      <button aria-pressed={initialValues.type === "expense"}>支出</button>
-      <button aria-pressed={initialValues.type === "income"}>收入</button>
     </div>
   ),
 }));
@@ -106,14 +104,14 @@ describe("EditTransactionTemplate", () => {
     ).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("普通编辑页不显示转账 tab", () => {
+  it("普通编辑页显示转账切换 tab", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps()} />,
     );
 
     expect(
-      within(container).queryByRole("button", { name: "转账" }),
-    ).toBeNull();
+      within(container).getByRole("button", { name: "转账" }),
+    ).toHaveAttribute("aria-pressed", "false");
     expect(
       within(container).getByTestId("transaction-form"),
     ).toBeInTheDocument();

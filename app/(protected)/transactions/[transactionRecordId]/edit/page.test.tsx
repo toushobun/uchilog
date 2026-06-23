@@ -9,10 +9,12 @@ const mocks = vi.hoisted(() => ({
     error ? `编辑错误:${error}` : null,
   ),
   loadEditTransactionView: vi.fn(),
+  saveEditTransaction: vi.fn(),
   updateTransaction: vi.fn(),
 }));
 
 vi.mock("server/actions/transactions", () => ({
+  saveEditTransaction: mocks.saveEditTransaction,
   updateTransaction: mocks.updateTransaction,
 }));
 
@@ -79,7 +81,7 @@ describe("TransactionEditPage", () => {
     expect(element.type).toBe(mocks.EditTransactionTemplate);
     expect(element.props).toMatchObject({
       ...view,
-      action: mocks.updateTransaction,
+      action: mocks.saveEditTransaction,
       errorMessage: "编辑错误:update_failed",
     });
   });
@@ -103,7 +105,7 @@ describe("TransactionEditPage", () => {
     expect(element.type).toBe(mocks.EditTransactionTemplate);
     expect(element.props).toMatchObject({
       ...view,
-      action: mocks.updateTransaction,
+      action: mocks.saveEditTransaction,
       errorMessage: null,
     });
   });
