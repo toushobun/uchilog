@@ -1,4 +1,4 @@
-import { cleanup, render, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -46,16 +46,21 @@ describe("TransactionGroupList", () => {
     ).toBeInTheDocument();
   });
 
-  it("分组内的记账记录显示编辑入口", () => {
+  it("点击记账记录后显示编辑和删除入口", () => {
     const { container } = render(
-      <TransactionGroupList groups={[defaultGroup]} />,
+      <TransactionGroupList groups={[defaultGroup]} voidAction={vi.fn()} />,
+    );
+
+    fireEvent.click(
+      within(container).getByTestId("row-00000000-0000-4000-8000-000000009001"),
     );
 
     expect(
-      within(container)
-        .getByTestId("row-00000000-0000-4000-8000-000000009001")
-        .getAttribute("data-show-edit"),
-    ).toBe("true");
+      within(container).getByRole("link", { name: "编辑" }),
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByRole("button", { name: "删除" }),
+    ).toBeInTheDocument();
   });
 
   it("显示多个分组", () => {
@@ -71,11 +76,11 @@ describe("TransactionGroupList", () => {
     expect(within(container).getByText("06/01 周一")).toBeInTheDocument();
   });
 
-  it("分组汇总结余为负数时金额有对应样式标识", () => {
+  it("显示分组支出汇总", () => {
     const { container } = render(
       <TransactionGroupList groups={[defaultGroup]} />,
     );
 
-    expect(within(container).getByText("-1,234")).toBeInTheDocument();
+    expect(within(container).getByText("支出 ¥1,234")).toBeInTheDocument();
   });
 });

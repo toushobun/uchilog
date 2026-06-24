@@ -18,44 +18,65 @@ import {
   createTransactionAmountSummary,
 } from "utils/transactions";
 
-function addExpenseTotal(
-  summary: { expense: string; recordCount: number },
-  amount: number,
-) {
-  summary.expense = String(Number(summary.expense) + amount);
-  summary.recordCount += 1;
-}
+type DashboardAccountDbRow = AccountOptionDbRow & {
+  type: string;
+  current_balance: number | string;
+  sort_order: number;
+  created_at: string;
+};
 
 export async function loadDashboardView(): Promise<DashboardViewData> {
   const currentLedger = await getCurrentLedgerOrRedirect();
   const supabase = await createClient();
-  const { monthStartIso, monthEndIso, monthLabel, todayStart, weekStart } =
-    getDashboardDateRange();
+  const { monthStartIso, monthEndIso, monthLabel } = getDashboardDateRange();
 
-  const { data: recordData, error: recordError } = await supabase
-    .from("transaction_record")
-    .select("id, type, transaction_at, merchant_id, note, created_at")
-    .eq("ledger_id", currentLedger.id)
-    .eq("status", "active")
-    .in("type", ["expense", "income"])
-    .gte("transaction_at", monthStartIso)
-    .lt("transaction_at", monthEndIso)
-    .order("transaction_at", { ascending: false })
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false });
+  const [{ data: recordData, error: recordError }, { data: recentRecordData }] =
+    await Promise.all([
+      supabase
+        .from("transaction_record")
+        .select("id, type, transaction_at, merchant_id, note, created_at")
+        .eq("ledger_id", currentLedger.id)
+        .eq("status", "active")
+        .in("type", ["expense", "income"])
+        .gte("transaction_at", monthStartIso)
+        .lt("transaction_at", monthEndIso)
+        .order("transaction_at", { ascending: false })
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false }),
+      // 单独查最近 100 条全类型记录用于账户排序，不限本月、包含 transfer
+      supabase
+        .from("transaction_record")
+        .select("id")
+        .eq("ledger_id", currentLedger.id)
+        .eq("status", "active")
+        .order("transaction_at", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(100),
+    ]);
 
   if (recordError) throw new Error("Failed to load dashboard records");
 
   const records = (recordData ?? []) as TransactionRecordDbRow[];
   const recordIds = records.map((record) => record.id);
-  const { data: itemData, error: itemError } =
-    recordIds.length > 0
-      ? await supabase
-          .from("transaction_item")
-          .select("transaction_record_id, account_id, category_id, amount")
-          .eq("ledger_id", currentLedger.id)
-          .in("transaction_record_id", recordIds)
-      : { data: [], error: null };
+  const recentRecordIds = (recentRecordData ?? []).map((r) => r.id);
+
+  const [{ data: itemData, error: itemError }, { data: recentItemData }] =
+    await Promise.all([
+      recordIds.length > 0
+        ? supabase
+            .from("transaction_item")
+            .select("transaction_record_id, account_id, category_id, amount")
+            .eq("ledger_id", currentLedger.id)
+            .in("transaction_record_id", recordIds)
+        : Promise.resolve({ data: [], error: null }),
+      recentRecordIds.length > 0
+        ? supabase
+            .from("transaction_item")
+            .select("transaction_record_id, account_id")
+            .eq("ledger_id", currentLedger.id)
+            .in("transaction_record_id", recentRecordIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
 
   if (itemError) throw new Error("Failed to load dashboard items");
 
@@ -72,17 +93,6 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
     currentLedger.baseCurrency,
   );
 
-  const todayExpense = {
-    expense: "0",
-    currency: currentLedger.baseCurrency,
-    recordCount: 0,
-  };
-  const weekExpense = {
-    expense: "0",
-    currency: currentLedger.baseCurrency,
-    recordCount: 0,
-  };
-
   for (const record of records) {
     const recordItems = itemsByRecordId.get(record.id) ?? [];
     const total = recordItems.reduce(
@@ -93,18 +103,6 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
     if (!Number.isFinite(total) || total === 0) continue;
 
     addTransactionAmount(monthSummary, record.type, String(total));
-
-    if (record.type === "expense") {
-      const recordAt = new Date(record.transaction_at);
-
-      if (recordAt >= weekStart) {
-        addExpenseTotal(weekExpense, total);
-      }
-
-      if (recordAt >= todayStart) {
-        addExpenseTotal(todayExpense, total);
-      }
-    }
   }
 
   const recentRecords = records.slice(0, 5);
@@ -114,6 +112,21 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   const recentAccountIds = [
     ...new Set(recentRecordItems.map((item) => item.account_id)),
   ];
+  const recentItemsByRecordId = new Map<string, string[]>();
+
+  for (const item of (recentItemData ?? []) as {
+    transaction_record_id: string;
+    account_id: string;
+  }[]) {
+    const ids = recentItemsByRecordId.get(item.transaction_record_id) ?? [];
+    ids.push(item.account_id);
+    recentItemsByRecordId.set(item.transaction_record_id, ids);
+  }
+
+  const recentlyUsedAccountIds = getRecentlyUsedAccountIds(
+    recentRecordIds,
+    recentItemsByRecordId,
+  );
   const categoryIds = [
     ...new Set(
       recentRecordItems
@@ -129,7 +142,12 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
     ),
   ];
 
-  const [accountResult, categories, merchantResult] = await Promise.all([
+  const [
+    recentAccountResult,
+    accountSummaryResult,
+    categories,
+    merchantResult,
+  ] = await Promise.all([
     recentAccountIds.length > 0
       ? supabase
           .from("account")
@@ -137,6 +155,15 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
           .eq("ledger_id", currentLedger.id)
           .in("id", recentAccountIds)
       : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("account")
+      .select(
+        "id, name, type, currency, current_balance, sort_order, created_at",
+      )
+      .eq("ledger_id", currentLedger.id)
+      .eq("is_archived", false)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true }),
     loadCategoriesByIdsWithParents(categoryIds, currentLedger.id),
     merchantIds.length > 0
       ? supabase
@@ -147,13 +174,23 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  if (accountResult.error) throw new Error("Failed to load recent accounts");
+  if (recentAccountResult.error) {
+    throw new Error("Failed to load recent accounts");
+  }
+
+  if (accountSummaryResult.error) {
+    throw new Error("Failed to load dashboard account summaries");
+  }
+
   if (merchantResult.error) throw new Error("Failed to load recent merchants");
 
-  const accounts = (accountResult.data ?? []) as AccountOptionDbRow[];
+  const recentAccounts = (recentAccountResult.data ??
+    []) as AccountOptionDbRow[];
+  const dashboardAccounts = (accountSummaryResult.data ??
+    []) as DashboardAccountDbRow[];
   const merchants = (merchantResult.data ?? []) as MerchantSummaryDbRow[];
   const accountById = new Map(
-    accounts.map((account) => [account.id, account] as const),
+    recentAccounts.map((account) => [account.id, account] as const),
   );
   const categoryById = new Map(
     categories.map((category) => [category.id, category] as const),
@@ -171,12 +208,55 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
       recordItems: itemsByRecordId.get(record.id) ?? [],
     }),
   );
+  const accountSummaries = sortDashboardAccountsByRecentUse(
+    dashboardAccounts,
+    recentlyUsedAccountIds,
+  ).slice(0, 5);
 
   return {
     monthLabel,
     monthSummary,
-    todayExpense,
-    weekExpense,
+    accountSummaries: accountSummaries.map((account) => ({
+      id: account.id,
+      name: account.name,
+      type: account.type,
+      currency: account.currency,
+      balance: account.current_balance,
+    })),
     recentTransactions,
   };
+}
+
+function getRecentlyUsedAccountIds(
+  recordIds: string[],
+  itemsByRecordId: Map<string, string[]>,
+) {
+  const seen = new Set<string>();
+
+  for (const recordId of recordIds) {
+    for (const accountId of itemsByRecordId.get(recordId) ?? []) {
+      seen.add(accountId);
+    }
+  }
+
+  return [...seen];
+}
+
+function sortDashboardAccountsByRecentUse(
+  accounts: DashboardAccountDbRow[],
+  recentlyUsedAccountIds: string[],
+) {
+  const recentIndexByAccountId = new Map(
+    recentlyUsedAccountIds.map((id, index) => [id, index] as const),
+  );
+
+  return [...accounts].sort((a, b) => {
+    const aIndex = recentIndexByAccountId.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+    const bIndex = recentIndexByAccountId.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+
+    if (aIndex !== bIndex) return aIndex - bIndex;
+    if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+
+    return a.created_at.localeCompare(b.created_at);
+  });
 }

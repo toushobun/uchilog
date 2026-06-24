@@ -22,6 +22,7 @@ function createItem(overrides = {}) {
     merchant_icon_url: null,
     note: null,
     recorder_name: null,
+    tagNames: [],
     created_at: "2026-06-05T03:20:10.000Z",
     ...overrides,
   };
@@ -87,16 +88,16 @@ describe("TransactionListRow", () => {
     expect(screen.queryByText("测试备注")).toBeNull();
   });
 
-  it("传入 voidAction 时显示撤销按钮", () => {
+  it("传入 voidAction 时显示删除按钮", () => {
     render(<TransactionListRow item={createItem()} voidAction={vi.fn()} />);
 
-    expect(screen.getByRole("button", { name: "撤销" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
   });
 
-  it("未传入 voidAction 时不显示撤销按钮", () => {
+  it("未传入 voidAction 时不显示删除按钮", () => {
     render(<TransactionListRow item={createItem()} />);
 
-    expect(screen.queryByRole("button", { name: "撤销" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "删除" })).toBeNull();
   });
 
   it("转账记录显示转账标签", () => {

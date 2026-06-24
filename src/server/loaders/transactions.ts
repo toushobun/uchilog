@@ -22,8 +22,6 @@ import type {
   TransactionMonthViewData,
 } from "types/transactions";
 import {
-  addTransactionAmount,
-  createTransactionAmountSummary,
   formatMonthLabel,
   getMonthBounds,
   groupTransactionItemsByDate,
@@ -79,30 +77,40 @@ async function loadTransactionItems(
     ),
   ];
 
-  const [accountResult, categories, merchantResult, recorderResult] =
-    await Promise.all([
-      accountIds.length > 0
-        ? supabase
-            .from("account")
-            .select("id, name, currency")
-            .eq("ledger_id", currentLedger.id)
-            .in("id", accountIds)
-        : Promise.resolve({ data: [], error: null }),
-      loadCategoriesByIdsWithParents(categoryIds, currentLedger.id),
-      merchantIds.length > 0
-        ? supabase
-            .from("merchant")
-            .select("id, name, icon_url")
-            .eq("ledger_id", currentLedger.id)
-            .in("id", merchantIds)
-        : Promise.resolve({ data: [], error: null }),
-      recorderIds.length > 0
-        ? supabase
-            .from("app_user")
-            .select("id, display_name")
-            .in("id", recorderIds)
-        : Promise.resolve({ data: [], error: null }),
-    ]);
+  const [
+    accountResult,
+    categories,
+    merchantResult,
+    recorderResult,
+    tagAssignmentResult,
+  ] = await Promise.all([
+    accountIds.length > 0
+      ? supabase
+          .from("account")
+          .select("id, name, currency")
+          .eq("ledger_id", currentLedger.id)
+          .in("id", accountIds)
+      : Promise.resolve({ data: [], error: null }),
+    loadCategoriesByIdsWithParents(categoryIds, currentLedger.id),
+    merchantIds.length > 0
+      ? supabase
+          .from("merchant")
+          .select("id, name, icon_url")
+          .eq("ledger_id", currentLedger.id)
+          .in("id", merchantIds)
+      : Promise.resolve({ data: [], error: null }),
+    recorderIds.length > 0
+      ? supabase
+          .from("app_user")
+          .select("id, display_name")
+          .in("id", recorderIds)
+      : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("transaction_record_tag")
+      .select("tag_id, transaction_record_id")
+      .eq("ledger_id", currentLedger.id)
+      .in("transaction_record_id", recordIds),
+  ]);
 
   if (accountResult.error) {
     throw new Error("Failed to load transaction accounts");
@@ -114,6 +122,43 @@ async function loadTransactionItems(
 
   if (recorderResult.error) {
     throw new Error("Failed to load transaction recorders");
+  }
+
+  if (tagAssignmentResult.error) {
+    throw new Error("Failed to load transaction tags");
+  }
+
+  const tagAssignments = (tagAssignmentResult.data ?? []) as {
+    tag_id: string;
+    transaction_record_id: string;
+  }[];
+  const uniqueTagIds = [...new Set(tagAssignments.map((a) => a.tag_id))];
+  const tagById = new Map<string, string>();
+
+  if (uniqueTagIds.length > 0) {
+    const { data: tagData, error: tagError } = await supabase
+      .from("transaction_tag")
+      .select("id, name")
+      .eq("ledger_id", currentLedger.id)
+      .in("id", uniqueTagIds);
+
+    if (tagError) throw new Error("Failed to load transaction tag names");
+
+    for (const tag of tagData ?? []) {
+      tagById.set(tag.id, tag.name as string);
+    }
+  }
+
+  const tagNamesByRecordId = new Map<string, string[]>();
+
+  for (const assignment of tagAssignments) {
+    const name = tagById.get(assignment.tag_id);
+    if (name) {
+      const names =
+        tagNamesByRecordId.get(assignment.transaction_record_id) ?? [];
+      names.push(name);
+      tagNamesByRecordId.set(assignment.transaction_record_id, names);
+    }
   }
 
   const accounts = (accountResult.data ?? []) as AccountOptionDbRow[];
@@ -148,6 +193,7 @@ async function loadTransactionItems(
       record,
       recorderById,
       recordItems: itemsByRecordId.get(record.id) ?? [],
+      tagNamesByRecordId,
     }),
   );
 }
@@ -183,12 +229,6 @@ export async function loadTransactionMonthView(
   const hasMore = allRecords.length > monthPageSize;
   const allItems = await loadTransactionItems(allRecords, currentLedger);
   const currency = currentLedger.baseCurrency;
-  const monthSummary = createTransactionAmountSummary(currency);
-
-  for (const item of allItems) {
-    addTransactionAmount(monthSummary, item.type, item.amount);
-  }
-
   const displayItems = allItems.slice(0, pageRecords.length);
 
   return {
@@ -197,7 +237,6 @@ export async function loadTransactionMonthView(
     monthLabel: formatMonthLabel(normalizedMonth),
     nextMonth: shiftMonth(normalizedMonth, 1),
     previousMonth: shiftMonth(normalizedMonth, -1),
-    summary: monthSummary,
     nextOffset: hasMore ? monthPageSize : null,
   };
 }

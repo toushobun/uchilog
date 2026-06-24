@@ -31,6 +31,7 @@ function createItem(
     merchant_name: isExpense ? "便利店" : "共達",
     note: index % 3 === 0 ? `Storybook 月度记录 #${index}` : null,
     recorder_name: null,
+    tagNames: [],
     transaction_at: new Date(
       Date.UTC(2026, 4, index <= 3 ? 29 : 28, 3 + index, 15, 0),
     ).toISOString(),
@@ -82,24 +83,12 @@ const monthView: TransactionMonthView = {
   monthLabel: "2026年5月",
   nextMonth: "2026-06",
   previousMonth: "2026-04",
-  summary: {
-    balance: "255480",
-    currency: "JPY",
-    expense: "4520",
-    income: "260000",
-  },
   nextOffset: null,
 };
 
 const emptyMonthView: TransactionMonthView = {
   ...monthView,
   groups: [],
-  summary: {
-    balance: "0",
-    currency: "JPY",
-    expense: "0",
-    income: "0",
-  },
 };
 
 function voidAction(formData: FormData) {

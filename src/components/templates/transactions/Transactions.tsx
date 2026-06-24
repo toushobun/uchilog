@@ -1,15 +1,22 @@
-import Button from "@mui/material/Button";
+import FilterListRoundedIcon from "@mui/icons-material/FilterListRounded";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { transactionsMonthHref } from "config/paths";
-import { transactionMonthNavigationBackgroundColor } from "theme/transactionColors";
+import {
+  receiptAccentColor,
+  receiptCardBorder,
+  receiptPageBackground,
+  receiptPatternColor,
+  receiptTextColor,
+} from "theme/receiptColors";
 import { TransactionMonthList } from "organisms/transactions/TransactionMonthList";
+import type { ServerAction } from "types/actions";
 import type {
   TransactionMonthPage,
   TransactionMonthViewData,
 } from "types/transactions";
-import type { ServerAction } from "types/actions";
 
 type TransactionsTemplateProps = {
   errorMessage: string | null;
@@ -18,6 +25,9 @@ type TransactionsTemplateProps = {
   voidAction: ServerAction;
 };
 
+const pageBg = receiptPageBackground;
+const textColor = receiptTextColor;
+
 export function TransactionsTemplate({
   errorMessage,
   loadMoreAction,
@@ -25,53 +35,56 @@ export function TransactionsTemplate({
   voidAction,
 }: TransactionsTemplateProps) {
   return (
-    <Stack spacing={2.2}>
-      <Stack direction="row" sx={{ alignItems: "center" }}>
-        <Typography component="h1" sx={{ fontSize: 24, fontWeight: 900 }}>
-          明细
-        </Typography>
-      </Stack>
-
-      <Stack
-        direction="row"
-        sx={{
-          alignItems: "center",
-          bgcolor: transactionMonthNavigationBackgroundColor,
-          borderRadius: 999,
-          color: "text.secondary",
-          height: 44,
-          justifyContent: "space-between",
-          px: 1.3,
-        }}
-      >
-        <Button
-          href={transactionsMonthHref(monthView.previousMonth)}
-          size="small"
-          sx={{ color: "text.secondary", minWidth: 40 }}
+    <Box
+      sx={{
+        bgcolor: pageBg,
+        boxShadow: `0 0 0 100vmax ${pageBg}`,
+        clipPath: "inset(0 -100vmax)",
+        color: textColor,
+        minHeight: "100dvh",
+        mx: { xs: -2, sm: 0 },
+        px: { xs: 2, sm: 3 },
+        py: { xs: 2.4, sm: 3 },
+      }}
+    >
+      <Stack spacing={2.2}>
+        <Stack
+          direction="row"
+          sx={{ alignItems: "center", justifyContent: "space-between" }}
         >
-          ‹
-        </Button>
-        <Typography sx={{ fontWeight: 800 }}>{monthView.monthLabel}</Typography>
-        <Button
-          href={transactionsMonthHref(monthView.nextMonth)}
-          size="small"
-          sx={{ color: "text.secondary", minWidth: 40 }}
-        >
-          ›
-        </Button>
+          <Typography component="h1" sx={{ fontSize: 24, fontWeight: 900 }}>
+            小票明细
+          </Typography>
+
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            <Chip
+              icon={<FilterListRoundedIcon />}
+              label="筛选"
+              sx={{ bgcolor: receiptPatternColor, fontWeight: 800 }}
+            />
+            <Chip
+              label={monthView.monthLabel}
+              sx={{
+                bgcolor: "rgba(255, 238, 194, 0.95)",
+                color: receiptAccentColor,
+                fontWeight: 900,
+              }}
+            />
+          </Stack>
+        </Stack>
+
+        {errorMessage ? (
+          <Typography color="error" sx={{ fontWeight: 700 }} variant="body2">
+            {errorMessage}
+          </Typography>
+        ) : null}
+
+        <TransactionMonthList
+          loadMoreAction={loadMoreAction}
+          monthView={monthView}
+          voidAction={voidAction}
+        />
       </Stack>
-
-      {errorMessage ? (
-        <Typography color="error" sx={{ fontWeight: 700 }} variant="body2">
-          {errorMessage}
-        </Typography>
-      ) : null}
-
-      <TransactionMonthList
-        loadMoreAction={loadMoreAction}
-        monthView={monthView}
-        voidAction={voidAction}
-      />
-    </Stack>
+    </Box>
   );
 }

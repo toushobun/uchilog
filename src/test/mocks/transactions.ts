@@ -21,6 +21,7 @@ export function createTransactionListItem(
     merchant_name: "便利店",
     note: "测试备注",
     recorder_name: null,
+    tagNames: [],
     transaction_at: "2026-05-29T03:20:10.000Z",
     type: "expense",
     ...overrides,
@@ -73,12 +74,6 @@ export function createTransactionMonthView(
     monthLabel: "2026年5月",
     nextMonth: "2026-06",
     previousMonth: "2026-04",
-    summary: {
-      balance: "98766",
-      currency: "JPY",
-      expense: "1234",
-      income: "100000",
-    },
     nextOffset: null,
     ...overrides,
   };

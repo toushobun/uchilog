@@ -16,6 +16,7 @@ const expenseItem = {
   merchant_icon_url: null,
   note: "测试备注",
   recorder_name: null,
+  tagNames: [],
   created_at: "2026-06-05T03:20:10.000Z",
 };
 
@@ -54,7 +55,7 @@ export const Income: Story = {
 };
 
 export const WithVoidAction: Story = {
-  name: "带撤销按钮",
+  name: "带删除按钮",
   args: {
     voidAction: (formData: FormData) => {
       console.info("void", formData.get("transactionRecordId"));

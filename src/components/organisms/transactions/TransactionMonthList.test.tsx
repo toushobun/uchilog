@@ -31,21 +31,16 @@ describe("TransactionMonthList", () => {
   it("显示月度汇总和日期分组", () => {
     render(<TransactionMonthList monthView={createTransactionMonthView()} />);
 
-    expect(screen.getByText("收入")).toBeInTheDocument();
-    expect(screen.getByText("100,000")).toBeInTheDocument();
-    expect(screen.getByText("支出")).toBeInTheDocument();
-    expect(screen.getByText("1,234")).toBeInTheDocument();
-    expect(screen.getByText("结余")).toBeInTheDocument();
-    expect(screen.getByText("98,766")).toBeInTheDocument();
     expect(screen.getByText("05/29 周五")).toBeInTheDocument();
     expect(screen.getAllByText("-1,234")[0]).toBeInTheDocument();
+    expect(screen.getByText("支出 ¥1,234")).toBeInTheDocument();
   });
 
   it("显示交易行内容", () => {
     render(<TransactionMonthList monthView={createTransactionMonthView()} />);
 
     expect(screen.getByText("便利店")).toBeInTheDocument();
-    expect(screen.getByText("饮食·餐饮 · 测试备注")).toBeInTheDocument();
+    expect(screen.getByText("饮食 > 餐饮")).toBeInTheDocument();
     expect(screen.getByText(/日元现金/)).toBeInTheDocument();
     expect(screen.getAllByText("-1,234")[0]).toBeInTheDocument();
   });
@@ -53,22 +48,14 @@ describe("TransactionMonthList", () => {
   it("没有记录时显示空状态", () => {
     render(
       <TransactionMonthList
-        monthView={createTransactionMonthView({
-          groups: [],
-          summary: {
-            balance: "0",
-            currency: "JPY",
-            expense: "0",
-            income: "0",
-          },
-        })}
+        monthView={createTransactionMonthView({ groups: [] })}
       />,
     );
 
     expect(screen.getByText("这个月还没有记账记录。")).toBeInTheDocument();
   });
 
-  it("传入撤销 action 时显示撤销按钮并提交表单", () => {
+  it("传入删除 action 时显示删除按钮并提交表单", () => {
     const voidAction = vi.fn();
 
     render(
@@ -78,9 +65,16 @@ describe("TransactionMonthList", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "撤销" }));
+    fireEvent.click(
+      screen.getByText("便利店").closest("[data-testid]") ??
+        screen.getByText("便利店"),
+    );
 
-    expect(window.confirm).toHaveBeenCalledWith("确定要撤销这条记录吗？");
+    fireEvent.submit(
+      screen.getByRole("button", { name: "删除" }).closest("form")!,
+    );
+
+    expect(window.confirm).toHaveBeenCalledWith("确定要删除这条记录吗？");
     expect(voidAction).toHaveBeenCalledTimes(1);
     expect(voidAction.mock.calls[0]?.[0].get("transactionRecordId")).toBe(
       "00000000-0000-4000-8000-000000009001",
@@ -140,6 +134,6 @@ describe("TransactionMonthList", () => {
     expect(loadMoreAction).toHaveBeenCalledTimes(1);
     expect(screen.getAllByText("05/29 周五")).toHaveLength(1);
     expect(screen.getAllByText("便利店")).toHaveLength(1);
-    expect(screen.getByText("-3,234")).toBeInTheDocument();
+    expect(screen.getByText("支出 ¥3,234")).toBeInTheDocument();
   });
 });

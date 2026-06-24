@@ -97,14 +97,14 @@ export function TransactionListRow({
             <form
               action={voidAction}
               onSubmit={(event) => {
-                if (!window.confirm("确定要撤销这条记录吗？")) {
+                if (!window.confirm("确定要删除这条记录吗？")) {
                   event.preventDefault();
                 }
               }}
             >
               <input name="transactionRecordId" type="hidden" value={item.id} />
               <Button color="error" size="small" type="submit" variant="text">
-                撤销
+                删除
               </Button>
             </form>
           ) : null}

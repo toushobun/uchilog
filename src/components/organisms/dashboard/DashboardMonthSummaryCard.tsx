@@ -1,98 +1,132 @@
+import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import CreditCardRoundedIcon from "@mui/icons-material/CreditCardRounded";
+import PaymentsRoundedIcon from "@mui/icons-material/PaymentsRounded";
+import SmartphoneRoundedIcon from "@mui/icons-material/SmartphoneRounded";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import {
-  transactionAccentColor,
-  transactionExpenseColor,
-  transactionIncomeColor,
-  transactionSummaryBackgroundColor,
-} from "theme/transactionColors";
-import type { DashboardAmountSummary } from "types/dashboard";
-import { formatNumber } from "utils/transactions";
+import { receiptCardBorder, receiptTextColor } from "theme/receiptColors";
+import type { DashboardAccountSummary } from "types/dashboard";
+import { formatAmount } from "utils/accounts";
+
+const cardBorder = receiptCardBorder;
+const rowBorder = "rgba(133, 77, 14, 0.1)";
+const textColor = receiptTextColor;
+
+const accountIconStyles = {
+  bank: {
+    bgcolor: "#22c55e",
+    icon: <AccountBalanceWalletRoundedIcon fontSize="small" />,
+  },
+  cash: {
+    bgcolor: "#94a3b8",
+    icon: <PaymentsRoundedIcon fontSize="small" />,
+  },
+  credit_card: {
+    bgcolor: "#b45309",
+    icon: <CreditCardRoundedIcon fontSize="small" />,
+  },
+  e_money: {
+    bgcolor: "#2563eb",
+    icon: <SmartphoneRoundedIcon fontSize="small" />,
+  },
+} as const;
 
 type DashboardMonthSummaryCardProps = {
+  accounts: DashboardAccountSummary[];
   monthLabel: string;
-  monthSummary: DashboardAmountSummary;
 };
 
 export function DashboardMonthSummaryCard({
+  accounts,
   monthLabel,
-  monthSummary,
 }: DashboardMonthSummaryCardProps) {
   return (
     <Box
       sx={{
-        bgcolor: transactionSummaryBackgroundColor,
-        borderRadius: 2,
-        p: 2.5,
+        bgcolor: "rgba(255, 255, 255, 0.86)",
+        border: `1px solid ${cardBorder}`,
+        borderRadius: 1.25,
+        boxShadow: "0 8px 18px rgba(120, 53, 15, 0.05)",
+        overflow: "hidden",
+        p: 1.5,
       }}
     >
-      <Typography
-        sx={{
-          color: transactionAccentColor,
-          fontSize: 13,
-          fontWeight: 700,
-          mb: 0.8,
-        }}
-      >
-        {monthLabel}
-      </Typography>
-      <Stack
-        direction="row"
-        sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
-      >
-        <Stack spacing={0.3}>
-          <Typography sx={{ color: "text.secondary", fontSize: 12 }}>
-            结余
+      <Stack spacing={1.1}>
+        <Stack
+          direction="row"
+          sx={{ alignItems: "center", justifyContent: "space-between" }}
+        >
+          <Typography sx={{ color: textColor, fontSize: 15, fontWeight: 900 }}>
+            账户余额
           </Typography>
-          <Typography sx={{ fontSize: 32, fontWeight: 900, lineHeight: 1.15 }}>
-            {formatNumber(monthSummary.balance)}
+          <Typography sx={{ color: "rgba(74, 47, 27, 0.48)", fontSize: 12 }}>
+            {monthLabel}
           </Typography>
         </Stack>
-        <Stack spacing={1}>
-          <Stack direction="row" spacing={0.6} sx={{ alignItems: "center" }}>
-            <Typography
-              sx={{
-                color: transactionIncomeColor,
-                fontSize: 11,
-                fontWeight: 700,
-              }}
-            >
-              ▲ 收入
-            </Typography>
-            <Typography
-              sx={{
-                color: transactionIncomeColor,
-                fontSize: 17,
-                fontWeight: 900,
-              }}
-            >
-              {formatNumber(monthSummary.income)}
-            </Typography>
+
+        {accounts.length > 0 ? (
+          <Stack spacing={0}>
+            {accounts.map((account) => (
+              <Stack
+                direction="row"
+                key={account.id}
+                spacing={1.1}
+                sx={{
+                  alignItems: "center",
+                  borderTop: `1px solid ${rowBorder}`,
+                  minHeight: 40,
+                  py: 0.75,
+                }}
+              >
+                <Box
+                  sx={{
+                    alignItems: "center",
+                    bgcolor: getAccountIconStyle(account.type).bgcolor,
+                    borderRadius: 0.75,
+                    color: "white",
+                    display: "inline-flex",
+                    flexShrink: 0,
+                    height: 28,
+                    justifyContent: "center",
+                    width: 28,
+                  }}
+                >
+                  {getAccountIconStyle(account.type).icon}
+                </Box>
+                <Typography
+                  noWrap
+                  sx={{
+                    color: textColor,
+                    flex: 1,
+                    fontSize: 13,
+                    fontWeight: 800,
+                  }}
+                >
+                  {account.name}
+                </Typography>
+                <Typography
+                  sx={{ color: textColor, fontSize: 13, fontWeight: 900 }}
+                >
+                  {formatAmount(account.balance, account.currency)}
+                </Typography>
+              </Stack>
+            ))}
           </Stack>
-          <Stack direction="row" spacing={0.6} sx={{ alignItems: "center" }}>
-            <Typography
-              sx={{
-                color: transactionExpenseColor,
-                fontSize: 11,
-                fontWeight: 700,
-              }}
-            >
-              ▼ 支出
-            </Typography>
-            <Typography
-              sx={{
-                color: transactionExpenseColor,
-                fontSize: 17,
-                fontWeight: 900,
-              }}
-            >
-              {formatNumber(monthSummary.expense)}
-            </Typography>
-          </Stack>
-        </Stack>
+        ) : (
+          <Typography sx={{ color: "rgba(74, 47, 27, 0.52)", fontSize: 12 }}>
+            还没有账户余额数据。
+          </Typography>
+        )}
       </Stack>
     </Box>
+  );
+}
+
+function getAccountIconStyle(type: string) {
+  return (
+    accountIconStyles[type as keyof typeof accountIconStyles] ??
+    accountIconStyles.bank
   );
 }
