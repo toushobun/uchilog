@@ -37,7 +37,7 @@ export function SettingsOverviewCard({
                 WebkitBackgroundClip: "text",
               }}
             >
-              UchiLog
+              KuraNote
             </Typography>
           </Link>
           <Link href={routePaths.ledgers} style={{ textDecoration: "none" }}>

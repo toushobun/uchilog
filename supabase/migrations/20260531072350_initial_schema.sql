@@ -1,4 +1,4 @@
--- UchiLog MVP 初期数据库结构
+-- KuraNote MVP 初期数据库结构
 -- 对应 Issue：#8
 -- 基于 Issue #7 的数据库设计实现
 

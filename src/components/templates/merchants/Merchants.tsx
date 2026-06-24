@@ -44,7 +44,7 @@ export function MerchantsTemplate({
           <Stack spacing={0.5}>
             <span>当前账本：{ledgerName}</span>
             <span>
-              管理常用商家、商家网址、备注和别名。UchiLog
+              管理常用商家、商家网址、备注和别名。KuraNote
               会以商家为主轴，再结合分类进行统计。
             </span>
           </Stack>

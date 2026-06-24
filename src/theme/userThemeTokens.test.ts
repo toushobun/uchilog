@@ -50,10 +50,10 @@ describe("userThemeTokens", () => {
 
   it("按登录用户生成不同 localStorage key，避免用户主题互相影响", () => {
     expect(getUserThemeStorageKey("a@example.com")).toBe(
-      "uchilog-user-theme:user:a%40example.com",
+      "kuranote-user-theme:user:a%40example.com",
     );
     expect(getUserThemeStorageKey("B@example.com")).toBe(
-      "uchilog-user-theme:user:b%40example.com",
+      "kuranote-user-theme:user:b%40example.com",
     );
     expect(getUserThemeStorageKey("a@example.com")).not.toBe(
       getUserThemeStorageKey("b@example.com"),

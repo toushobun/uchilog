@@ -1,4 +1,4 @@
--- UchiLog 商家别名 schema
+-- KuraNote 商家别名 schema
 -- 对应 Issue：#28
 -- 用于支持同一商家通过中文、日语、英文、简称或俗称进行搜索
 

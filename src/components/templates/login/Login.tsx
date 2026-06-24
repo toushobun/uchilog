@@ -36,7 +36,7 @@ export function LoginTemplate({
           }}
         >
           <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
-            UchiLog
+            KuraNote
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 1, mb: 4 }}>
             登录后开始使用记账功能

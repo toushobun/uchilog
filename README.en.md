@@ -4,18 +4,18 @@
   English
 </p>
 
-# UchiLog
+# KuraNote
 
-UchiLog is a merchant-first multilingual family budgeting PWA for Chinese, Japanese, and English users. It is used to record and visualize income, expenses, accounts, transfers, categories, and shared household spending, helping families understand which merchants they spend money at, what categories are involved for each merchant, and how daily spending is shared among family members.
+KuraNote is a multilingual household life record PWA with family budgeting as its current core, built for Chinese, Japanese, and English users. It is used to record and visualize income, expenses, accounts, transfers, categories, and shared household spending, helping families understand which merchants they spend money at, what categories are involved for each merchant, and how daily spending is shared among family members.
 
 This repository also serves as a record of the personal development process.
 The project is currently in the MVP development stage.
 
 ## Overview
 
-UchiLog aims to be a practical merchant-first budgeting app for everyday household use.
+KuraNote aims to be a practical merchant-first household life record app for everyday household use.
 
-Many budgeting apps organize spending primarily by category. In real household use, however, "where the money was spent" is often the most natural way to review daily expenses. UchiLog treats merchants as a key entry point, so users can review spending records, category distribution, and spending trends around each merchant.
+Many budgeting apps organize spending primarily by category. In real household use, however, "where the money was spent" is often the most natural way to review daily expenses. KuraNote treats merchants as a key entry point, so users can review spending records, category distribution, and spending trends around each merchant.
 
 Initial goals:
 
@@ -259,7 +259,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-local-publishable-key
 
 ### Local Test Users
 
-Running `npx supabase db reset` will automatically execute `supabase/seed.sql` and create local test users.
+`npx supabase db reset` automatically runs `supabase/seed.sql` and creates local development test users.
 
 Login credentials:
 

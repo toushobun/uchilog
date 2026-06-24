@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-export const turnstileScriptId = "uchilog-turnstile-script";
+export const turnstileScriptId = "kuranote-turnstile-script";
 
 const turnstileScriptSrc =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";

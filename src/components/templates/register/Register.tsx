@@ -53,7 +53,7 @@ export function RegisterTemplate({
           }}
         >
           <Typography component="h1" variant="h4" sx={{ fontWeight: 700 }}>
-            UchiLog
+            KuraNote
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 1, mb: 4 }}>
             创建账号后开始使用记账功能

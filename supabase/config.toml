@@ -2,7 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "uchilog"
+project_id = "kuranote"
 
 [api]
 enabled = true
@@ -250,7 +250,7 @@ otp_expiry = 600
 # content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.confirmation]
-subject = "Your UchiLog verification code"
+subject = "Your KuraNote verification code"
 content_path = "./supabase/templates/confirmation.html"
 
 # Uncomment to customize notification email template

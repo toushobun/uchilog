@@ -1,4 +1,4 @@
--- UchiLog merchant note schema
+-- KuraNote merchant note schema
 -- Issue: #27
 
 alter table public.merchant
