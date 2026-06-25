@@ -8,23 +8,22 @@ import {
   type ReactNode,
 } from "react";
 
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import Link from "next/link";
 
+import { routePaths } from "config/paths";
+import { TransactionAmountKeypadLauncher } from "organisms/transactions/TransactionAmountKeypadLauncher";
 import {
   TransactionForm,
   type TransactionFormInitialValues,
 } from "organisms/transactions/TransactionForm";
-import { TransactionAmountKeypadLauncher } from "organisms/transactions/TransactionAmountKeypadLauncher";
 import { TransferTransactionForm } from "organisms/transactions/TransferTransactionForm";
-import { routePaths } from "config/paths";
 import type { TransferEditInitialValues } from "server/loaders/transactionForm";
+import { SegmentTabs } from "molecules/ui/SegmentTabs";
 import type {
   TransactionAccountOption,
   TransactionCategoryOption,
@@ -65,6 +64,11 @@ const transactionTypeOrder: readonly TransactionRecordType[] = [
   "income",
   "transfer",
 ];
+
+const transactionTypeTabs = [
+  { label: "收支", value: "normal" },
+  { label: "转账", value: "transfer" },
+] as const;
 
 type TransactionTypeSlidePanelsProps = {
   activeType: TransactionRecordType;
@@ -292,18 +296,12 @@ function NewTransactionTypeNavigation({
   onChange,
 }: NewTransactionTypeNavigationProps) {
   return (
-    <ToggleButtonGroup
-      aria-label="记账类型"
-      exclusive
-      fullWidth
+    <SegmentTabs
+      ariaLabel="记账类型"
+      items={transactionTypeTabs}
       value={activeType}
-      onChange={(_, value: NewTransactionTypeTab | null) => {
-        if (value) onChange(value);
-      }}
-    >
-      <ToggleButton value="normal">收支</ToggleButton>
-      <ToggleButton value="transfer">转账</ToggleButton>
-    </ToggleButtonGroup>
+      onChange={(value) => onChange(value as NewTransactionTypeTab)}
+    />
   );
 }
 
@@ -316,12 +314,15 @@ const newTransactionTopBarSx = {
 };
 
 const newTransactionCloseButtonSx = {
-  color: "rgba(74, 47, 27, 0.54)",
+  color: "text.secondary",
   justifySelf: "start",
+  "&:hover": {
+    bgcolor: "action.hover",
+  },
 };
 
 const newTransactionTitleSx = {
-  color: "#3f2b1f",
+  color: "text.primary",
   fontSize: "1.5rem",
   fontWeight: 900,
   letterSpacing: 0,
