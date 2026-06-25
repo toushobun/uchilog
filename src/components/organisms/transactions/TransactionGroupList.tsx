@@ -147,7 +147,7 @@ export function TransactionGroupList({
                             fontSize: 12,
                             fontWeight: 800,
                             "&:hover": {
-                              bgcolor: "var(--user-theme-bottom-nav-active-bg)",
+                              bgcolor: "var(--user-theme-field-card-selected-bg)",
                             },
                           }}
                           variant="text"
@@ -175,13 +175,13 @@ export function TransactionGroupList({
                               size="small"
                               startIcon={<DeleteRoundedIcon />}
                               sx={{
-                                bgcolor: "action.hover",
+                                bgcolor: "transparent",
                                 borderRadius: 2,
                                 color: "var(--user-theme-negative-amount)",
                                 fontSize: 12,
                                 fontWeight: 800,
                                 "&:hover": {
-                                  bgcolor: "action.selected",
+                                  bgcolor: "action.hover",
                                 },
                               }}
                               type="submit"
