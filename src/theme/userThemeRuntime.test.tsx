@@ -27,10 +27,10 @@ describe("user theme runtime", () => {
     vi.useFakeTimers();
     window.localStorage.setItem(
       getUserThemeStorageKey("a@example.com"),
-      "jade_morning_dew",
+      "emeraldMorning",
     );
 
-    document.documentElement.dataset.userTheme = "jade_morning_dew";
+    document.documentElement.dataset.userTheme = "emeraldMorning";
 
     const { unmount } = render(
       <UserThemeProvider storageScope="a@example.com">
@@ -38,10 +38,8 @@ describe("user theme runtime", () => {
       </UserThemeProvider>,
     );
 
-    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
-    expect(document.cookie).toContain(
-      `${userThemeCookieName}=jade_morning_dew`,
-    );
+    expect(document.documentElement.dataset.userTheme).toBe("emeraldMorning");
+    expect(document.cookie).toContain(`${userThemeCookieName}=emeraldMorning`);
 
     unmount();
 
@@ -49,21 +47,21 @@ describe("user theme runtime", () => {
       vi.runOnlyPendingTimers();
     });
 
-    expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
+    expect(document.documentElement.dataset.userTheme).toBe("amberWarmth");
     expect(document.cookie).not.toContain(userThemeCookieName);
     expect(
       document.documentElement.style.getPropertyValue("--user-theme-page-bg"),
-    ).toContain("#b8f0e0");
+    ).toContain("#FEF3DC");
   });
 
   it("protected provider 重新挂载时不会短暂恢复默认主题", () => {
     vi.useFakeTimers();
     window.localStorage.setItem(
       getUserThemeStorageKey("a@example.com"),
-      "jade_morning_dew",
+      "emeraldMorning",
     );
 
-    document.documentElement.dataset.userTheme = "jade_morning_dew";
+    document.documentElement.dataset.userTheme = "emeraldMorning";
 
     const firstRender = render(
       <UserThemeProvider storageScope="a@example.com">
@@ -83,7 +81,7 @@ describe("user theme runtime", () => {
       vi.runOnlyPendingTimers();
     });
 
-    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
+    expect(document.documentElement.dataset.userTheme).toBe("emeraldMorning");
 
     // 清理第二次挂载，并触发延迟的默认主题重置。
     secondRender.unmount();
@@ -92,7 +90,7 @@ describe("user theme runtime", () => {
       vi.runOnlyPendingTimers();
     });
 
-    expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
+    expect(document.documentElement.dataset.userTheme).toBe("amberWarmth");
   });
 
   it("Suspense 延迟重挂载到下一轮任务时不会恢复默认主题", () => {
@@ -100,10 +98,10 @@ describe("user theme runtime", () => {
     window.history.pushState(null, "", "/statistics?month=2026-06");
     window.localStorage.setItem(
       getUserThemeStorageKey("a@example.com"),
-      "jade_morning_dew",
+      "emeraldMorning",
     );
 
-    document.documentElement.dataset.userTheme = "jade_morning_dew";
+    document.documentElement.dataset.userTheme = "emeraldMorning";
 
     const firstRender = render(
       <UserThemeProvider storageScope="a@example.com">
@@ -117,10 +115,8 @@ describe("user theme runtime", () => {
       vi.runOnlyPendingTimers();
     });
 
-    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
-    expect(document.cookie).toContain(
-      `${userThemeCookieName}=jade_morning_dew`,
-    );
+    expect(document.documentElement.dataset.userTheme).toBe("emeraldMorning");
+    expect(document.cookie).toContain(`${userThemeCookieName}=emeraldMorning`);
 
     const secondRender = render(
       <UserThemeProvider storageScope="a@example.com">
@@ -128,7 +124,7 @@ describe("user theme runtime", () => {
       </UserThemeProvider>,
     );
 
-    expect(document.documentElement.dataset.userTheme).toBe("jade_morning_dew");
+    expect(document.documentElement.dataset.userTheme).toBe("emeraldMorning");
 
     secondRender.unmount();
     window.history.pushState(null, "", "/login");
@@ -137,17 +133,17 @@ describe("user theme runtime", () => {
       vi.runOnlyPendingTimers();
     });
 
-    expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
+    expect(document.documentElement.dataset.userTheme).toBe("amberWarmth");
     expect(document.cookie).not.toContain(userThemeCookieName);
   });
 
   it("主题选择器刷新后选中当前用户保存的主题，而不是先显示默认主题", async () => {
     window.localStorage.setItem(
       getUserThemeStorageKey("a@example.com"),
-      "sakura_story",
+      "sakuraStory",
     );
 
-    document.documentElement.dataset.userTheme = "sakura_story";
+    document.documentElement.dataset.userTheme = "sakuraStory";
 
     const initialMarkup = renderToString(
       <UserThemeProvider storageScope="a@example.com">
@@ -181,6 +177,22 @@ describe("user theme runtime", () => {
       vi.runOnlyPendingTimers();
     });
 
-    expect(document.documentElement.dataset.userTheme).toBe("lavender_dream");
+    expect(document.documentElement.dataset.userTheme).toBe("amberWarmth");
+  });
+
+  it("旧主题 key 不再迁移，统一回退到默认主题", () => {
+    window.localStorage.setItem(
+      getUserThemeStorageKey("a@example.com"),
+      "jade_morning_dew",
+    );
+
+    render(
+      <UserThemeProvider storageScope="a@example.com">
+        <div />
+      </UserThemeProvider>,
+    );
+
+    expect(document.documentElement.dataset.userTheme).toBe("amberWarmth");
+    expect(document.cookie).toContain(`${userThemeCookieName}=amberWarmth`);
   });
 });

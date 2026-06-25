@@ -55,9 +55,9 @@ export function UserThemePicker() {
         const selected = key === themeKey;
 
         return (
-          <Tooltip key={key} title={theme.label}>
+          <Tooltip key={key} title={theme.name}>
             <ButtonBase
-              aria-label={`切换到${theme.label}`}
+              aria-label={`切换到${theme.name}`}
               aria-selected={selected}
               onClick={() => setThemeKey(key)}
               role="option"
@@ -86,7 +86,7 @@ export function UserThemePicker() {
               <Box
                 aria-hidden="true"
                 sx={{
-                  background: theme.switcherGradient,
+                  background: theme.component.buttonPrimaryBg,
                   borderRadius: "50%",
                   flexShrink: 0,
                   height: 13,
@@ -102,7 +102,7 @@ export function UserThemePicker() {
                   whiteSpace: "nowrap",
                 }}
               >
-                {theme.label}
+                {theme.name}
               </Typography>
             </ButtonBase>
           </Tooltip>

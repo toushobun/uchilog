@@ -1,57 +1,77 @@
 import {
   defaultUserThemeKey,
+  type KuraThemeToken,
   type UserThemeKey,
   userThemeTokens,
 } from "./userThemeTokens";
-import { userTransactionThemeTokens } from "./userTransactionThemeTokens";
 
-const sharedUserThemeCssVariables = {
-  "--user-theme-card-bg": "rgba(255, 255, 255, 0.54)",
-  "--user-theme-card-border": "rgba(255, 255, 255, 0.75)",
-  "--user-theme-card-shadow": "0 3px 18px rgba(0, 0, 0, 0.07)",
-  "--user-theme-nav-bg": "rgba(255, 255, 255, 0.65)",
-  "--user-theme-nav-border": "rgba(255, 255, 255, 0.82)",
-} as const;
+function createPageBackground(token: KuraThemeToken) {
+  const { pageGradientFrom, pageGradientTo } = token.palette;
+
+  return `linear-gradient(180deg, ${pageGradientFrom} 0%, ${pageGradientTo} 100%)`;
+}
+
+function createTitleGradient(token: KuraThemeToken) {
+  const { accentDeep, accent, accentLight } = token.palette;
+
+  return `linear-gradient(120deg, ${accentDeep}, ${accent}, ${accentLight})`;
+}
+
+function createSemanticGradient(background: string, color: string) {
+  return `linear-gradient(90deg, ${background}, ${color})`;
+}
 
 export function getUserThemeCssVariables(themeKey: UserThemeKey) {
-  const tokens = userThemeTokens[themeKey];
-  const transactionTokens = userTransactionThemeTokens[themeKey];
+  const token = userThemeTokens[themeKey];
+  const { palette, semantic, component } = token;
 
   return {
-    ...sharedUserThemeCssVariables,
-    "--user-theme-page-bg": tokens.pageBackground,
-    "--user-theme-switcher-dot": tokens.switcherGradient,
-    "--user-theme-status-text": tokens.statusTextColor,
-    "--user-theme-title-gradient": tokens.titleGradient,
-    "--user-theme-subtitle-text": tokens.subtitleTextColor,
-    "--user-theme-avatar-bg": tokens.avatar.background,
-    "--user-theme-avatar-color": tokens.avatar.color,
-    "--user-theme-badge-bg": tokens.balanceBadge.background,
-    "--user-theme-badge-color": tokens.balanceBadge.color,
-    "--user-theme-balance-text": tokens.balanceTextColor,
-    "--user-theme-section-text": tokens.sectionTextColor,
-    "--user-theme-action-text": tokens.actionTextColor,
-    "--user-theme-budget-bar-1": tokens.budgetBarGradients[0],
-    "--user-theme-budget-bar-2": tokens.budgetBarGradients[1],
-    "--user-theme-budget-bar-3": tokens.budgetBarGradients[2],
-    "--user-theme-negative-amount": tokens.negativeAmountColor,
-    "--user-theme-secondary-text": tokens.secondaryTextColor,
-    "--user-theme-stat-value-1": tokens.statValueColors[0],
-    "--user-theme-stat-value-2": tokens.statValueColors[1],
-    "--user-theme-bottom-nav-active": tokens.bottomNavigation.activeColor,
-    "--user-theme-bottom-nav-active-bg":
-      tokens.bottomNavigation.activeBackground,
-    "--user-theme-bottom-nav-inactive": tokens.bottomNavigation.inactiveColor,
-    "--user-theme-fab-bg": tokens.floatingActionButton.background,
-    "--user-theme-fab-shadow": tokens.floatingActionButton.shadowColor,
-    "--user-theme-fab-text": tokens.floatingActionButton.textColor,
-    "--user-theme-tx-name": tokens.transactionText.nameColor,
-    "--user-theme-tx-meta": tokens.transactionText.metaColor,
-    "--user-theme-tx-summary-bg": transactionTokens.summaryBackground,
-    "--user-theme-tx-nav-bg": transactionTokens.navBackground,
-    "--user-theme-tx-avatar-bg": transactionTokens.avatarBackground,
-    "--user-theme-tx-accent": transactionTokens.accent,
-    "--user-theme-tx-border": transactionTokens.border,
+    "--user-theme-page-bg": createPageBackground(token),
+    "--user-theme-switcher-gradient": component.buttonPrimaryBg,
+    "--user-theme-status-text": palette.textMuted,
+    "--user-theme-title-gradient": createTitleGradient(token),
+    "--user-theme-subtitle-text": palette.textMuted,
+    "--user-theme-avatar-bg": component.iconBadgeBg,
+    "--user-theme-avatar-color": component.iconBadgeText,
+    "--user-theme-badge-bg": component.buttonSecondaryBg,
+    "--user-theme-badge-color": component.buttonSecondaryText,
+    "--user-theme-balance-text": palette.text,
+    "--user-theme-section-text": palette.textMuted,
+    "--user-theme-action-text": palette.accent,
+    "--user-theme-budget-bar-1": createSemanticGradient(
+      semantic.expenseBg,
+      semantic.expense,
+    ),
+    "--user-theme-budget-bar-2": createSemanticGradient(
+      semantic.transferBg,
+      semantic.transfer,
+    ),
+    "--user-theme-budget-bar-3": createSemanticGradient(
+      semantic.incomeBg,
+      semantic.income,
+    ),
+    "--user-theme-negative-amount": semantic.expense,
+    "--user-theme-secondary-text": palette.textMuted,
+    "--user-theme-stat-value-1": palette.accentDeep,
+    "--user-theme-stat-value-2": palette.accent,
+    "--user-theme-bottom-nav-active": palette.accent,
+    "--user-theme-bottom-nav-active-bg": palette.accentPale,
+    "--user-theme-bottom-nav-inactive": palette.textFaint,
+    "--user-theme-fab-bg": component.buttonPrimaryBg,
+    "--user-theme-fab-shadow": palette.shadow,
+    "--user-theme-fab-text": component.buttonPrimaryText,
+    "--user-theme-card-bg": palette.card,
+    "--user-theme-card-border": palette.border,
+    "--user-theme-card-shadow": `0 3px 18px ${palette.shadow}`,
+    "--user-theme-nav-bg": palette.cardElevated,
+    "--user-theme-nav-border": palette.border,
+    "--user-theme-tx-name": palette.text,
+    "--user-theme-tx-meta": palette.textMuted,
+    "--user-theme-tx-summary-bg": palette.surfaceAlt,
+    "--user-theme-tx-nav-bg": palette.surfaceAlt,
+    "--user-theme-tx-avatar-bg": component.iconBadgeBg,
+    "--user-theme-tx-accent": palette.accent,
+    "--user-theme-tx-border": palette.border,
   } as const;
 }
 

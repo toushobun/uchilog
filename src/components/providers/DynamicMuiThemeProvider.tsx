@@ -15,18 +15,29 @@ export function DynamicMuiThemeProvider({
   children,
 }: DynamicMuiThemeProviderProps) {
   const { tokens, themeKey } = useUserTheme();
-  const primaryColor = tokens[themeKey].actionTextColor;
+  const token = tokens[themeKey];
 
   const dynamicTheme = useMemo(
     () =>
       createTheme(baseTheme, {
         palette: {
           primary: {
-            main: primaryColor,
+            main: token.palette.accent,
+            light: token.palette.accentLight,
+            dark: token.palette.accentDeep,
           },
+          background: {
+            default: token.palette.page,
+            paper: token.palette.card,
+          },
+          text: {
+            primary: token.palette.text,
+            secondary: token.palette.textMuted,
+          },
+          divider: token.palette.divider,
         },
       }),
-    [primaryColor],
+    [token],
   );
 
   return <ThemeProvider theme={dynamicTheme}>{children}</ThemeProvider>;
