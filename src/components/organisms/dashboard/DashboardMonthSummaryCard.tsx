@@ -10,23 +10,11 @@ import { SectionCard } from "molecules/ui/SectionCard";
 import type { DashboardAccountSummary } from "types/dashboard";
 import { formatAmount } from "utils/accounts";
 
-const accountIconStyles = {
-  bank: {
-    bgcolor: "var(--user-theme-business-completed-text)",
-    icon: <AccountBalanceWalletRoundedIcon fontSize="small" />,
-  },
-  cash: {
-    bgcolor: "var(--user-theme-business-excluded-text)",
-    icon: <PaymentsRoundedIcon fontSize="small" />,
-  },
-  credit_card: {
-    bgcolor: "var(--user-theme-business-pending-text)",
-    icon: <CreditCardRoundedIcon fontSize="small" />,
-  },
-  e_money: {
-    bgcolor: "var(--user-theme-business-refund-text)",
-    icon: <SmartphoneRoundedIcon fontSize="small" />,
-  },
+const accountIconMap = {
+  bank: <AccountBalanceWalletRoundedIcon fontSize="small" />,
+  cash: <PaymentsRoundedIcon fontSize="small" />,
+  credit_card: <CreditCardRoundedIcon fontSize="small" />,
+  e_money: <SmartphoneRoundedIcon fontSize="small" />,
 } as const;
 
 type DashboardMonthSummaryCardProps = {
@@ -78,14 +66,12 @@ export function DashboardMonthSummaryCard({
                 <IconBadge
                   size="sm"
                   sx={{
-                    backgroundColor: getAccountIconStyle(account.type).bgcolor,
                     borderRadius: 0.75,
-                    color: "common.white",
                     height: 28,
                     width: 28,
                   }}
                 >
-                  {getAccountIconStyle(account.type).icon}
+                  {getAccountIcon(account.type)}
                 </IconBadge>
                 <Typography
                   noWrap
@@ -116,9 +102,6 @@ export function DashboardMonthSummaryCard({
   );
 }
 
-function getAccountIconStyle(type: string) {
-  return (
-    accountIconStyles[type as keyof typeof accountIconStyles] ??
-    accountIconStyles.bank
-  );
+function getAccountIcon(type: string) {
+  return accountIconMap[type as keyof typeof accountIconMap] ?? accountIconMap.bank;
 }
