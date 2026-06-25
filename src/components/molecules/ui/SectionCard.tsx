@@ -7,6 +7,11 @@ export function SectionCard({ sx, ...props }: CardProps) {
     <Card
       sx={[
         {
+          backgroundColor: "var(--user-theme-card-bg)",
+          backgroundImage: "none",
+          border: "1px solid var(--user-theme-card-border)",
+          borderRadius: `${designTokens.radius.lg}px`,
+          boxShadow: "var(--user-theme-card-shadow)",
           p: designTokens.spacing.card,
         },
         ...(Array.isArray(sx) ? sx : [sx]),

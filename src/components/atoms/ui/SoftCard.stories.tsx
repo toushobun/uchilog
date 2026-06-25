@@ -1,12 +1,12 @@
 import Typography from "@mui/material/Typography";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { GlassCard } from "./GlassCard";
+import { SoftCard } from "./SoftCard";
 
 const meta = {
-  title: "Atoms/UI/GlassCard",
-  component: GlassCard,
-} satisfies Meta<typeof GlassCard>;
+  title: "Atoms/UI/SoftCard",
+  component: SoftCard,
+} satisfies Meta<typeof SoftCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -15,7 +15,7 @@ export const Default: Story = {
   name: "默认",
   args: {
     sx: { p: 3 },
-    children: <Typography>这是一张玻璃卡片内容区域</Typography>,
+    children: <Typography>这是一张柔和卡片内容区域</Typography>,
   },
 };
 

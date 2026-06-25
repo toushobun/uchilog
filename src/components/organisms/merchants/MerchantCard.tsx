@@ -7,11 +7,11 @@ import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { SoftCard } from "atoms/ui/SoftCard";
 import { MerchantAliasForm } from "organisms/merchants/MerchantAliasForm";
 import { MerchantEditForm } from "organisms/merchants/MerchantEditForm";
 import type { ServerAction } from "types/actions";
 import type { MerchantRow } from "types/merchants";
-import { GlassCard } from "atoms/ui/GlassCard";
 import { getMerchantInitial } from "utils/merchants";
 
 type MerchantCardProps = {
@@ -32,7 +32,7 @@ export function MerchantCard({
   updateMerchantAction,
 }: MerchantCardProps) {
   return (
-    <GlassCard
+    <SoftCard
       sx={{
         borderColor: errorMessage
           ? "error.main"
@@ -130,6 +130,6 @@ export function MerchantCard({
 
       <Divider sx={{ my: 3 }} />
       <MerchantEditForm action={updateMerchantAction} merchant={merchant} />
-    </GlassCard>
+    </SoftCard>
   );
 }

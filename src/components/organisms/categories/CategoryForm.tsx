@@ -7,13 +7,13 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
 
+import { SoftCard } from "atoms/ui/SoftCard";
 import {
   type CategoryAction,
   type CategoryParentOption,
   categoryTypeOptions,
 } from "types/categories";
 import type { TransactionType } from "types/transactions";
-import { GlassCard } from "atoms/ui/GlassCard";
 
 type CategoryFormProps = {
   createCategoryAction: CategoryAction;
@@ -34,7 +34,7 @@ export function CategoryForm({
   );
 
   return (
-    <GlassCard sx={{ mt: 4, p: 3 }}>
+    <SoftCard sx={{ mt: 4, p: 3 }}>
       <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
         新增分类
       </Typography>
@@ -98,6 +98,6 @@ export function CategoryForm({
           新增分类
         </Button>
       </Stack>
-    </GlassCard>
+    </SoftCard>
   );
 }

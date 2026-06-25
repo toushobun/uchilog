@@ -5,9 +5,9 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import type { CategoryAction, CategoryTreeItem } from "types/categories";
-import { GlassCard } from "atoms/ui/GlassCard";
+import { SoftCard } from "atoms/ui/SoftCard";
 import { EmptyState } from "molecules/ui/EmptyState";
+import type { CategoryAction, CategoryTreeItem } from "types/categories";
 
 type CategoryListProps = {
   archiveCategoryAction: CategoryAction;
@@ -111,7 +111,7 @@ export function CategoryList({
                   errorCategoryId === category.id ? errorMessage : null;
 
                 return (
-                  <GlassCard
+                  <SoftCard
                     key={category.id}
                     sx={{
                       borderColor: categoryErrorMessage
@@ -199,7 +199,7 @@ export function CategoryList({
                         })}
                       </Stack>
                     )}
-                  </GlassCard>
+                  </SoftCard>
                 );
               })}
             </Stack>

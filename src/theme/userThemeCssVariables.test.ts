@@ -50,4 +50,16 @@ describe("getUserThemeCssVariables", () => {
       getUserThemeCssVariables("deepSeaStarlight")["--user-theme-fab-text"],
     ).toBe("#FFFFFF");
   });
+
+  it("输出共通样式组件使用的用户主题变量", () => {
+    const themeVars = getUserThemeCssVariables("amberWarmth");
+
+    expect(themeVars["--user-theme-segment-bg"]).toBe("#F7EFE5");
+    expect(themeVars["--user-theme-segment-selected-bg"]).toBe("#FFFDF8");
+    expect(themeVars["--user-theme-icon-badge-bg"]).toBe("#FEF3DC");
+    expect(themeVars["--user-theme-receipt-bg"]).toBe("#FFFDF8");
+    expect(themeVars["--user-theme-receipt-tear-bg"]).toBe("#FDF8F0");
+    expect(themeVars["--user-theme-business-pending-bg"]).toBe("#FFF3D6");
+    expect(themeVars["--user-theme-business-completed-text"]).toBe("#2F855A");
+  });
 });
