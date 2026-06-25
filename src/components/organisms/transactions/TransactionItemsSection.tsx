@@ -8,7 +8,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { MouseEvent, RefObject } from "react";
 
-import { designTokens } from "theme/theme";
+import { SectionCard } from "molecules/ui/SectionCard";
 import type { TransactionType } from "types/transactions";
 
 import type {
@@ -47,7 +47,7 @@ export function TransactionItemsSection({
   signedTotalAmount,
 }: TransactionItemsSectionProps) {
   return (
-    <Paper ref={itemsFieldRef} variant="outlined" sx={sectionPaperSx}>
+    <SectionCard ref={itemsFieldRef} sx={sectionCardSx}>
       <Stack spacing={1.5}>
         <Typography color="text.secondary" variant="subtitle1" sx={titleSx}>
           📋 {selectedType === "income" ? "收入明细" : "消费明细"}
@@ -182,7 +182,7 @@ export function TransactionItemsSection({
           </Box>
         ) : null}
       </Stack>
-    </Paper>
+    </SectionCard>
   );
 }
 
@@ -226,15 +226,29 @@ const currencySymbols: Record<string, string> = {
   USD: "$",
 };
 
-const itemAccentColors = ["#e88b00", "#f43f7f", "#2f8be6"];
+const itemAccentStyles = [
+  {
+    accent: "var(--user-theme-action-text)",
+    background: "var(--user-theme-badge-bg)",
+  },
+  {
+    accent: "var(--user-theme-negative-amount)",
+    background: "var(--user-theme-negative-bg)",
+  },
+  {
+    accent: "var(--user-theme-tx-accent)",
+    background: "var(--user-theme-transfer-bg)",
+  },
+] as const;
 
 function getItemPaperSx(index: number) {
-  const accentColor = itemAccentColors[index % itemAccentColors.length];
+  const accent = itemAccentStyles[index % itemAccentStyles.length].accent;
 
   return {
-    bgcolor: "rgba(255, 250, 242, 0.9)",
+    bgcolor: "var(--user-theme-card-bg)",
+    border: "1px solid var(--user-theme-card-border)",
     borderLeft: "4px solid",
-    borderLeftColor: accentColor,
+    borderLeftColor: accent,
     borderRadius: 2,
     boxShadow: "none",
     px: 1.5,
@@ -243,18 +257,18 @@ function getItemPaperSx(index: number) {
 }
 
 function getCategoryChipSx(index: number, isParent: boolean) {
-  const accentColor = itemAccentColors[index % itemAccentColors.length];
+  const style = itemAccentStyles[index % itemAccentStyles.length];
 
   return {
-    bgcolor: isParent ? `${accentColor}18` : "rgba(47, 42, 36, 0.08)",
+    bgcolor: isParent ? style.background : "var(--user-theme-badge-bg)",
     borderRadius: 1,
-    color: isParent ? accentColor : "text.secondary",
+    color: isParent ? style.accent : "text.secondary",
     fontWeight: 800,
     height: 28,
   };
 }
 
-const sectionPaperSx = {
+const sectionCardSx = {
   borderRadius: 2,
   p: 2,
 };
@@ -288,16 +302,16 @@ const amountButtonSx = {
 
 const addItemButtonSx = {
   border: "2px dashed",
-  borderColor: "rgba(217, 119, 6, 0.38)",
+  borderColor: "var(--user-theme-field-card-selected-border)",
   borderRadius: 2,
-  color: "#d97706",
+  color: "var(--user-theme-action-text)",
   fontSize: "0.9rem",
   fontWeight: 900,
   minHeight: 40,
 };
 
 const summaryBoxSx = {
-  bgcolor: designTokens.color.background.subtle,
+  bgcolor: "var(--user-theme-tx-summary-bg)",
   borderRadius: 2,
   display: "flex",
   justifyContent: "space-between",
