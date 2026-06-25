@@ -27,6 +27,7 @@ import {
 import { routePaths } from "config/paths";
 import { TransactionFormHeader } from "organisms/transactions/TransactionFormHeader";
 import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
+import { IconBadge } from "atoms/ui/IconBadge";
 import type {
   TransactionAccountOption,
   TransactionCategoryOption,
@@ -630,7 +631,7 @@ export function TransactionForm({
           sx={{
             "&:not(.Mui-disabled)": {
               background: "var(--user-theme-fab-bg)",
-              color: "white",
+              color: "var(--user-theme-fab-text)",
             },
           }}
         >
@@ -685,7 +686,14 @@ function SelectionIcon({
   children: ReactNode;
   tone: "blue" | "orange";
 }) {
-  return <Box sx={getSelectionIconSx(tone)}>{children}</Box>;
+  return (
+    <IconBadge
+      size="sm"
+      sx={tone === "orange" ? merchantSelectionIconSx : accountSelectionIconSx}
+    >
+      {children}
+    </IconBadge>
+  );
 }
 
 function createInitialItemsByType(
@@ -761,7 +769,6 @@ const selectionFieldGroupSx = {
 };
 
 const sectionTitleSx = {
-  color: "rgba(74, 47, 27, 0.64)",
   fontSize: "1rem",
   fontWeight: 800,
   lineHeight: 1.2,
@@ -791,23 +798,23 @@ const selectionSelectSx = {
     width: 1,
   },
   "& .MuiOutlinedInput-root": {
-    bgcolor: "rgba(255, 253, 248, 0.94)",
+    bgcolor: "var(--user-theme-card-bg)",
     borderRadius: 1.5,
     minHeight: 54,
     pr: 4.5,
   },
   "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "rgba(133, 77, 14, 0.14)",
+    borderColor: "var(--user-theme-card-border)",
   },
   "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "rgba(217, 119, 6, 0.32)",
+    borderColor: "var(--user-theme-field-card-selected-border)",
   },
   "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#d97706",
+    borderColor: "var(--user-theme-field-card-selected-border)",
     borderWidth: 1,
   },
   "& .MuiSelect-icon": {
-    color: "rgba(74, 47, 27, 0.48)",
+    color: "text.secondary",
     fontSize: "1.8rem",
     right: 10,
   },
@@ -822,24 +829,15 @@ const selectionSelectSx = {
   },
 };
 
-function getSelectionIconSx(tone: "blue" | "orange") {
-  const colors =
-    tone === "orange"
-      ? { bgcolor: "#fff1df", color: "#f08a24" }
-      : { bgcolor: "#e7f4ff", color: "#2994dd" };
+const merchantSelectionIconSx = {
+  bgcolor: "var(--user-theme-badge-bg)",
+  color: "var(--user-theme-action-text)",
+};
 
-  return {
-    alignItems: "center",
-    bgcolor: colors.bgcolor,
-    borderRadius: 999,
-    color: colors.color,
-    display: "inline-flex",
-    flexShrink: 0,
-    height: 30,
-    justifyContent: "center",
-    width: 30,
-  };
-}
+const accountSelectionIconSx = {
+  bgcolor: "var(--user-theme-transfer-bg)",
+  color: "var(--user-theme-tx-accent)",
+};
 
 const noteFieldSx = {
   "& .MuiOutlinedInput-root": {
