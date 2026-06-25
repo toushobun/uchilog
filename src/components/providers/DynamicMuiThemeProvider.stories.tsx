@@ -121,7 +121,7 @@ function OverlaySurface({ overlay }: { overlay: OverlayKind }) {
         }}
         variant="persistent"
       >
-        <Typography sx={{ fontWeight: 700 }}>项目选择</Typography>
+        <Typography sx={{ fontWeight: "fontWeightBold" }}>项目选择</Typography>
         <List dense>
           <ListItem disablePadding>
             <ListItemText primary="食材" secondary="Drawer 背景确认" />
@@ -159,7 +159,7 @@ function OverlaySurface({ overlay }: { overlay: OverlayKind }) {
       open
     >
       <Box sx={{ maxWidth: 240, p: 2 }}>
-        <Typography sx={{ fontWeight: 700 }}>补充说明</Typography>
+        <Typography sx={{ fontWeight: "fontWeightBold" }}>补充说明</Typography>
         <Typography color="text.secondary" variant="body2">
           Popover 背景应保持基础 paper，避免被卡片 token 无意污染。
         </Typography>
