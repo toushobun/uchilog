@@ -1,4 +1,6 @@
 import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import { cleanup, render, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -59,6 +61,31 @@ describe("PageHeader", () => {
     expect(within(container).getByText("账户说明")).toBeInTheDocument();
     expect(
       within(container).getByRole("button", { name: "新增账户" }),
+    ).toBeInTheDocument();
+  });
+
+  it("显示 ReactNode 副标题", () => {
+    const { container } = render(
+      <PageHeader
+        title="统计"
+        subtitle={
+          <Stack spacing={0.5}>
+            <span>当前账本：家庭账本</span>
+            <Typography color="text.secondary" variant="body2">
+              按月份整理收支、分类和商家，让家庭账本一眼看清。
+            </Typography>
+          </Stack>
+        }
+      />,
+    );
+
+    expect(
+      within(container).getByText("当前账本：家庭账本"),
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByText(
+        "按月份整理收支、分类和商家，让家庭账本一眼看清。",
+      ),
     ).toBeInTheDocument();
   });
 

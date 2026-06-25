@@ -1,5 +1,7 @@
 import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
 import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { CSSProperties, ReactNode } from "react";
 
@@ -71,6 +73,25 @@ export const HeaderOnly: Story = {
         title="商家"
         subtitle="管理常用商家、平台、公司和个人。"
         action={<Button variant="outlined">导入</Button>}
+      />
+    </ThemeStory>
+  ),
+};
+
+export const HeaderWithRichSubtitle: Story = {
+  name: "PageHeader（ReactNode subtitle）",
+  render: () => (
+    <ThemeStory>
+      <PageHeader
+        title="统计"
+        subtitle={
+          <Stack spacing={0.5}>
+            <span>当前账本：家庭账本</span>
+            <Typography color="text.secondary" variant="body2">
+              按月份整理收支、分类和商家，让家庭账本一眼看清。
+            </Typography>
+          </Stack>
+        }
       />
     </ThemeStory>
   ),
