@@ -790,6 +790,7 @@ const selectionPrimarySx = {
 };
 
 const selectionSelectSx = {
+  ...outlinedInputTokenSx,
   "& .MuiInputLabel-root": {
     clip: "rect(0 0 0 0)",
     height: 1,
@@ -804,16 +805,6 @@ const selectionSelectSx = {
     minHeight: 54,
     pr: 4.5,
   },
-  "& .MuiOutlinedInput-notchedOutline":
-    outlinedInputTokenSx["& .MuiOutlinedInput-notchedOutline"],
-  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-    outlinedInputTokenSx[
-      "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline"
-    ],
-  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-    outlinedInputTokenSx[
-      "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline"
-    ],
   "& .MuiSelect-icon": {
     color: "text.secondary",
     fontSize: "1.8rem",

@@ -69,7 +69,7 @@ export function UserThemePicker() {
                   ? "var(--user-theme-bottom-nav-active)"
                   : "transparent",
                 borderRadius: 999,
-                boxShadow: selected ? "var(--user-theme-card-shadow)" : "none",
+                boxShadow: "var(--user-theme-card-shadow)",
                 color: selected ? "text.primary" : "text.secondary",
                 display: "inline-flex",
                 flexShrink: 0,
