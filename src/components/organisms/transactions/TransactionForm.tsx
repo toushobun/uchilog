@@ -662,7 +662,7 @@ export function TransactionForm({
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <Typography color="text.secondary" variant="subtitle1" sx={sectionTitleSx}>
+    <Typography variant="subtitle1" sx={sectionTitleSx}>
       {children}
     </Typography>
   );
@@ -769,6 +769,7 @@ const selectionFieldGroupSx = {
 };
 
 const sectionTitleSx = {
+  color: "text.secondary",
   fontSize: "1rem",
   fontWeight: 800,
   lineHeight: 1.2,
