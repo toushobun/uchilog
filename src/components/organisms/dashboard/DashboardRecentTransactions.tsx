@@ -1,25 +1,18 @@
 "use client";
 
-import Box from "@mui/material/Box";
+import MuiLink from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 
 import { routePaths } from "config/paths";
-import {
-  receiptCardBorder,
-  receiptMutedText,
-  receiptTextColor,
-} from "theme/receiptColors";
 import { TransactionRow } from "molecules/transactions/TransactionRow";
+import { SectionCard } from "molecules/ui/SectionCard";
 import type { DashboardRecentTransaction } from "types/dashboard";
 
 type DashboardRecentTransactionsProps = {
   transactions: DashboardRecentTransaction[];
 };
-
-const cardBorder = receiptCardBorder;
-const textColor = receiptTextColor;
 
 export function DashboardRecentTransactions({
   transactions,
@@ -30,30 +23,31 @@ export function DashboardRecentTransactions({
         direction="row"
         sx={{ alignItems: "center", justifyContent: "space-between" }}
       >
-        <Typography sx={{ color: textColor, fontSize: 15, fontWeight: 900 }}>
+        <Typography
+          sx={{ color: "text.primary", fontSize: 15, fontWeight: 900 }}
+        >
           近期记录
         </Typography>
-        <Link
+        <MuiLink
+          component={Link}
           href={routePaths.transactions}
-          style={{
-            color: receiptMutedText,
+          sx={{
+            color: "text.secondary",
             fontSize: 12,
-            fontWeight: 800,
+            fontWeight: "fontWeightBold",
             textDecoration: "none",
           }}
         >
           查看全部
-        </Link>
+        </MuiLink>
       </Stack>
 
-      <Box
+      <SectionCard
         sx={{
-          bgcolor: "rgba(255, 255, 255, 0.82)",
-          border: `1px solid ${cardBorder}`,
           borderRadius: 1.25,
-          boxShadow: "0 8px 18px rgba(120, 53, 15, 0.05)",
           overflow: "hidden",
           px: 1.2,
+          py: 0,
         }}
       >
         {transactions.length > 0 ? (
@@ -77,7 +71,7 @@ export function DashboardRecentTransactions({
             本月还没有记账记录。
           </Typography>
         )}
-      </Box>
+      </SectionCard>
     </Stack>
   );
 }
