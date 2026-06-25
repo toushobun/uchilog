@@ -12,14 +12,8 @@ import { useSyncExternalStore } from "react";
 
 import { serverFallbackTimeZone } from "config/dateTime";
 import { transactionEditHref } from "config/paths";
-import { transactionAccentColor } from "theme/transactionColors";
-import {
-  receiptAccentColor,
-  receiptExpenseColor,
-  receiptIncomeColor,
-  receiptMutedText,
-  receiptTextColor,
-} from "theme/receiptColors";
+import { TransactionBusinessBadge } from "organisms/transactions/TransactionBusinessBadge";
+import type { TransactionBusinessBadgeStatus } from "organisms/transactions/transactionBusinessBadgeConfig";
 import type { ServerAction } from "types/actions";
 import type {
   CategorySummaryItem,
@@ -54,17 +48,12 @@ type ReceiptTransactionRowItem = TransactionRowItem & {
   tagNames?: string[];
 };
 
-const textColor = receiptTextColor;
-const mutedText = receiptMutedText;
-const expenseColor = receiptExpenseColor;
-const incomeColor = receiptIncomeColor;
-const themeDotColor = receiptAccentColor;
-const tagStyles = [
-  { bgcolor: "#fee2e2", color: "#be123c" },
-  { bgcolor: "#ccfbf1", color: "#0f766e" },
-  { bgcolor: "#dbeafe", color: "#1d4ed8" },
-  { bgcolor: "#fef3c7", color: "#b45309" },
-] as const;
+const textColor = "var(--user-theme-tx-name)";
+const mutedText = "var(--user-theme-tx-meta)";
+const expenseColor = "var(--user-theme-negative-amount)";
+const incomeColor = "var(--user-theme-income-amount)";
+const themeDotColor = "var(--user-theme-tx-accent)";
+const avatarBackground = "var(--user-theme-tx-avatar-bg)";
 
 export function TransactionRow({
   item,
@@ -83,7 +72,7 @@ export function TransactionRow({
     ? "账户周转"
     : (item.merchant_name ?? "未指定商家");
   const amountColor = isTransfer
-    ? transactionAccentColor
+    ? themeDotColor
     : item.type === "income"
       ? incomeColor
       : expenseColor;
@@ -114,7 +103,7 @@ export function TransactionRow({
           src={isTransfer ? undefined : (item.merchant_icon_url ?? undefined)}
           variant="rounded"
           sx={{
-            bgcolor: getAvatarBackground(item.type),
+            bgcolor: avatarBackground,
             borderRadius: 0.75,
             color: getAvatarColor(item.type),
             flexShrink: 0,
@@ -183,24 +172,20 @@ export function TransactionRow({
                       {metaText}
                     </Typography>
                   ) : null}
-                  {categoryTags.map((tag, index) => {
-                    const style = tagStyles[index % tagStyles.length];
-
-                    return (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        size="small"
-                        sx={{
-                          bgcolor: style.bgcolor,
-                          color: style.color,
-                          fontSize: 11,
-                          fontWeight: 800,
-                          height: 22,
-                        }}
-                      />
-                    );
-                  })}
+                  {categoryTags.map((tag) => (
+                    <Chip
+                      key={tag}
+                      label={tag}
+                      size="small"
+                      sx={{
+                        bgcolor: "var(--user-theme-badge-bg)",
+                        color: "var(--user-theme-badge-color)",
+                        fontSize: 11,
+                        fontWeight: 800,
+                        height: 22,
+                      }}
+                    />
+                  ))}
                 </Stack>
               ) : null}
             </Stack>
@@ -241,7 +226,7 @@ export function TransactionRow({
       {shouldShowBreakdown ? (
         <Box
           sx={{
-            bgcolor: "rgba(255, 248, 237, 0.74)",
+            bgcolor: "var(--user-theme-tx-summary-bg)",
             borderRadius: 1,
             px: 1.35,
             py: 0.8,
@@ -275,15 +260,11 @@ export function TransactionRow({
                     {formatCategoryBreakdownLabel(category)}
                   </Typography>
                   {category.specialLabel ? (
-                    <Chip
+                    <TransactionBusinessBadge
                       label={category.specialLabel}
                       size="small"
-                      sx={{
-                        ...getSpecialStatusStyle(category.specialTone),
-                        fontSize: 10,
-                        fontWeight: 900,
-                        height: 20,
-                      }}
+                      status={getBusinessBadgeStatus(category.specialTone)}
+                      sx={{ fontSize: 10, height: 20 }}
                     />
                   ) : null}
                 </Stack>
@@ -344,16 +325,10 @@ export function TransactionRow({
   );
 }
 
-function getAvatarBackground(type: TransactionRowItem["type"]) {
-  if (type === "income") return "#ccfbf1";
-  if (type === "transfer") return "#dbeafe";
-  return "#fee2e2";
-}
-
 function getAvatarColor(type: TransactionRowItem["type"]) {
-  if (type === "income") return "#0f766e";
-  if (type === "transfer") return transactionAccentColor;
-  return "#e11d48";
+  if (type === "income") return incomeColor;
+  if (type === "transfer") return themeDotColor;
+  return expenseColor;
 }
 
 function getCategoryTags(tagNames: string[] | undefined) {
@@ -366,16 +341,14 @@ function formatCategoryBreakdownLabel(category: CategorySummaryItem) {
     : category.categoryName;
 }
 
-// TODO: 待报销 / 待退款等特殊标签后续需要从每条明细的数据结构中正式提供，
-// 并按标签语义配置对应的背景色与字体色。当前仅用于 Storybook 假数据验证样式。
-function getSpecialStatusStyle(
+function getBusinessBadgeStatus(
   tone: ReceiptCategoryItem["specialTone"] = "orange",
-) {
-  if (tone === "blue") return { bgcolor: "#dbeafe", color: "#2563eb" };
-  if (tone === "pink") return { bgcolor: "#ffe4e6", color: "#e11d48" };
-  if (tone === "teal") return { bgcolor: "#ccfbf1", color: "#0f766e" };
+): TransactionBusinessBadgeStatus {
+  if (tone === "blue") return "pendingRefund";
+  if (tone === "pink") return "excluded";
+  if (tone === "teal") return "reimbursed";
 
-  return { bgcolor: "#fef3c7", color: "#d97706" };
+  return "pendingReimbursement";
 }
 
 function getTypeLabel(type: TransactionRowItem["type"]) {
