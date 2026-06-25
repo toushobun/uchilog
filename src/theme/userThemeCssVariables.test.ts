@@ -62,4 +62,11 @@ describe("getUserThemeCssVariables", () => {
     expect(themeVars["--user-theme-business-pending-bg"]).toBe("#FFF3D6");
     expect(themeVars["--user-theme-business-completed-text"]).toBe("#2F855A");
   });
+
+  it("输出首页金额语义色变量", () => {
+    const themeVars = getUserThemeCssVariables("amberWarmth");
+
+    expect(themeVars["--user-theme-income-amount"]).toBe("#42A87A");
+    expect(themeVars["--user-theme-expense-amount"]).toBe("#E8547A");
+  });
 });
