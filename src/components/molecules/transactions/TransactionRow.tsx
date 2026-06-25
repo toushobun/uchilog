@@ -51,7 +51,6 @@ const mutedText = "var(--user-theme-tx-meta)";
 const expenseColor = "var(--user-theme-negative-amount)";
 const incomeColor = "var(--user-theme-income-amount)";
 const themeDotColor = "var(--user-theme-tx-accent)";
-const avatarBackground = "var(--user-theme-tx-avatar-bg)";
 
 export function TransactionRow({
   item,
@@ -101,7 +100,7 @@ export function TransactionRow({
           src={isTransfer ? undefined : (item.merchant_icon_url ?? undefined)}
           variant="rounded"
           sx={{
-            bgcolor: avatarBackground,
+            bgcolor: getAvatarBackground(item.type),
             borderRadius: 0.75,
             color: getAvatarColor(item.type),
             flexShrink: 0,
@@ -325,6 +324,12 @@ export function TransactionRow({
       ) : null}
     </Stack>
   );
+}
+
+function getAvatarBackground(type: TransactionRowItem["type"]) {
+  if (type === "income") return "var(--user-theme-income-bg)";
+  if (type === "transfer") return "var(--user-theme-transfer-bg)";
+  return "var(--user-theme-negative-bg)";
 }
 
 function getAvatarColor(type: TransactionRowItem["type"]) {
