@@ -59,7 +59,7 @@ export function TransactionTagSection({
       <Stack spacing={1.5}>
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <LocalOfferRoundedIcon sx={titleIconSx} />
-          <Typography color="text.secondary" variant="subtitle1" sx={titleSx}>
+          <Typography variant="subtitle1" sx={titleSx}>
             标签（整体）
           </Typography>
         </Stack>
@@ -199,6 +199,7 @@ const titleIconSx = {
 };
 
 const titleSx = {
+  color: "text.secondary",
   fontSize: "1.05rem",
   fontWeight: 800,
 };
@@ -216,7 +217,7 @@ const tagInlineInputSx = {
 };
 
 const tagConfirmButtonSx = {
-  color: "var(--user-theme-business-completed-text)",
+  color: "success.main",
   p: 0.25,
 };
 
