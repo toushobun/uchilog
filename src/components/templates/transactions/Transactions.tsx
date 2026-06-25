@@ -1,3 +1,5 @@
+"use client";
+
 import FilterListRoundedIcon from "@mui/icons-material/FilterListRounded";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
