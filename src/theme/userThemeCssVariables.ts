@@ -50,6 +50,8 @@ export function getUserThemeCssVariables(themeKey: UserThemeKey) {
       semantic.incomeBg,
       semantic.income,
     ),
+    "--user-theme-income-amount": semantic.income,
+    "--user-theme-expense-amount": semantic.expense,
     "--user-theme-negative-amount": semantic.expense,
     "--user-theme-secondary-text": palette.textMuted,
     "--user-theme-stat-value-1": palette.accentDeep,
