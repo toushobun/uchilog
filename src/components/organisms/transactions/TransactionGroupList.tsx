@@ -147,7 +147,8 @@ export function TransactionGroupList({
                             fontSize: 12,
                             fontWeight: 800,
                             "&:hover": {
-                              bgcolor: "var(--user-theme-field-card-selected-bg)",
+                              bgcolor:
+                                "var(--user-theme-field-card-selected-bg)",
                             },
                           }}
                           variant="text"
