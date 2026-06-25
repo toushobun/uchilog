@@ -71,6 +71,14 @@ describe("getUserThemeCssVariables", () => {
     expect(themeVars["--user-theme-negative-amount"]).toBe("#E8547A");
   });
 
+  it("输出默认主题交易类型背景语义色变量", () => {
+    const themeVars = getUserThemeCssVariables("amberWarmth");
+
+    expect(themeVars["--user-theme-income-bg"]).toBe("#E2F7EC");
+    expect(themeVars["--user-theme-transfer-bg"]).toBe("#E5F0FF");
+    expect(themeVars["--user-theme-negative-bg"]).toBe("#FFE7ED");
+  });
+
   it("所有主题均输出首页金额相关变量", () => {
     userThemeKeys.forEach((themeKey) => {
       const themeVars = getUserThemeCssVariables(themeKey);
