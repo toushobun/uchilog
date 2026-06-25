@@ -96,9 +96,15 @@ describe("getUserThemeCssVariables", () => {
     userThemeKeys.forEach((themeKey) => {
       const themeVars = getUserThemeCssVariables(themeKey);
 
-      expect(themeVars["--user-theme-income-bg"]).toEqual(expect.any(String));
-      expect(themeVars["--user-theme-transfer-bg"]).toEqual(expect.any(String));
-      expect(themeVars["--user-theme-negative-bg"]).toEqual(expect.any(String));
+      expect(themeVars["--user-theme-income-bg"]).toEqual(
+        expect.any(String),
+      );
+      expect(themeVars["--user-theme-transfer-bg"]).toEqual(
+        expect.any(String),
+      );
+      expect(themeVars["--user-theme-negative-bg"]).toEqual(
+        expect.any(String),
+      );
     });
   });
 });
