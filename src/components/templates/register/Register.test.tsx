@@ -48,7 +48,7 @@ describe("RegisterTemplate", () => {
     const { container } = render(<RegisterTemplate {...defaultProps} />);
 
     expect(
-      within(container).getByRole("heading", { name: "UchiLog" }),
+      within(container).getByRole("heading", { name: "KuraNote" }),
     ).toBeTruthy();
   });
 

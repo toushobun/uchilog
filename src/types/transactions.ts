@@ -26,6 +26,7 @@ export type TransactionRowItem = {
   merchant_icon_url: string | null;
   note?: string | null;
   recorder_name?: string | null;
+  tagNames: string[];
 };
 
 export type TransactionAccountOption = {
@@ -79,7 +80,6 @@ export type TransactionMonthViewData = {
   monthLabel: string;
   previousMonth: string;
   nextMonth: string;
-  summary: TransactionAmountSummary;
   groups: TransactionDateGroup[];
   nextOffset: number | null;
 };

@@ -1,18 +1,18 @@
 import { cleanup, render, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { GlassCard } from "./GlassCard";
+import { SoftCard } from "./SoftCard";
 
 afterEach(() => {
   cleanup();
 });
 
-describe("GlassCard", () => {
+describe("SoftCard", () => {
   it("渲染子元素内容", () => {
     const { container } = render(
-      <GlassCard>
+      <SoftCard>
         <span>卡片内容</span>
-      </GlassCard>,
+      </SoftCard>,
     );
 
     expect(within(container).getByText("卡片内容")).toBeInTheDocument();
@@ -20,13 +20,11 @@ describe("GlassCard", () => {
 
   it("透传额外的 sx 属性", () => {
     const { container } = render(
-      <GlassCard data-testid="glass-card" sx={{ mt: 2 }}>
+      <SoftCard data-testid="soft-card" sx={{ mt: 2 }}>
         内容
-      </GlassCard>,
+      </SoftCard>,
     );
 
-    expect(
-      container.querySelector("[data-testid='glass-card']"),
-    ).not.toBeNull();
+    expect(container.querySelector("[data-testid='soft-card']")).not.toBeNull();
   });
 });

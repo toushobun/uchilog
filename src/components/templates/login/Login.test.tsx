@@ -36,7 +36,7 @@ describe("LoginTemplate", () => {
     );
 
     expect(
-      within(container).getByRole("heading", { name: "UchiLog" }),
+      within(container).getByRole("heading", { name: "KuraNote" }),
     ).toBeTruthy();
   });
 

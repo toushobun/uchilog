@@ -4,7 +4,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import type { ReactNode } from "react";
 
-import { GlassCard } from "atoms/ui/GlassCard";
+import { SoftCard } from "atoms/ui/SoftCard";
 import { themeColorTokens } from "theme/themeColorTokens";
 
 import type { AccountHolderRow, AccountType } from "types/accounts";
@@ -36,7 +36,7 @@ export function AccountCard({
   footer,
 }: AccountCardProps) {
   return (
-    <GlassCard sx={{ p: 3 }}>
+    <SoftCard sx={{ p: 3 }}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
@@ -105,6 +105,6 @@ export function AccountCard({
           {footer}
         </>
       ) : null}
-    </GlassCard>
+    </SoftCard>
   );
 }

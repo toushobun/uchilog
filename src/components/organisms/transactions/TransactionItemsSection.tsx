@@ -1,14 +1,15 @@
 import CloseIcon from "@mui/icons-material/Close";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import type { RefObject } from "react";
+import type { MouseEvent, RefObject } from "react";
 
 import { designTokens } from "theme/theme";
+import type { TransactionType } from "types/transactions";
 
 import type {
   TransactionFormItem,
@@ -29,6 +30,7 @@ type TransactionItemsSectionProps = {
     values: Partial<Omit<TransactionFormItem, "id">>,
   ) => void;
   selectedAccountCurrency?: string;
+  selectedType: TransactionType;
   signedTotalAmount: string;
 };
 
@@ -41,13 +43,14 @@ export function TransactionItemsSection({
   onRemoveItem,
   onUpdateItem,
   selectedAccountCurrency,
+  selectedType,
   signedTotalAmount,
 }: TransactionItemsSectionProps) {
   return (
-    <Paper ref={itemsFieldRef} variant="outlined" sx={{ p: 2 }}>
+    <Paper ref={itemsFieldRef} variant="outlined" sx={sectionPaperSx}>
       <Stack spacing={1.5}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-          消费明细
+        <Typography color="text.secondary" variant="subtitle1" sx={titleSx}>
+          📋 {selectedType === "income" ? "收入明细" : "消费明细"}
         </Typography>
 
         {itemSummaries.length === 0 ? (
@@ -65,45 +68,79 @@ export function TransactionItemsSection({
               : "请选择分类";
 
             return (
-              <Paper key={item.id} elevation={0} sx={subtlePaperSx}>
+              <Paper key={item.id} elevation={0} sx={getItemPaperSx(index)}>
                 <Stack
                   direction="row"
-                  spacing={1}
-                  sx={{ alignItems: "center", minHeight: 48 }}
+                  spacing={1.5}
+                  sx={{ alignItems: "center", minHeight: 70 }}
                 >
                   <input
                     name="itemCategoryId"
                     type="hidden"
                     value={item.categoryId}
                   />
-                  <Typography noWrap sx={{ flex: 1, fontWeight: 700 }}>
-                    {categoryLabel}
-                  </Typography>
-                  <TextField
-                    hiddenLabel
-                    name="itemAmount"
-                    onChange={(event) =>
-                      onUpdateItem(item.id, { amount: event.target.value })
-                    }
-                    placeholder="0"
-                    size="small"
-                    slotProps={{
-                      htmlInput: {
-                        "aria-label": `明细 ${index + 1} 金额`,
-                        "data-amount-currency": selectedAccountCurrency ?? "",
-                        "data-amount-input": "true",
-                        inputMode: "decimal",
-                        sx: { textAlign: "right" },
-                      },
-                      input: {
-                        disableUnderline: true,
-                      },
-                    }}
-                    type="text"
-                    value={item.amount}
-                    variant="standard"
-                    sx={amountFieldSx}
-                  />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    {item.category ? (
+                      <Stack
+                        direction="row"
+                        sx={{
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: 0.75,
+                        }}
+                      >
+                        <Chip
+                          label={item.category.parentName ?? item.category.name}
+                          size="small"
+                          sx={getCategoryChipSx(index, true)}
+                        />
+                        {item.category.parentName ? (
+                          <>
+                            <Typography color="text.secondary" variant="body2">
+                              &gt;
+                            </Typography>
+                            <Chip
+                              label={item.category.name}
+                              size="small"
+                              sx={getCategoryChipSx(index, false)}
+                            />
+                          </>
+                        ) : null}
+                      </Stack>
+                    ) : (
+                      <Typography noWrap sx={{ fontWeight: 700 }}>
+                        {categoryLabel}
+                      </Typography>
+                    )}
+                  </Box>
+                  <Box sx={amountInputBoxSx}>
+                    <input
+                      aria-label={`明细 ${index + 1} 金额`}
+                      data-amount-currency={selectedAccountCurrency ?? ""}
+                      data-amount-input="true"
+                      inputMode="decimal"
+                      name="itemAmount"
+                      onChange={(event) =>
+                        onUpdateItem(item.id, { amount: event.target.value })
+                      }
+                      style={hiddenAmountInputStyle}
+                      type="text"
+                      value={item.amount}
+                    />
+                    <Button
+                      aria-label={`编辑明细 ${index + 1} 金额`}
+                      onClick={focusAmountInput}
+                      type="button"
+                      variant="text"
+                      sx={amountButtonSx}
+                    >
+                      {formatDisplayAmount(
+                        item.category?.type ?? selectedType,
+                        item.amount,
+                        selectedAccountCurrency,
+                      )}
+                    </Button>
+                  </Box>
                   <IconButton
                     aria-label={`删除明细 ${index + 1}`}
                     onClick={() => onRemoveItem(item.id)}
@@ -126,7 +163,7 @@ export function TransactionItemsSection({
           variant="text"
           sx={addItemButtonSx}
         >
-          + 添加一项明细
+          + 添加明细
         </Button>
 
         {itemSummaries.length > 0 ? (
@@ -149,28 +186,114 @@ export function TransactionItemsSection({
   );
 }
 
-const subtlePaperSx = {
-  bgcolor: designTokens.color.background.subtle,
-  borderRadius: 2,
-  px: 1.5,
-  py: 1,
+function focusAmountInput(event: MouseEvent<HTMLButtonElement>) {
+  const input =
+    event.currentTarget.parentElement?.querySelector<HTMLInputElement>(
+      'input[data-amount-input="true"]',
+    );
+
+  input?.focus();
+}
+
+function formatDisplayAmount(
+  type: TransactionType,
+  amount: string,
+  currency?: string,
+) {
+  const sign = type === "expense" ? "-" : "+";
+  const symbol = getCurrencySymbol(currency);
+  const displayAmount = amount.trim() || "0";
+
+  return symbol
+    ? `${sign} ${symbol} ${displayAmount}`
+    : `${sign} ${displayAmount}`;
+}
+
+function getCurrencySymbol(currency?: string) {
+  const normalizedCurrency = currency?.trim().toUpperCase();
+
+  if (!normalizedCurrency) return "";
+
+  return currencySymbols[normalizedCurrency] ?? normalizedCurrency;
+}
+
+const currencySymbols: Record<string, string> = {
+  CNY: "¥",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  KRW: "₩",
+  USD: "$",
 };
 
-const amountFieldSx = {
-  width: 96,
-  "& .MuiInputBase-root": {
-    bgcolor: "transparent",
-    fontSize: "1.25rem",
+const itemAccentColors = ["#e88b00", "#f43f7f", "#2f8be6"];
+
+function getItemPaperSx(index: number) {
+  const accentColor = itemAccentColors[index % itemAccentColors.length];
+
+  return {
+    bgcolor: "rgba(255, 250, 242, 0.9)",
+    borderLeft: "4px solid",
+    borderLeftColor: accentColor,
+    borderRadius: 2,
+    boxShadow: "none",
+    px: 1.5,
+    py: 1.25,
+  };
+}
+
+function getCategoryChipSx(index: number, isParent: boolean) {
+  const accentColor = itemAccentColors[index % itemAccentColors.length];
+
+  return {
+    bgcolor: isParent ? `${accentColor}18` : "rgba(47, 42, 36, 0.08)",
+    borderRadius: 1,
+    color: isParent ? accentColor : "text.secondary",
     fontWeight: 800,
-  },
+    height: 28,
+  };
+}
+
+const sectionPaperSx = {
+  borderRadius: 2,
+  p: 2,
+};
+
+const titleSx = {
+  fontWeight: 800,
+};
+
+const amountInputBoxSx = {
+  position: "relative",
+};
+
+const hiddenAmountInputStyle = {
+  height: 1,
+  opacity: 0,
+  pointerEvents: "none" as const,
+  position: "absolute" as const,
+  right: 0,
+  top: "50%",
+  width: 1,
+};
+
+const amountButtonSx = {
+  color: "text.primary",
+  fontSize: "1.4rem",
+  fontWeight: 900,
+  minWidth: 92,
+  px: 0,
+  textAlign: "right",
 };
 
 const addItemButtonSx = {
   border: "2px dashed",
-  borderColor: "var(--user-theme-action-text)",
+  borderColor: "rgba(217, 119, 6, 0.38)",
   borderRadius: 2,
-  color: "var(--user-theme-action-text)",
-  minHeight: 48,
+  color: "#d97706",
+  fontSize: "0.9rem",
+  fontWeight: 900,
+  minHeight: 40,
 };
 
 const summaryBoxSx = {

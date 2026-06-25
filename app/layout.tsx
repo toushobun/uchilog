@@ -6,8 +6,8 @@ import type { ReactNode } from "react";
 import { RootLayoutShell } from "templates/root/RootLayoutShell";
 
 export const metadata: Metadata = {
-  title: "UchiLog",
-  description: "记账应用 UchiLog",
+  title: "KuraNote",
+  description: "KuraNote 家庭生活记录工具",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

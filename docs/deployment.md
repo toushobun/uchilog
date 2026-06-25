@@ -1,6 +1,6 @@
 # Vercel + Supabase 单环境部署说明
 
-本文件记录 UchiLog 当前阶段的部署和验证方式。
+本文件记录 KuraNote 当前阶段的部署和验证方式。
 
 ## 当前模型
 
@@ -16,7 +16,7 @@ PR merge 到 main 后，GitHub Actions 依次执行 Supabase migration → Verce
 ## Vercel 项目设置
 
 1. 在 Vercel Dashboard 新建 Project。
-2. Import Git Repository，选择 `toushobun/uchilog`。
+2. Import Git Repository，选择 `toushobun/kuranote`。
 3. Framework Preset 选择 Next.js。
 4. Build Command 使用默认 `npm run build`。
 5. Install Command 使用默认 `npm install` 或 `npm ci`。

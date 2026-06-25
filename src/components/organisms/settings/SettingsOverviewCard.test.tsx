@@ -34,7 +34,7 @@ describe("SettingsOverviewCard", () => {
     const { container } = render(<SettingsOverviewCard {...baseProps} />);
 
     expect(
-      within(container).getByRole("link", { name: "UchiLog" }),
+      within(container).getByRole("link", { name: "KuraNote" }),
     ).toBeInTheDocument();
     expect(
       within(container).getByText("当前账本：家庭账本"),
@@ -50,7 +50,7 @@ describe("SettingsOverviewCard", () => {
 
     expect(
       within(container)
-        .getByRole("link", { name: "UchiLog" })
+        .getByRole("link", { name: "KuraNote" })
         .getAttribute("href"),
     ).toBe("/dashboard");
     expect(

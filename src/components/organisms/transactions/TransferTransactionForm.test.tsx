@@ -113,7 +113,7 @@ describe("TransferTransactionForm", () => {
     expect(getSaveButton(container)).toHaveProperty("disabled", true);
   });
 
-  it("转出账户和转入账户相同时禁用保存按钮", () => {
+  it("转出账户和转入账户相同时显示提示且保存按钮可点击", () => {
     const { container } = renderForm();
 
     fireEvent.mouseDown(
@@ -126,13 +126,13 @@ describe("TransferTransactionForm", () => {
     );
     fireEvent.click(screen.getAllByText("日元现金（JPY）").at(-1)!);
 
-    expect(getSaveButton(container)).toHaveProperty("disabled", true);
+    expect(getSaveButton(container)).toHaveProperty("disabled", false);
     expect(
       within(container).getByText("转出账户和转入账户不能相同。"),
     ).toBeInTheDocument();
   });
 
-  it("不同币种账户时禁用保存按钮并显示提示", () => {
+  it("不同币种账户时显示提示且保存按钮可点击", () => {
     const { container } = renderForm({
       accountOptions: [jpyAccount1, usdAccount],
     });
@@ -147,46 +147,62 @@ describe("TransferTransactionForm", () => {
     );
     fireEvent.click(screen.getAllByText("美元账户（USD）").at(-1)!);
 
-    expect(getSaveButton(container)).toHaveProperty("disabled", true);
+    expect(getSaveButton(container)).toHaveProperty("disabled", false);
     expect(
       within(container).getByText("暂不支持不同币种之间的转账。"),
     ).toBeInTheDocument();
   });
 
-  it("金额为空时禁用保存按钮", () => {
+  it("金额为空时保存按钮可点击，提交后显示字段错误", () => {
     const { container } = renderForm();
 
-    expect(getSaveButton(container)).toHaveProperty("disabled", true);
+    expect(getSaveButton(container)).toHaveProperty("disabled", false);
+
+    fireEvent.submit(container.querySelector("form")!);
+
+    expect(within(container).getByText("请输入有效金额。")).toBeInTheDocument();
   });
 
-  it("金额为 0 时禁用保存按钮", () => {
+  it("金额为 0 时保存按钮可点击，提交后显示字段错误", () => {
     const { container } = renderForm();
 
     fireEvent.change(within(container).getByRole("textbox", { name: "金额" }), {
       target: { value: "0" },
     });
 
-    expect(getSaveButton(container)).toHaveProperty("disabled", true);
+    expect(getSaveButton(container)).toHaveProperty("disabled", false);
+
+    fireEvent.submit(container.querySelector("form")!);
+
+    expect(within(container).getByText("请输入有效金额。")).toBeInTheDocument();
   });
 
-  it("金额为负数时禁用保存按钮", () => {
+  it("金额为负数时保存按钮可点击，提交后显示字段错误", () => {
     const { container } = renderForm();
 
     fireEvent.change(within(container).getByRole("textbox", { name: "金额" }), {
       target: { value: "-100" },
     });
 
-    expect(getSaveButton(container)).toHaveProperty("disabled", true);
+    expect(getSaveButton(container)).toHaveProperty("disabled", false);
+
+    fireEvent.submit(container.querySelector("form")!);
+
+    expect(within(container).getByText("请输入有效金额。")).toBeInTheDocument();
   });
 
-  it("金额格式不合法时禁用保存按钮", () => {
+  it("金额格式不合法时保存按钮可点击，提交后显示字段错误", () => {
     const { container } = renderForm();
 
     fireEvent.change(within(container).getByRole("textbox", { name: "金额" }), {
       target: { value: "abc" },
     });
 
-    expect(getSaveButton(container)).toHaveProperty("disabled", true);
+    expect(getSaveButton(container)).toHaveProperty("disabled", false);
+
+    fireEvent.submit(container.querySelector("form")!);
+
+    expect(within(container).getByText("请输入有效金额。")).toBeInTheDocument();
   });
 
   it("合法输入时保存按钮可用", () => {

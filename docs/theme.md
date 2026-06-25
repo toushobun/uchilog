@@ -1,10 +1,10 @@
-# UchiLog Theme 使用规范
+# KuraNote Theme 使用规范
 
-本文件定义 UchiLog 的 Theme / Design Token 使用规则。
+本文件定义 KuraNote 的 Theme / Design Token 使用规则。
 
 ## 视觉方向
 
-UchiLog 是家庭共享的生活记账工具，不是企业后台，也不是强金融工具。
+KuraNote 是家庭共享的生活记录工具，不是企业后台，也不是强金融工具。
 
 整体视觉关键词：
 

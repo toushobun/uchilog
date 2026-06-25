@@ -2,14 +2,14 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { SoftCard } from "atoms/ui/SoftCard";
 import { routePaths } from "config/paths";
-import { GlassCard } from "atoms/ui/GlassCard";
 
 import { settingsEntryButtonSx } from "./settingsEntryButtonSx";
 
 export function SettingsCategoriesEntry() {
   return (
-    <GlassCard sx={{ p: { xs: 3, sm: 4 } }}>
+    <SoftCard sx={{ p: { xs: 3, sm: 4 } }}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
@@ -35,6 +35,6 @@ export function SettingsCategoriesEntry() {
           打开分类管理
         </Button>
       </Stack>
-    </GlassCard>
+    </SoftCard>
   );
 }

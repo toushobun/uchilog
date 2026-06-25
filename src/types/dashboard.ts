@@ -10,6 +10,14 @@ export type DashboardAmountSummary = {
   currency: string;
 };
 
+export type DashboardAccountSummary = {
+  id: string;
+  name: string;
+  type: string;
+  currency: string;
+  balance: number | string;
+};
+
 export type DashboardRecentTransaction = {
   id: string;
   type: TransactionRecordType;
@@ -21,18 +29,12 @@ export type DashboardRecentTransaction = {
   merchant_name: string | null;
   merchant_icon_url: string | null;
   note: string | null;
-};
-
-export type DashboardPeriodExpense = {
-  expense: string;
-  currency: string;
-  recordCount: number;
+  tagNames: string[];
 };
 
 export type DashboardViewData = {
   monthLabel: string;
   monthSummary: DashboardAmountSummary;
+  accountSummaries: DashboardAccountSummary[];
   recentTransactions: DashboardRecentTransaction[];
-  todayExpense: DashboardPeriodExpense;
-  weekExpense: DashboardPeriodExpense;
 };

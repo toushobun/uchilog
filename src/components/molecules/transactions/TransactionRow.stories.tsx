@@ -18,6 +18,7 @@ const expenseItem: TransactionRowItem = {
   merchant_icon_url: null,
   note: "测试备注",
   recorder_name: "淞文",
+  tagNames: [],
 };
 
 const incomeItem: TransactionRowItem = {
@@ -34,6 +35,7 @@ const incomeItem: TransactionRowItem = {
   merchant_icon_url: null,
   note: null,
   recorder_name: null,
+  tagNames: [],
 };
 
 const meta = {
@@ -72,7 +74,7 @@ export const Income: Story = {
 };
 
 export const WithVoidAction: Story = {
-  name: "带撤销按钮",
+  name: "带删除按钮",
   args: {
     showType: true,
     voidAction: async () => {},

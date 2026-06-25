@@ -7,8 +7,8 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { receiptCardBorder } from "theme/receiptColors";
 import { TransactionGroupList } from "organisms/transactions/TransactionGroupList";
-import { TransactionSummaryBar } from "molecules/transactions/TransactionSummaryBar";
 import type { ServerAction } from "types/actions";
 import type {
   TransactionMonthPage,
@@ -91,27 +91,23 @@ export function TransactionMonthList({
 
   if (groups.length === 0) {
     return (
-      <Stack spacing={2.5} sx={{ mt: 1.5 }}>
-        <TransactionSummaryBar summary={monthView.summary} />
-        <Box
-          sx={{
-            bgcolor: "background.paper",
-            borderRadius: 3,
-            px: 2,
-            py: 4,
-            textAlign: "center",
-          }}
-        >
-          <Typography color="text.secondary">这个月还没有记账记录。</Typography>
-        </Box>
-      </Stack>
+      <Box
+        sx={{
+          bgcolor: "rgba(255, 255, 255, 0.82)",
+          border: `1px solid ${receiptCardBorder}`,
+          borderRadius: 2,
+          px: 2,
+          py: 5,
+          textAlign: "center",
+        }}
+      >
+        <Typography color="text.secondary">这个月还没有记账记录。</Typography>
+      </Box>
     );
   }
 
   return (
-    <Stack spacing={2} sx={{ mt: 1.5 }}>
-      <TransactionSummaryBar summary={monthView.summary} />
-
+    <Stack spacing={2.3}>
       <TransactionGroupList groups={groups} voidAction={voidAction} />
 
       {nextOffset !== null ? (

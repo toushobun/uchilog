@@ -9,12 +9,17 @@ import {
   type ReactNode,
 } from "react";
 
+import AccountBalanceWalletRoundedIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
+import StorefrontRoundedIcon from "@mui/icons-material/StorefrontRounded";
 import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import {
   maxTransactionTagCount,
   maxTransactionTagNameLength,
@@ -76,11 +81,6 @@ type TransactionFormProps = {
   typeNavigation?: ReactNode;
 };
 
-const emptyItemsByType: Record<TransactionType, TransactionFormItem[]> = {
-  expense: [],
-  income: [],
-};
-
 export function TransactionForm({
   action,
   accountOptions,
@@ -117,7 +117,12 @@ export function TransactionForm({
   const [fieldErrors, setFieldErrors] = useState<TransactionFieldErrors>({});
   const [itemsByType, setItemsByType] = useState<
     Record<TransactionType, TransactionFormItem[]>
-  >(() => createInitialItemsByType(initialValues));
+  >(() =>
+    createInitialItemsByType(
+      initialValues,
+      new Map(categoryOptions.map((c) => [c.id, c])),
+    ),
+  );
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedCategoryGroupId, setSelectedCategoryGroupId] = useState("");
   const [pickerCategoryId, setPickerCategoryId] = useState("");
@@ -131,7 +136,7 @@ export function TransactionForm({
   const [transactionTime, setTransactionTime] = useState("");
   const [timeZoneOffsetMinutes, setTimeZoneOffsetMinutes] = useState("");
 
-  const items = itemsByType[selectedType];
+  const allDisplayItems = [...itemsByType.expense, ...itemsByType.income];
 
   useEffect(() => {
     const localValue = initialValues?.transactionAt
@@ -162,13 +167,16 @@ export function TransactionForm({
     }
   }, [initialType, initialValues]);
 
-  const filteredCategoryOptions = useMemo(
-    () => categoryOptions.filter((category) => category.type === selectedType),
-    [categoryOptions, selectedType],
+  const allNormalCategoryOptions = useMemo(
+    () =>
+      categoryOptions.filter(
+        (c) => c.type === "expense" || c.type === "income",
+      ),
+    [categoryOptions],
   );
   const categoryGroups = useMemo(
-    () => buildCategoryPickerGroups(filteredCategoryOptions),
-    [filteredCategoryOptions],
+    () => buildCategoryPickerGroups(allNormalCategoryOptions),
+    [allNormalCategoryOptions],
   );
   const categoryById = useMemo(
     () => new Map(categoryOptions.map((category) => [category.id, category])),
@@ -192,25 +200,25 @@ export function TransactionForm({
   const suggestedTagOptions = tagOptions.filter(
     (tag) => !hasTagName(selectedTagNames, tag.name),
   );
-  const itemSummaries: TransactionItemSummary[] = items.map((item) => ({
-    ...item,
-    category: categoryById.get(item.categoryId),
-  }));
-  const totalAmount = items.reduce((sum, item) => {
+  const itemSummaries: TransactionItemSummary[] = allDisplayItems.map(
+    (item) => ({
+      ...item,
+      category: categoryById.get(item.categoryId),
+    }),
+  );
+  const expenseTotal = itemsByType.expense.reduce((sum, item) => {
     if (!isValidMoneyText(item.amount)) return sum;
-
+    return sum + Number(item.amount);
+  }, 0);
+  const incomeTotal = itemsByType.income.reduce((sum, item) => {
+    if (!isValidMoneyText(item.amount)) return sum;
     return sum + Number(item.amount);
   }, 0);
   const hasValidItems =
-    items.length > 0 &&
-    items.every((item) => {
-      const category = categoryById.get(item.categoryId);
-      return (
-        category?.type === selectedType &&
-        item.categoryId.length > 0 &&
-        isValidMoneyText(item.amount)
-      );
-    });
+    allDisplayItems.length > 0 &&
+    allDisplayItems.every(
+      (item) => item.categoryId.length > 0 && isValidMoneyText(item.amount),
+    );
   const hasValidTags = !getSelectedTagError(selectedTagNames);
   const transactionAtValue = composeTransactionDateTimeLocalValue(
     transactionDate,
@@ -219,7 +227,7 @@ export function TransactionForm({
   const isSubmitDisabled =
     accountOptions.length === 0 ||
     merchantOptions.length === 0 ||
-    filteredCategoryOptions.length === 0 ||
+    allNormalCategoryOptions.length === 0 ||
     !transactionAtValue ||
     !hasValidTags;
 
@@ -228,34 +236,21 @@ export function TransactionForm({
   }, [isSubmitDisabled, onSubmitDisabledChange]);
 
   const signedTotalAmount =
-    items.length > 0
-      ? formatSignedAmount(selectedType, totalAmount)
+    allDisplayItems.length > 0
+      ? formatNetAmount(incomeTotal - expenseTotal)
       : "未填写金额";
 
-  function setCurrentItems(
-    updater:
-      | TransactionFormItem[]
-      | ((currentItems: TransactionFormItem[]) => TransactionFormItem[]),
-  ) {
-    setItemsByType((currentItemsByType) => {
-      const currentItems = currentItemsByType[selectedType];
-      const nextItems =
-        typeof updater === "function" ? updater(currentItems) : updater;
-
-      return {
-        ...currentItemsByType,
-        [selectedType]: nextItems,
-      };
-    });
-  }
-
   function addItem(categoryId: string, amount: string) {
+    const categoryType = categoryById.get(categoryId)?.type ?? selectedType;
     const itemId = nextItemIdRef.current;
     nextItemIdRef.current += 1;
-    setCurrentItems((currentItems) => [
-      ...currentItems,
-      { amount, categoryId, id: itemId },
-    ]);
+    setItemsByType((current) => ({
+      ...current,
+      [categoryType]: [
+        ...current[categoryType],
+        { amount, categoryId, id: itemId },
+      ],
+    }));
     if (fieldErrors.items) {
       setFieldErrors((prev) => ({ ...prev, items: undefined }));
     }
@@ -265,17 +260,24 @@ export function TransactionForm({
     itemId: number,
     values: Partial<Omit<TransactionFormItem, "id">>,
   ) {
-    setCurrentItems((currentItems) =>
-      currentItems.map((item) =>
+    setItemsByType((current) => ({
+      expense: current.expense.map((item) =>
         item.id === itemId ? { ...item, ...values } : item,
       ),
-    );
+      income: current.income.map((item) =>
+        item.id === itemId ? { ...item, ...values } : item,
+      ),
+    }));
   }
 
   function removeItem(itemId: number) {
-    setCurrentItems((currentItems) =>
-      currentItems.filter((item) => item.id !== itemId),
-    );
+    setItemsByType((current) => ({
+      expense: current.expense.filter((item) => item.id !== itemId),
+      income: current.income.filter((item) => item.id !== itemId),
+    }));
+    if (fieldErrors.items) {
+      setFieldErrors((prev) => ({ ...prev, items: undefined }));
+    }
   }
 
   function addTag(tagName: string) {
@@ -448,92 +450,131 @@ export function TransactionForm({
           <input key={tagName} name="tagName" type="hidden" value={tagName} />
         ))}
 
-        <TextField
-          ref={merchantFieldRef}
-          disabled={merchantOptions.length === 0}
-          error={!!fieldErrors.merchant}
-          fullWidth
-          helperText={
-            fieldErrors.merchant ??
-            (merchantOptions.length === 0
-              ? "请先新增商家。"
-              : "选择这笔记录的商家。")
-          }
-          label="商家"
-          name="merchantId"
-          onChange={(event) => {
-            setSelectedMerchantId(event.target.value);
-            if (fieldErrors.merchant) {
-              setFieldErrors((prev) => ({ ...prev, merchant: undefined }));
+        <Box ref={merchantFieldRef} sx={selectionFieldGroupSx}>
+          <SectionTitle>商家</SectionTitle>
+          <TextField
+            disabled={merchantOptions.length === 0}
+            error={!!fieldErrors.merchant}
+            fullWidth
+            helperText={
+              fieldErrors.merchant ??
+              (merchantOptions.length === 0 ? "请先新增商家。" : undefined)
             }
-          }}
-          select
-          value={selectedMerchantId}
-        >
-          <MenuItem disabled value="">
-            请选择商家
-          </MenuItem>
-          {merchantOptions.map((merchant) => (
-            <MenuItem key={merchant.id} value={merchant.id}>
-              <Stack
-                direction="row"
-                spacing={1.5}
-                sx={{ alignItems: "center" }}
-              >
-                <Avatar
-                  alt={merchant.name}
-                  src={merchant.icon_url ?? undefined}
-                  sx={{ height: 24, width: 24 }}
+            label="商家"
+            name="merchantId"
+            onChange={(event) => {
+              setSelectedMerchantId(event.target.value);
+              if (fieldErrors.merchant) {
+                setFieldErrors((prev) => ({ ...prev, merchant: undefined }));
+              }
+            }}
+            select
+            slotProps={{
+              select: {
+                displayEmpty: true,
+                IconComponent: KeyboardArrowRightRoundedIcon,
+                renderValue: () => (
+                  <SelectionValue
+                    icon={
+                      <SelectionIcon tone="orange">
+                        <StorefrontRoundedIcon fontSize="small" />
+                      </SelectionIcon>
+                    }
+                    text={selectedMerchant?.name ?? "选择商家"}
+                  />
+                ),
+              },
+            }}
+            value={selectedMerchantId}
+            sx={selectionSelectSx}
+          >
+            <MenuItem disabled value="">
+              请选择商家
+            </MenuItem>
+            {merchantOptions.map((merchant) => (
+              <MenuItem key={merchant.id} value={merchant.id}>
+                <Stack
+                  direction="row"
+                  spacing={1.5}
+                  sx={{ alignItems: "center" }}
                 >
-                  {getMerchantInitial(merchant.name)}
-                </Avatar>
-                <span>{merchant.name}</span>
-              </Stack>
-            </MenuItem>
-          ))}
-        </TextField>
+                  <Avatar
+                    alt={merchant.name}
+                    src={merchant.icon_url ?? undefined}
+                    sx={{ height: 24, width: 24 }}
+                  >
+                    {getMerchantInitial(merchant.name)}
+                  </Avatar>
+                  <span>{merchant.name}</span>
+                </Stack>
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
-        <TextField
-          ref={accountFieldRef}
-          disabled={accountOptions.length === 0}
-          error={!!fieldErrors.account}
-          fullWidth
-          helperText={
-            fieldErrors.account ??
-            (accountOptions.length === 0
-              ? "请先新增账户。"
-              : "选择这笔记录使用的账户。")
-          }
-          label="账户"
-          name="accountId"
-          onChange={(event) => {
-            setSelectedAccountId(event.target.value);
-            if (fieldErrors.account) {
-              setFieldErrors((prev) => ({ ...prev, account: undefined }));
+        <Box ref={accountFieldRef} sx={selectionFieldGroupSx}>
+          <SectionTitle>付款账户</SectionTitle>
+          <TextField
+            disabled={accountOptions.length === 0}
+            error={!!fieldErrors.account}
+            fullWidth
+            helperText={
+              fieldErrors.account ??
+              (accountOptions.length === 0 ? "请先新增账户。" : undefined)
             }
-          }}
-          select
-          value={selectedAccountId}
-        >
-          <MenuItem disabled value="">
-            请选择账户
-          </MenuItem>
-          {accountOptions.map((account) => (
-            <MenuItem key={account.id} value={account.id}>
-              {account.name}（{account.currency}）
+            label="账户"
+            name="accountId"
+            onChange={(event) => {
+              setSelectedAccountId(event.target.value);
+              if (fieldErrors.account) {
+                setFieldErrors((prev) => ({ ...prev, account: undefined }));
+              }
+            }}
+            select
+            slotProps={{
+              select: {
+                displayEmpty: true,
+                IconComponent: KeyboardArrowRightRoundedIcon,
+                renderValue: () => (
+                  <SelectionValue
+                    icon={
+                      <SelectionIcon tone="blue">
+                        <AccountBalanceWalletRoundedIcon fontSize="small" />
+                      </SelectionIcon>
+                    }
+                    text={
+                      selectedAccount
+                        ? `${selectedAccount.name}（${selectedAccount.currency}）`
+                        : "选择账户"
+                    }
+                  />
+                ),
+              },
+            }}
+            value={selectedAccountId}
+            sx={selectionSelectSx}
+          >
+            <MenuItem disabled value="">
+              请选择账户
             </MenuItem>
-          ))}
-        </TextField>
+            {accountOptions.map((account) => (
+              <MenuItem key={account.id} value={account.id}>
+                {account.name}（{account.currency}）
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
         <TransactionItemsSection
           fieldError={fieldErrors.items}
-          hasCategoryOptions={filteredCategoryOptions.length > 0}
+          hasCategoryOptions={allNormalCategoryOptions.length > 0}
           itemsFieldRef={itemsFieldRef}
           itemSummaries={itemSummaries}
           onOpenSheet={openSheet}
           onRemoveItem={removeItem}
           onUpdateItem={updateItem}
           selectedAccountCurrency={selectedAccount?.currency}
+          selectedType={selectedType}
           signedTotalAmount={signedTotalAmount}
         />
 
@@ -557,11 +598,11 @@ export function TransactionForm({
         <TextField
           defaultValue={initialValues?.note ?? ""}
           fullWidth
-          label="备注"
-          minRows={3}
-          multiline
+          hiddenLabel
           name="note"
-          placeholder="可选"
+          placeholder="✎ 备注..."
+          size="small"
+          sx={noteFieldSx}
         />
 
         <TransactionDateTimePicker
@@ -599,7 +640,7 @@ export function TransactionForm({
 
       <TransactionItemPickerDrawer
         categoryGroups={categoryGroups}
-        filteredCategoryOptions={filteredCategoryOptions}
+        filteredCategoryOptions={allNormalCategoryOptions}
         itemSummaries={itemSummaries}
         onAmountChange={handlePickerAmountChange}
         onCategoryToggle={handlePickerCategoryToggle}
@@ -613,37 +654,68 @@ export function TransactionForm({
         pickerErrors={pickerErrors}
         selectedAccountCurrency={selectedAccount?.currency}
         selectedCategoryGroup={selectedCategoryGroup}
-        selectedType={selectedType}
       />
     </form>
   );
 }
 
+function SectionTitle({ children }: { children: ReactNode }) {
+  return (
+    <Typography color="text.secondary" variant="subtitle1" sx={sectionTitleSx}>
+      {children}
+    </Typography>
+  );
+}
+
+function SelectionValue({ icon, text }: { icon: ReactNode; text: string }) {
+  return (
+    <Stack direction="row" spacing={1.25} sx={selectionValueSx}>
+      {icon}
+      <Typography noWrap sx={selectionPrimarySx}>
+        {text}
+      </Typography>
+    </Stack>
+  );
+}
+
+function SelectionIcon({
+  children,
+  tone,
+}: {
+  children: ReactNode;
+  tone: "blue" | "orange";
+}) {
+  return <Box sx={getSelectionIconSx(tone)}>{children}</Box>;
+}
+
 function createInitialItemsByType(
   initialValues?: TransactionFormInitialValues,
-) {
-  const itemsByType = { ...emptyItemsByType };
+  categoryById?: Map<string, TransactionCategoryOption>,
+): Record<TransactionType, TransactionFormItem[]> {
+  const result: Record<TransactionType, TransactionFormItem[]> = {
+    expense: [],
+    income: [],
+  };
 
-  if (!initialValues) return itemsByType;
+  if (!initialValues) return result;
 
-  itemsByType[initialValues.type] = initialValues.items.map((item, index) => ({
-    ...item,
-    id: index + 1,
-  }));
+  initialValues.items.forEach((item, index) => {
+    const categoryType =
+      categoryById?.get(item.categoryId)?.type ?? initialValues.type;
+    result[categoryType].push({ ...item, id: index + 1 });
+  });
 
-  return itemsByType;
+  return result;
 }
 
 function cancelDefaultEvent(event: { preventDefault(): void }) {
   event.preventDefault();
 }
 
-function formatSignedAmount(type: TransactionType, amount: number) {
-  const normalizedAmount = parseFloat(amount.toFixed(2));
-
-  if (normalizedAmount === 0) return "0";
-
-  return `${type === "expense" ? "-" : "+"}${normalizedAmount}`;
+function formatNetAmount(net: number) {
+  const n = parseFloat(net.toFixed(2));
+  if (n === 0) return "0";
+  return n > 0 ? `+${n}` : `${n}`;
 }
 
 function getNextTagError(tagNames: string[], tagName: string) {
@@ -682,3 +754,95 @@ function hasTagName(tagNames: string[], tagName: string) {
     (currentTagName) => currentTagName.toLowerCase() === tagName.toLowerCase(),
   );
 }
+
+const selectionFieldGroupSx = {
+  display: "grid",
+  gap: 0.75,
+};
+
+const sectionTitleSx = {
+  color: "rgba(74, 47, 27, 0.64)",
+  fontSize: "1rem",
+  fontWeight: 800,
+  lineHeight: 1.2,
+  px: 0.25,
+};
+
+const selectionValueSx = {
+  alignItems: "center",
+  minWidth: 0,
+};
+
+const selectionPrimarySx = {
+  color: "text.primary",
+  fontSize: "1rem",
+  fontWeight: 900,
+  minWidth: 0,
+};
+
+const selectionSelectSx = {
+  "& .MuiInputLabel-root": {
+    clip: "rect(0 0 0 0)",
+    height: 1,
+    m: -1,
+    overflow: "hidden",
+    p: 0,
+    position: "absolute",
+    width: 1,
+  },
+  "& .MuiOutlinedInput-root": {
+    bgcolor: "rgba(255, 253, 248, 0.94)",
+    borderRadius: 1.5,
+    minHeight: 54,
+    pr: 4.5,
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(133, 77, 14, 0.14)",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(217, 119, 6, 0.32)",
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#d97706",
+    borderWidth: 1,
+  },
+  "& .MuiSelect-icon": {
+    color: "rgba(74, 47, 27, 0.48)",
+    fontSize: "1.8rem",
+    right: 10,
+  },
+  "& .MuiSelect-select": {
+    alignItems: "center",
+    display: "flex",
+    minHeight: "54px !important",
+    py: 0,
+  },
+  "& legend": {
+    display: "none",
+  },
+};
+
+function getSelectionIconSx(tone: "blue" | "orange") {
+  const colors =
+    tone === "orange"
+      ? { bgcolor: "#fff1df", color: "#f08a24" }
+      : { bgcolor: "#e7f4ff", color: "#2994dd" };
+
+  return {
+    alignItems: "center",
+    bgcolor: colors.bgcolor,
+    borderRadius: 999,
+    color: colors.color,
+    display: "inline-flex",
+    flexShrink: 0,
+    height: 30,
+    justifyContent: "center",
+    width: 30,
+  };
+}
+
+const noteFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 2,
+  },
+};

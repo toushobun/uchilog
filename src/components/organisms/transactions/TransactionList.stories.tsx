@@ -28,6 +28,7 @@ function createItem(index: number): TransactionListItem {
     merchant_name: isExpense ? "便利店" : "共達",
     note: `Storybook 模拟记录 #${index}`,
     recorder_name: index % 3 === 0 ? "淞文" : null,
+    tagNames: [],
     transaction_at: new Date(
       Date.UTC(2026, 5, 5 - index, 3, 0, 0),
     ).toISOString(),
@@ -57,7 +58,7 @@ async function loadMoreAction(offset: number): Promise<TransactionListPage> {
 function voidAction(formData: FormData) {
   const transactionRecordId = formData.get("transactionRecordId");
 
-  // Storybook 中只确认表单状态，不执行真实撤销。
+  // Storybook 中只确认表单状态，不执行真实删除。
   console.info("void transaction", transactionRecordId);
 }
 

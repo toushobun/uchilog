@@ -32,6 +32,7 @@ function createItem(
     merchant_icon_url: null,
     note: "测试备注",
     recorder_name: null,
+    tagNames: [],
     ...overrides,
   };
 }
@@ -117,7 +118,7 @@ describe("TransactionRow", () => {
       <TransactionRow item={createItem()} showAccount showTime />,
     );
 
-    expect(html).toContain("日元现金 · 12:20");
+    expect(html).toContain("12:20 · 日元现金");
   });
 
   it("客户端渲染时使用浏览器时区显示时间", () => {
@@ -125,7 +126,7 @@ describe("TransactionRow", () => {
 
     render(<TransactionRow item={createItem()} showAccount showTime />);
 
-    expect(screen.getByText("日元现金 · 11:20")).toBeInTheDocument();
+    expect(screen.getByText("11:20 · 日元现金")).toBeInTheDocument();
   });
 
   it("merchant_name 为 null 时显示未指定商家", () => {
@@ -134,16 +135,16 @@ describe("TransactionRow", () => {
     expect(screen.getByText("未指定商家")).toBeInTheDocument();
   });
 
-  it("未传入撤销 action 时不显示撤销按钮", () => {
+  it("未传入删除 action 时不显示删除按钮", () => {
     render(<TransactionRow item={createItem()} />);
 
-    expect(screen.queryByRole("button", { name: "撤销" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "删除" })).toBeNull();
   });
 
-  it("传入撤销 action 时显示撤销按钮", () => {
+  it("传入删除 action 时显示删除按钮", () => {
     render(<TransactionRow item={createItem()} voidAction={vi.fn()} />);
 
-    expect(screen.getByRole("button", { name: "撤销" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "编辑" })).toBeNull();
   });
 
@@ -155,22 +156,24 @@ describe("TransactionRow", () => {
     ).toBe("/transactions/00000000-0000-4000-8000-000000009001/edit");
   });
 
-  it("showEdit 和撤销 action 同时传入时显示两个操作", () => {
+  it("showEdit 和删除 action 同时传入时显示两个操作", () => {
     render(
       <TransactionRow item={createItem()} showEdit voidAction={vi.fn()} />,
     );
 
     expect(screen.getByRole("link", { name: "编辑" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "撤销" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "删除" })).toBeInTheDocument();
   });
 
-  it("确认后提交撤销表单并传递记录 id", () => {
+  it("确认后提交删除表单并传递记录 id", () => {
     const voidAction = vi.fn();
     window.confirm = vi.fn(() => true);
 
     render(<TransactionRow item={createItem()} voidAction={voidAction} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "撤销" }));
+    fireEvent.submit(
+      screen.getByRole("button", { name: "删除" }).closest("form")!,
+    );
 
     expect(voidAction).toHaveBeenCalledTimes(1);
     expect(voidAction.mock.calls[0]?.[0].get("transactionRecordId")).toBe(
@@ -178,13 +181,15 @@ describe("TransactionRow", () => {
     );
   });
 
-  it("取消确认时不提交撤销表单", () => {
+  it("取消确认时不提交删除表单", () => {
     const voidAction = vi.fn();
     window.confirm = vi.fn(() => false);
 
     render(<TransactionRow item={createItem()} voidAction={voidAction} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "撤销" }));
+    fireEvent.submit(
+      screen.getByRole("button", { name: "删除" }).closest("form")!,
+    );
 
     expect(voidAction).not.toHaveBeenCalled();
   });

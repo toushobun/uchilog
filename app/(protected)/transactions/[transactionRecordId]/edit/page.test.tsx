@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     error ? `编辑错误:${error}` : null,
   ),
   loadEditTransactionView: vi.fn(),
+  NewTransactionVisualFrame: vi.fn(() => null),
   saveEditTransaction: vi.fn(),
   updateTransaction: vi.fn(),
 }));
@@ -28,6 +29,10 @@ vi.mock("templates/transactions/TransactionFormPage", () => ({
 
 vi.mock("utils/pageErrors", () => ({
   getEditTransactionErrorMessage: mocks.getEditTransactionErrorMessage,
+}));
+
+vi.mock("templates/transactions/NewTransactionVisualFrame", () => ({
+  NewTransactionVisualFrame: mocks.NewTransactionVisualFrame,
 }));
 
 import TransactionEditPage from "./page";
@@ -71,6 +76,9 @@ describe("TransactionEditPage", () => {
       searchParams: Promise.resolve({ error: "update_failed" }),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
     expect(mocks.loadEditTransactionView).toHaveBeenCalledWith(
       transactionRecordId,
@@ -78,8 +86,9 @@ describe("TransactionEditPage", () => {
     expect(mocks.getEditTransactionErrorMessage).toHaveBeenCalledWith(
       "update_failed",
     );
-    expect(element.type).toBe(mocks.EditTransactionTemplate);
-    expect(element.props).toMatchObject({
+    expect(element.type).toBe(mocks.NewTransactionVisualFrame);
+    expect(child.type).toBe(mocks.EditTransactionTemplate);
+    expect(child.props).toMatchObject({
       ...view,
       action: mocks.saveEditTransaction,
       errorMessage: "编辑错误:update_failed",
@@ -95,6 +104,9 @@ describe("TransactionEditPage", () => {
       searchParams: Promise.resolve({}),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
     expect(mocks.loadEditTransactionView).toHaveBeenCalledWith(
       transactionRecordId,
@@ -102,8 +114,9 @@ describe("TransactionEditPage", () => {
     expect(mocks.getEditTransactionErrorMessage).toHaveBeenCalledWith(
       undefined,
     );
-    expect(element.type).toBe(mocks.EditTransactionTemplate);
-    expect(element.props).toMatchObject({
+    expect(element.type).toBe(mocks.NewTransactionVisualFrame);
+    expect(child.type).toBe(mocks.EditTransactionTemplate);
+    expect(child.props).toMatchObject({
       ...view,
       action: mocks.saveEditTransaction,
       errorMessage: null,

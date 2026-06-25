@@ -22,7 +22,6 @@ import {
 import {
   getUserThemeStorageKey,
   lastUserThemeStorageKey,
-  legacyUserThemeStorageKey,
   userThemeChangeEventName,
   userThemeCookieName,
 } from "theme/userThemeStorage";
@@ -198,23 +197,31 @@ function subscribeToUserTheme(onStoreChange: () => void) {
 }
 
 function getStoredUserThemeKey(storageKey: string): UserThemeKey {
-  const savedThemeKey = window.localStorage.getItem(storageKey);
+  const savedThemeKey = normalizeUserThemeKey(
+    window.localStorage.getItem(storageKey),
+  );
 
-  if (savedThemeKey && isUserThemeKey(savedThemeKey)) {
+  if (savedThemeKey) {
     return savedThemeKey;
   }
 
-  const lastThemeKey = window.localStorage.getItem(lastUserThemeStorageKey);
+  const lastThemeKey = normalizeUserThemeKey(
+    window.localStorage.getItem(lastUserThemeStorageKey),
+  );
 
-  if (lastThemeKey && isUserThemeKey(lastThemeKey)) {
-    return lastThemeKey;
+  return lastThemeKey ?? defaultUserThemeKey;
+}
+
+function normalizeUserThemeKey(value: string | null): UserThemeKey | null {
+  if (!value) {
+    return null;
   }
 
-  const legacyThemeKey = window.localStorage.getItem(legacyUserThemeStorageKey);
+  if (isUserThemeKey(value)) {
+    return value;
+  }
 
-  return legacyThemeKey && isUserThemeKey(legacyThemeKey)
-    ? legacyThemeKey
-    : defaultUserThemeKey;
+  return null;
 }
 
 function getDefaultUserThemeKey(): UserThemeKey {
@@ -228,7 +235,7 @@ function getAppliedUserThemeKey(): UserThemeKey | null {
 
   const themeKey = document.documentElement.dataset.userTheme;
 
-  return themeKey && isUserThemeKey(themeKey) ? themeKey : null;
+  return themeKey ? normalizeUserThemeKey(themeKey) : null;
 }
 
 function getIsThemeReady(storageKey: string) {

@@ -3,7 +3,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import { GlassCard } from "atoms/ui/GlassCard";
+import { SoftCard } from "atoms/ui/SoftCard";
 import type { ServerAction } from "types/actions";
 
 type MerchantFormProps = {
@@ -12,7 +12,7 @@ type MerchantFormProps = {
 
 export function MerchantForm({ action }: MerchantFormProps) {
   return (
-    <GlassCard sx={{ mt: 4, p: 3 }}>
+    <SoftCard sx={{ mt: 4, p: 3 }}>
       <Typography component="h2" variant="h6" sx={{ fontWeight: 700 }}>
         新增商家
       </Typography>
@@ -52,6 +52,6 @@ export function MerchantForm({ action }: MerchantFormProps) {
           新增商家
         </Button>
       </Stack>
-    </GlassCard>
+    </SoftCard>
   );
 }

@@ -1,7 +1,9 @@
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
 import type { Preview } from "@storybook/nextjs-vite";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+
+import { defaultUserThemeCssVariables } from "../src/theme/userThemeCssVariables";
 import { theme } from "../src/theme/theme";
 
 const preview: Preview = {
@@ -9,7 +11,9 @@ const preview: Preview = {
     (Story): ReactNode => (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Story />
+        <div style={defaultUserThemeCssVariables as CSSProperties}>
+          <Story />
+        </div>
       </ThemeProvider>
     ),
   ],

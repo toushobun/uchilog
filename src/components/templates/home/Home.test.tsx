@@ -12,13 +12,15 @@ describe("HomeTemplate", () => {
     const { container } = render(<HomeTemplate />);
 
     expect(
-      within(container).getByRole("heading", { name: "UchiLog" }),
+      within(container).getByRole("heading", { name: "KuraNote" }),
     ).toBeInTheDocument();
   });
 
-  it("显示开发中提示文字", () => {
+  it("显示提示文字", () => {
     const { container } = render(<HomeTemplate />);
 
-    expect(within(container).getByText("记账应用开发中")).toBeInTheDocument();
+    expect(
+      within(container).getByText("家庭生活记录工具开发中"),
+    ).toBeInTheDocument();
   });
 });

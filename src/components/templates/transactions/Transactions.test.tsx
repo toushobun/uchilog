@@ -27,7 +27,6 @@ const monthView = createTransactionMonthView({
   nextMonth: "2026-07",
   previousMonth: "2026-05",
   groups: [],
-  summary: { balance: "0", currency: "JPY", expense: "0", income: "0" },
 });
 
 function renderPage(errorMessage: string | null = null) {
@@ -46,7 +45,7 @@ describe("TransactionsTemplate", () => {
     const { container } = renderPage();
 
     expect(
-      within(container).getByRole("heading", { name: "明细" }),
+      within(container).getByRole("heading", { name: "小票明细" }),
     ).toBeInTheDocument();
   });
 
@@ -58,20 +57,18 @@ describe("TransactionsTemplate", () => {
     );
   });
 
-  it("上一个月导航链接指向正确月份", () => {
+  it("显示筛选入口", () => {
     const { container } = renderPage();
 
-    const prevLink = within(container).getByRole("link", { name: "‹" });
-
-    expect(prevLink.getAttribute("href")).toBe("/transactions?month=2026-05");
+    expect(within(container).getByText("筛选")).toBeInTheDocument();
   });
 
-  it("下一个月导航链接指向正确月份", () => {
+  it("向月度列表传递当前月份", () => {
     const { container } = renderPage();
 
-    const nextLink = within(container).getByRole("link", { name: "›" });
-
-    expect(nextLink.getAttribute("href")).toBe("/transactions?month=2026-07");
+    expect(
+      within(container).getByTestId("transaction-month-list"),
+    ).toHaveTextContent("2026年6月");
   });
 
   it("传入错误信息时显示错误提示", () => {

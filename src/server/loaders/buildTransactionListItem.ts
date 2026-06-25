@@ -16,6 +16,7 @@ export function buildTransactionListItem({
   record,
   recorderById,
   recordItems,
+  tagNamesByRecordId,
 }: {
   accountById: Map<string, AccountOptionDbRow>;
   categoryById: Map<string, CategorySummaryDbRow>;
@@ -24,6 +25,7 @@ export function buildTransactionListItem({
   record: TransactionRecordDbRow;
   recorderById?: Map<string, AppUserSummaryDbRow>;
   recordItems: TransactionItemDbRow[];
+  tagNamesByRecordId?: Map<string, string[]>;
 }): TransactionListItem {
   const recorder =
     record.created_by && recorderById
@@ -78,6 +80,7 @@ export function buildTransactionListItem({
     merchant_name: merchant?.name ?? null,
     note: record.note ?? firstItem?.note ?? null,
     recorder_name: recorder?.display_name ?? null,
+    tagNames: tagNamesByRecordId?.get(record.id) ?? [],
     transaction_at: record.transaction_at,
     type: record.type,
   };
@@ -136,6 +139,7 @@ function buildTransferListItem({
     merchant_name: null,
     note: record.note ?? null,
     recorder_name: recorder?.display_name ?? null,
+    tagNames: [],
     transaction_at: record.transaction_at,
     type: "transfer",
   };

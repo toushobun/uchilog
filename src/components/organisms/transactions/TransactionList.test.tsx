@@ -89,7 +89,7 @@ describe("TransactionList", () => {
     expect(screen.getByText("已显示全部记录。")).toBeInTheDocument();
   });
 
-  it("未传入撤销 action 时不显示撤销按钮", () => {
+  it("未传入删除 action 时不显示删除按钮", () => {
     render(
       <TransactionList
         initialPage={createPage([createTransactionListItem()], null)}
@@ -97,10 +97,10 @@ describe("TransactionList", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: "撤销" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "删除" })).toBeNull();
   });
 
-  it("传入撤销 action 时显示撤销按钮并提交表单", () => {
+  it("传入删除 action 时显示删除按钮并提交表单", () => {
     const voidAction = vi.fn();
 
     render(
@@ -111,16 +111,18 @@ describe("TransactionList", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "撤销" }));
+    fireEvent.submit(
+      screen.getByRole("button", { name: "删除" }).closest("form")!,
+    );
 
-    expect(window.confirm).toHaveBeenCalledWith("确定要撤销这条记录吗？");
+    expect(window.confirm).toHaveBeenCalledWith("确定要删除这条记录吗？");
     expect(voidAction).toHaveBeenCalledTimes(1);
     expect(voidAction.mock.calls[0]?.[0].get("transactionRecordId")).toBe(
       "00000000-0000-4000-8000-000000009001",
     );
   });
 
-  it("取消确认时不提交撤销表单", () => {
+  it("取消确认时不提交删除表单", () => {
     const voidAction = vi.fn();
     window.confirm = vi.fn(() => false);
 
@@ -132,9 +134,11 @@ describe("TransactionList", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "撤销" }));
+    fireEvent.submit(
+      screen.getByRole("button", { name: "删除" }).closest("form")!,
+    );
 
-    expect(window.confirm).toHaveBeenCalledWith("确定要撤销这条记录吗？");
+    expect(window.confirm).toHaveBeenCalledWith("确定要删除这条记录吗？");
     expect(voidAction).not.toHaveBeenCalled();
   });
 

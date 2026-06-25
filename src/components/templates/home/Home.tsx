@@ -30,9 +30,9 @@ export function HomeTemplate() {
             variant="h3"
             sx={{ fontWeight: 700 }}
           >
-            UchiLog
+            KuraNote
           </Typography>
-          <Typography color="text.secondary">记账应用开发中</Typography>
+          <Typography color="text.secondary">家庭生活记录工具开发中</Typography>
         </Paper>
       </Container>
     </Box>
