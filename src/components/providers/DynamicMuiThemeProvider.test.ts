@@ -13,7 +13,9 @@ describe("createDynamicMuiTheme", () => {
     userThemeKeys.forEach((themeKey) => {
       const dynamicTheme = createDynamicMuiTheme(themeKey);
 
-      expect(dynamicTheme.palette.background.paper).toBe(baseTheme.palette.background.paper);
+      expect(dynamicTheme.palette.background.paper).toBe(
+        baseTheme.palette.background.paper,
+      );
     });
   });
 
