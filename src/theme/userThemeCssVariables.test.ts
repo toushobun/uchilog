@@ -83,4 +83,14 @@ describe("getUserThemeCssVariables", () => {
       );
     });
   });
+
+  it("所有主题均输出交易类型背景相关变量", () => {
+    userThemeKeys.forEach((themeKey) => {
+      const themeVars = getUserThemeCssVariables(themeKey);
+
+      expect(themeVars["--user-theme-income-bg"]).toEqual(expect.any(String));
+      expect(themeVars["--user-theme-transfer-bg"]).toEqual(expect.any(String));
+      expect(themeVars["--user-theme-negative-bg"]).toEqual(expect.any(String));
+    });
+  });
 });
