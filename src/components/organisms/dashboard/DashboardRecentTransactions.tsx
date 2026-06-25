@@ -34,7 +34,7 @@ export function DashboardRecentTransactions({
           sx={{
             color: "text.secondary",
             fontSize: 12,
-            fontWeight: "fontWeightBold",
+            fontWeight: 800,
             textDecoration: "none",
           }}
         >
