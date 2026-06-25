@@ -17,7 +17,7 @@ import type { DashboardViewData } from "types/dashboard";
 import { formatNumber } from "utils/transactions";
 
 const incomeColor = "var(--user-theme-income-amount)";
-const expenseColor = "var(--user-theme-expense-amount)";
+const expenseColor = "var(--user-theme-negative-amount)";
 const balanceColor = "var(--user-theme-stat-value-1)";
 const primaryText = "var(--user-theme-balance-text)";
 const secondaryText = "var(--user-theme-secondary-text)";
