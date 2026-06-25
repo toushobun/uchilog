@@ -2,7 +2,10 @@ import { cleanup, fireEvent, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createTransactionDateGroup } from "@/test/mocks/transactions";
+import {
+  createTransactionDateGroup,
+  createTransactionListItem,
+} from "@/test/mocks/transactions";
 import type { TransactionRowProps } from "molecules/transactions/TransactionRow";
 
 import { TransactionGroupList } from "./TransactionGroupList";
@@ -82,5 +85,39 @@ describe("TransactionGroupList", () => {
     );
 
     expect(within(container).getByText("支出 ¥1,234")).toBeInTheDocument();
+  });
+
+  it("同一分组同时有收入和支出时显示收支与合计", () => {
+    const mixedGroup = createTransactionDateGroup({
+      items: [
+        createTransactionListItem({
+          amount: "3130",
+          id: "00000000-0000-4000-8000-000000009002",
+          type: "expense",
+        }),
+        createTransactionListItem({
+          amount: "260000",
+          categoryItems: [
+            {
+              amount: "260000",
+              categoryName: "工资",
+              parentCategoryName: "固定收入",
+            },
+          ],
+          id: "00000000-0000-4000-8000-000000009003",
+          merchant_name: "株式会社共达",
+          type: "income",
+        }),
+      ],
+    });
+    const { container } = render(
+      <TransactionGroupList groups={[mixedGroup]} />,
+    );
+
+    expect(
+      within(container).getByText(
+        "收入 ¥260,000 / 支出 ¥3,130 / 合计 +¥256,870",
+      ),
+    ).toBeInTheDocument();
   });
 });

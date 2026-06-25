@@ -243,13 +243,32 @@ export function TransactionGroupList({
 
 // TODO: 暂时以日元固定显示 ¥，后续需根据 summary.currency 字段使用 formatAmount
 function getGroupSummaryText(group: TransactionDateGroup) {
-  if (Number(group.summary.expense) > 0) {
+  const expense = Number(group.summary.expense);
+  const income = Number(group.summary.income);
+
+  if (income > 0 && expense > 0) {
+    return `收入 ¥${formatNumber(group.summary.income)} / 支出 ¥${formatNumber(
+      group.summary.expense,
+    )} / 合计 ${formatSignedYen(group.summary.balance)}`;
+  }
+
+  if (expense > 0) {
     return `支出 ¥${formatNumber(group.summary.expense)}`;
   }
 
-  if (Number(group.summary.income) > 0) {
+  if (income > 0) {
     return `收入 ¥${formatNumber(group.summary.income)}`;
   }
 
-  return `合计 ¥${formatNumber(group.summary.balance)}`;
+  return `合计 ${formatSignedYen(group.summary.balance)}`;
+}
+
+function formatSignedYen(amount: string) {
+  const value = Number(amount);
+
+  if (!Number.isFinite(value)) return `¥${formatNumber(amount)}`;
+  if (value === 0) return "¥0";
+
+  const sign = value > 0 ? "+" : "-";
+  return `${sign}¥${formatNumber(String(Math.abs(value)))}`;
 }

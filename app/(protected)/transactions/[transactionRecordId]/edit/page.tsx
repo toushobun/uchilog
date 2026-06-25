@@ -4,6 +4,7 @@ import {
   EditTransactionTemplate,
   EditTransferTransactionTemplate,
 } from "templates/transactions/TransactionFormPage";
+import { NewTransactionVisualFrame } from "templates/transactions/NewTransactionVisualFrame";
 import { getEditTransactionErrorMessage } from "utils/pageErrors";
 
 export default async function TransactionEditPage({
@@ -23,7 +24,24 @@ export default async function TransactionEditPage({
 
   if (initialValues.type === "transfer") {
     return (
-      <EditTransferTransactionTemplate
+      <NewTransactionVisualFrame>
+        <EditTransferTransactionTemplate
+          accountOptions={view.accountOptions}
+          action={saveEditTransaction}
+          categoryOptions={view.categoryOptions}
+          errorMessage={errorMessage}
+          initialValues={initialValues}
+          ledgerName={view.ledgerName}
+          merchantOptions={view.merchantOptions}
+          tagOptions={view.tagOptions}
+        />
+      </NewTransactionVisualFrame>
+    );
+  }
+
+  return (
+    <NewTransactionVisualFrame>
+      <EditTransactionTemplate
         accountOptions={view.accountOptions}
         action={saveEditTransaction}
         categoryOptions={view.categoryOptions}
@@ -33,19 +51,6 @@ export default async function TransactionEditPage({
         merchantOptions={view.merchantOptions}
         tagOptions={view.tagOptions}
       />
-    );
-  }
-
-  return (
-    <EditTransactionTemplate
-      accountOptions={view.accountOptions}
-      action={saveEditTransaction}
-      categoryOptions={view.categoryOptions}
-      errorMessage={errorMessage}
-      initialValues={initialValues}
-      ledgerName={view.ledgerName}
-      merchantOptions={view.merchantOptions}
-      tagOptions={view.tagOptions}
-    />
+    </NewTransactionVisualFrame>
   );
 }

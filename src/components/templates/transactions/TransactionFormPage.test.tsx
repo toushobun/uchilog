@@ -112,16 +112,19 @@ describe("NewTransactionTemplate", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     expect(
-      within(container).getByRole("heading", { name: "新增记账" }),
+      within(container).getByRole("heading", { name: "记一笔" }),
     ).toBeInTheDocument();
   });
 
-  it("显示当前账本名称", () => {
+  it("显示关闭入口且不显示当前账本名称", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 
     expect(
-      within(container).getByText("当前账本：家庭账本"),
+      within(container).getByRole("link", { name: "关闭" }),
     ).toBeInTheDocument();
+    expect(
+      within(container).queryByText("当前账本：家庭账本"),
+    ).not.toBeInTheDocument();
   });
 
   it("只显示一套包含转账的记账类型导航", () => {
@@ -133,6 +136,15 @@ describe("NewTransactionTemplate", () => {
     expect(
       within(container).getByRole("button", { name: "转账" }),
     ).toBeInTheDocument();
+    expect(
+      within(container).getByRole("button", { name: "收支" }),
+    ).toBeInTheDocument();
+    expect(
+      within(container).queryByRole("button", { name: "收入" }),
+    ).toBeNull();
+    expect(
+      within(container).queryByRole("button", { name: "支出" }),
+    ).toBeNull();
   });
 
   it("默认激活支出表单并保留其他类型面板", () => {
@@ -204,12 +216,12 @@ describe("NewTransactionTemplate", () => {
     ).toHaveAttribute("aria-hidden", "true");
   });
 
-  it("点击支出 tab 切换到支出面板", () => {
+  it("点击收支 tab 切换回普通记账面板", () => {
     const { container } = render(
       <NewTransactionTemplate {...baseProps} initialType="transfer" />,
     );
 
-    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
+    fireEvent.click(within(container).getByRole("button", { name: "收支" }));
 
     expect(
       within(container).getByTestId("transaction-type-slide-panel-expense"),
@@ -229,7 +241,7 @@ describe("NewTransactionTemplate", () => {
     fireEvent.change(within(container).getByLabelText("转账临时输入"), {
       target: { value: "保留转账输入" },
     });
-    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
+    fireEvent.click(within(container).getByRole("button", { name: "收支" }));
 
     expect(within(container).getByLabelText("支出临时输入")).toHaveValue(
       "保留支出输入",
@@ -281,30 +293,19 @@ describe("NewTransactionTemplate", () => {
     expect(hiddenInput).toHaveAttribute("type", "hidden");
   });
 
-  it("点击收入 tab 后当前普通表单 hidden type 变为 income", () => {
-    const { container } = render(<NewTransactionTemplate {...baseProps} />);
+  it("initialType=income 时收支 tab 对应收入表单", () => {
+    const { container } = render(
+      <NewTransactionTemplate {...baseProps} initialType="income" />,
+    );
 
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
+    expect(
+      within(container).getByRole("button", { name: "收支" }),
+    ).toHaveAttribute("aria-pressed", "true");
 
     const activePanel = within(container).getByTestId(
       "transaction-type-slide-panel-income",
     );
     const hiddenInput = within(activePanel).getByDisplayValue("income");
-    expect(hiddenInput).toHaveAttribute("name", "type");
-    expect(hiddenInput).toHaveAttribute("type", "hidden");
-  });
-
-  it("点击收入 tab 后再点击支出 tab 当前普通表单 hidden type 变回 expense", () => {
-    const { container } = render(<NewTransactionTemplate {...baseProps} />);
-
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
-    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
-
-    const activePanel = within(container).getByTestId(
-      "transaction-type-slide-panel-expense",
-    );
-    const hiddenInput = within(activePanel).getByDisplayValue("expense");
-
     expect(hiddenInput).toHaveAttribute("name", "type");
     expect(hiddenInput).toHaveAttribute("type", "hidden");
   });

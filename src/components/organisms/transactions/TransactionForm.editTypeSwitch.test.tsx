@@ -5,9 +5,8 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useState } from "react";
 
 import {
   TransactionForm,
@@ -78,7 +77,7 @@ afterEach(() => {
 });
 
 function renderForm(
-  props: Partial<React.ComponentProps<typeof TransactionForm>> = {},
+  props: Partial<ComponentProps<typeof TransactionForm>> = {},
 ) {
   return render(
     <TransactionForm
@@ -92,10 +91,6 @@ function renderForm(
   );
 }
 
-/**
- * 模拟 EditTransactionTemplate 的行为：typeNavigation 由外部传入，
- * 切换类型时以 key={activeType} 重新挂载 TransactionForm 并清空 items。
- */
 function renderEditFormWithTypeSwitch(
   baseInitialValues: TransactionFormInitialValues,
 ) {
@@ -110,14 +105,14 @@ function renderEditFormWithTypeSwitch(
     const typeNavigation = (
       <div>
         <button
-          onClick={() => setActiveType("expense")}
           aria-pressed={activeType === "expense"}
+          onClick={() => setActiveType("expense")}
         >
           支出
         </button>
         <button
-          onClick={() => setActiveType("income")}
           aria-pressed={activeType === "income"}
+          onClick={() => setActiveType("income")}
         >
           收入
         </button>
@@ -237,24 +232,30 @@ describe("TransactionForm 编辑类型切换", () => {
     expect(getSubmittedCategoryIds(container)).toEqual([]);
   });
 
-  it("切换到收入后可选择收入分类", () => {
-    const { container } = renderEditFormWithTypeSwitch(createInitialValues());
+  it("明细抽屉同时显示支出和收入分类，可混合追加", () => {
+    const { container } = renderForm({
+      initialValues: createInitialValues(),
+    });
 
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
     openSheet(container);
 
     expect(
+      screen.getByRole("button", { name: "食材/调料" }),
+    ).toBeInTheDocument();
+    expect(
       screen.getByRole("button", { name: "固定收入" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "工资" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
 
-    addItemViaSheet("工资", "500");
+    fireEvent.click(screen.getByRole("button", { name: "固定收入" }));
+    addItemViaSheet("工资", "300000");
 
-    expect(getSubmittedCategoryIds(container)).toEqual([incomeCategoryId]);
+    expect(getSubmittedCategoryIds(container)).toEqual([
+      expenseCategoryId,
+      incomeCategoryId,
+    ]);
   });
 
-  it("切换到支出后可选择支出分类", () => {
+  it("编辑切换到支出后弹框显示所有分类，可追加支出明细", () => {
     const { container } = renderEditFormWithTypeSwitch(
       createInitialValues("income"),
     );
@@ -266,10 +267,27 @@ describe("TransactionForm 编辑类型切换", () => {
       screen.getByRole("button", { name: "食材/调料" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "餐饮" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "工资" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "固定收入" }),
+    ).toBeInTheDocument();
 
     addItemViaSheet("餐饮", "800");
 
     expect(getSubmittedCategoryIds(container)).toEqual([expenseCategoryId]);
+  });
+
+  it("新增记账可同时添加支出和收入明细，两者均会提交", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    addItemViaSheet("餐饮", "500");
+
+    fireEvent.click(screen.getByRole("button", { name: "固定收入" }));
+    addItemViaSheet("工资", "300000");
+
+    expect(getSubmittedCategoryIds(container)).toEqual([
+      expenseCategoryId,
+      incomeCategoryId,
+    ]);
   });
 });

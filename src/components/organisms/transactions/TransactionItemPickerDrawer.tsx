@@ -10,10 +10,7 @@ import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
-import type {
-  TransactionCategoryOption,
-  TransactionType,
-} from "types/transactions";
+import type { TransactionCategoryOption } from "types/transactions";
 
 import type {
   CategoryPickerGroup,
@@ -39,7 +36,6 @@ type TransactionItemPickerDrawerProps = {
   pickerErrors: TransactionPickerErrors;
   selectedAccountCurrency?: string;
   selectedCategoryGroup?: CategoryPickerGroup;
-  selectedType: TransactionType;
 };
 
 export function TransactionItemPickerDrawer({
@@ -58,8 +54,11 @@ export function TransactionItemPickerDrawer({
   pickerErrors,
   selectedAccountCurrency,
   selectedCategoryGroup,
-  selectedType,
 }: TransactionItemPickerDrawerProps) {
+  const activeCategoryGroup =
+    categoryGroups.find((group) => group.id === selectedCategoryGroup?.id) ??
+    categoryGroups[0];
+
   return (
     <Drawer
       anchor="bottom"
@@ -129,14 +128,12 @@ export function TransactionItemPickerDrawer({
           选择分类
         </Typography>
         {filteredCategoryOptions.length === 0 ? (
-          <Typography color="text.secondary">
-            请先新增{selectedType === "expense" ? "支出" : "收入"}小分类。
-          </Typography>
+          <Typography color="text.secondary">请先新增分类。</Typography>
         ) : (
           <Stack direction="row" sx={{ minHeight: 180 }}>
             <Box sx={categoryGroupListSx}>
               {categoryGroups.map((group) => {
-                const isSelected = selectedCategoryGroup?.id === group.id;
+                const isSelected = activeCategoryGroup?.id === group.id;
 
                 return (
                   <Button
@@ -169,7 +166,7 @@ export function TransactionItemPickerDrawer({
             <Stack spacing={1.5} sx={{ flex: 1, minWidth: 0, pl: 2, pt: 0.5 }}>
               <Stack spacing={0.5}>
                 <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-                  {selectedCategoryGroup?.categories.map((category) => {
+                  {activeCategoryGroup?.categories.map((category) => {
                     const isSelected = pickerCategoryId === category.id;
 
                     return (

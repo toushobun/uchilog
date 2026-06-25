@@ -132,8 +132,8 @@ describe("TransactionForm regression", () => {
     );
   });
 
-  it("没有当前类型可用分类时保存按钮不可用", () => {
-    const { container } = renderForm({ categoryOptions: incomeCategories });
+  it("分类列表为空时保存按钮不可用", () => {
+    const { container } = renderForm({ categoryOptions: [] });
 
     expect(
       within(container).getByRole("button", { name: "保存记账" }),

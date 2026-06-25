@@ -84,7 +84,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  name: "新增记录页面",
+  name: "新增记账页面",
 };
 
 export const WithError: Story = {

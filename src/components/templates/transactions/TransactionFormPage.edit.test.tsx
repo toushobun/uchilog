@@ -143,51 +143,33 @@ describe("EditTransactionTemplate", () => {
     ).toBeInTheDocument();
   });
 
-  it("普通支出编辑页只渲染一套支出 / 收入 / 转账切换", () => {
+  it("普通支出编辑页渲染收支 / 转账切换，并激活支出面板", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps()} />,
     );
 
     expect(
-      within(container).getAllByRole("button", { name: "支出" }),
-    ).toHaveLength(1);
-    expect(
-      within(container).getByRole("button", { name: "支出" }),
+      within(container).getByRole("button", { name: "收支" }),
     ).toHaveAttribute("aria-pressed", "true");
     expect(
-      within(container).getAllByRole("button", { name: "收入" }),
-    ).toHaveLength(1);
-    expect(
-      within(container).getByRole("button", { name: "收入" }),
+      within(container).getByRole("button", { name: "转账" }),
     ).toHaveAttribute("aria-pressed", "false");
-    expect(
-      within(container).getAllByRole("button", { name: "转账" }),
-    ).toHaveLength(1);
     expect(
       within(container).getByTestId("transaction-type-slide-panel-expense"),
     ).toHaveAttribute("aria-hidden", "false");
   });
 
-  it("普通收入编辑页只渲染一套支出 / 收入 / 转账切换", () => {
+  it("普通收入编辑页渲染收支 / 转账切换，并激活收入面板", () => {
     const { container } = render(
       <EditTransactionTemplate {...createProps("income")} />,
     );
 
     expect(
-      within(container).getAllByRole("button", { name: "支出" }),
-    ).toHaveLength(1);
-    expect(
-      within(container).getByRole("button", { name: "支出" }),
-    ).toHaveAttribute("aria-pressed", "false");
-    expect(
-      within(container).getAllByRole("button", { name: "收入" }),
-    ).toHaveLength(1);
-    expect(
-      within(container).getByRole("button", { name: "收入" }),
+      within(container).getByRole("button", { name: "收支" }),
     ).toHaveAttribute("aria-pressed", "true");
     expect(
-      within(container).getAllByRole("button", { name: "转账" }),
-    ).toHaveLength(1);
+      within(container).getByRole("button", { name: "转账" }),
+    ).toHaveAttribute("aria-pressed", "false");
     expect(
       within(container).getByTestId("transaction-type-slide-panel-income"),
     ).toHaveAttribute("aria-hidden", "false");
@@ -236,7 +218,7 @@ describe("EditTransactionTemplate", () => {
       target: { value: "保留普通编辑输入" },
     });
     fireEvent.click(within(container).getByRole("button", { name: "转账" }));
-    fireEvent.click(within(container).getByRole("button", { name: "支出" }));
+    fireEvent.click(within(container).getByRole("button", { name: "收支" }));
 
     expect(within(container).getByLabelText("支出编辑临时输入")).toHaveValue(
       "保留普通编辑输入",

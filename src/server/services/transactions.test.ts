@@ -98,6 +98,40 @@ describe("transactions service", () => {
     });
   });
 
+  it("createTransactionService 支持支出和收入分类混合明细", async () => {
+    mockRpcResult();
+
+    await expect(
+      createTransactionService({
+        accountId,
+        items: [
+          { amount: 500, categoryId },
+          { amount: 300000, categoryId: categoryId2 },
+        ],
+        ledgerId,
+        merchantId,
+        note: null,
+        tagNames: ["工资", "返金"],
+        transactionAt,
+        type: "expense",
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(rpcMock).toHaveBeenCalledWith("create_transaction", {
+      p_account_id: accountId,
+      p_items: [
+        { amount: 500, categoryId },
+        { amount: 300000, categoryId: categoryId2 },
+      ],
+      p_ledger_id: ledgerId,
+      p_merchant_id: merchantId,
+      p_note: null,
+      p_tag_names: ["工资", "返金"],
+      p_transaction_at: transactionAt,
+      p_type: "expense",
+    });
+  });
+
   it.each([
     ["RPC 异常", { message: "failed" }],
     ["权限拒绝", { code: "42501" }],
@@ -188,6 +222,42 @@ describe("transactions service", () => {
       p_transaction_at: transactionAt,
       p_transaction_record_id: transactionRecordId,
       p_type: "income",
+    });
+  });
+
+  it("updateTransactionService 支持支出和收入分类混合明细", async () => {
+    mockRpcResult();
+
+    await expect(
+      updateTransactionService({
+        accountId,
+        items: [
+          { amount: 500, categoryId },
+          { amount: 300000, categoryId: categoryId2 },
+        ],
+        ledgerId,
+        merchantId,
+        note: null,
+        tagNames: [],
+        transactionAt,
+        transactionRecordId,
+        type: "expense",
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(rpcMock).toHaveBeenCalledWith("update_transaction", {
+      p_account_id: accountId,
+      p_items: [
+        { amount: 500, categoryId },
+        { amount: 300000, categoryId: categoryId2 },
+      ],
+      p_ledger_id: ledgerId,
+      p_merchant_id: merchantId,
+      p_note: null,
+      p_tag_names: [],
+      p_transaction_at: transactionAt,
+      p_transaction_record_id: transactionRecordId,
+      p_type: "expense",
     });
   });
 
