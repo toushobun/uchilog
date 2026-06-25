@@ -13,7 +13,6 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import MenuItem from "@mui/material/MenuItem";
-import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
@@ -21,6 +20,7 @@ import Typography from "@mui/material/Typography";
 import { routePaths } from "config/paths";
 import { TransactionFormHeader } from "organisms/transactions/TransactionFormHeader";
 import { TransactionDateTimePicker } from "molecules/transactions/TransactionDateTimePicker";
+import { SectionCard } from "molecules/ui/SectionCard";
 import type { TransferEditInitialValues } from "server/loaders/transactionForm";
 import type {
   TransactionAccountOption,
@@ -246,6 +246,7 @@ export function TransferTransactionForm({
               }
             }}
             select
+            sx={transferFieldSx}
             value={selectedAccountId}
           >
             <MenuItem disabled value="">
@@ -281,6 +282,7 @@ export function TransferTransactionForm({
               }
             }}
             select
+            sx={transferFieldSx}
             value={selectedTargetAccountId}
           >
             <MenuItem disabled value="">
@@ -318,6 +320,7 @@ export function TransferTransactionForm({
                 inputMode: "decimal" as const,
               },
             }}
+            sx={transferFieldSx}
             type="text"
             value={transferAmount}
           />
@@ -344,11 +347,12 @@ export function TransferTransactionForm({
             name="note"
             onChange={(e) => setNote(e.target.value)}
             rows={3}
+            sx={transferFieldSx}
             value={note}
           />
         </Box>
 
-        <Paper variant="outlined" sx={{ p: 2 }}>
+        <SectionCard sx={{ p: 2 }}>
           <Stack spacing={1.5}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
               保存前汇总
@@ -379,7 +383,7 @@ export function TransferTransactionForm({
               value={transferAmount || "未填写金额"}
             />
           </Stack>
-        </Paper>
+        </SectionCard>
 
         <Button
           disabled={isSubmitDisabled}
@@ -389,7 +393,7 @@ export function TransferTransactionForm({
           sx={{
             "&:not(.Mui-disabled)": {
               background: "var(--user-theme-fab-bg)",
-              color: "white",
+              color: "var(--user-theme-fab-text)",
             },
           }}
         >
@@ -427,3 +431,20 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
     </Stack>
   );
 }
+
+const transferFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    bgcolor: "var(--user-theme-card-bg)",
+    borderRadius: 1.5,
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--user-theme-card-border)",
+  },
+  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--user-theme-field-card-selected-border)",
+  },
+  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "var(--user-theme-field-card-selected-border)",
+    borderWidth: 1,
+  },
+};
