@@ -132,6 +132,10 @@ function clickSheetAddButton() {
   fireEvent.click(button);
 }
 
+function openTagInput(container: HTMLElement) {
+  fireEvent.click(within(container).getByRole("button", { name: "追加" }));
+}
+
 function addItemViaSheet(categoryName: string, amount: string) {
   fireEvent.click(screen.getByRole("button", { name: categoryName }));
   fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
@@ -243,7 +247,7 @@ describe("TransactionForm", () => {
     expect(screen.getByText("日元现金（JPY）")).toBeInTheDocument();
   });
 
-  it("支出弹框只显示支出分类", () => {
+  it("弹框同时显示支出和收入分类", () => {
     const { container } = renderForm();
 
     openSheet(container);
@@ -254,20 +258,9 @@ describe("TransactionForm", () => {
     expect(
       screen.getByRole("button", { name: "食材/调料" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "餐饮" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "固定收入" })).toBeNull();
-  });
-
-  it("收入弹框只显示收入分类", () => {
-    const { container } = renderForm({ initialType: "income" });
-
-    openSheet(container);
-
     expect(
       screen.getByRole("button", { name: "固定收入" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "工资" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "餐饮" })).toBeNull();
   });
 
   it("切换大分类后右侧显示对应的小分类", () => {
@@ -336,6 +329,7 @@ describe("TransactionForm", () => {
 
   it("可输入新标签，重复标签会显示提示且不会重复提交", () => {
     const { container } = renderForm();
+    openTagInput(container);
     const tagInput = within(container).getByRole("textbox", {
       name: "新增标签",
     });
@@ -356,6 +350,7 @@ describe("TransactionForm", () => {
 
   it("标签超过长度限制时显示独立错误", () => {
     const { container } = renderForm();
+    openTagInput(container);
 
     fireEvent.change(
       within(container).getByRole("textbox", { name: "新增标签" }),
@@ -374,6 +369,7 @@ describe("TransactionForm", () => {
         Array.from({ length: 10 }, (_, index) => `标签${index + 1}`),
       ),
     });
+    openTagInput(container);
 
     fireEvent.change(
       within(container).getByRole("textbox", { name: "新增标签" }),

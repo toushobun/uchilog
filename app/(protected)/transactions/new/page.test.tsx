@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   ),
   loadNewTransactionView: vi.fn(),
   NewTransactionTemplate: vi.fn(() => null),
+  NewTransactionVisualFrame: vi.fn(() => null),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
   }),
@@ -29,6 +30,10 @@ vi.mock("server/loaders/transactionForm", () => ({
 
 vi.mock("templates/transactions/TransactionFormPage", () => ({
   NewTransactionTemplate: mocks.NewTransactionTemplate,
+}));
+
+vi.mock("templates/transactions/NewTransactionVisualFrame", () => ({
+  NewTransactionVisualFrame: mocks.NewTransactionVisualFrame,
 }));
 
 vi.mock("utils/pageErrors", () => ({
@@ -89,8 +94,11 @@ describe("TransactionsNewPage", () => {
       searchParams: Promise.resolve({}),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
-    expect(element.props).toMatchObject({ initialType: "expense" });
+    expect(child.props).toMatchObject({ initialType: "expense" });
   });
 
   it("type=expense 时传递 expense", async () => {
@@ -98,8 +106,11 @@ describe("TransactionsNewPage", () => {
       searchParams: Promise.resolve({ type: "expense" }),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
-    expect(element.props).toMatchObject({ initialType: "expense" });
+    expect(child.props).toMatchObject({ initialType: "expense" });
   });
 
   it("type=income 时传递 income", async () => {
@@ -107,8 +118,11 @@ describe("TransactionsNewPage", () => {
       searchParams: Promise.resolve({ type: "income" }),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
-    expect(element.props).toMatchObject({ initialType: "income" });
+    expect(child.props).toMatchObject({ initialType: "income" });
   });
 
   it("type=transfer 时传递 transfer", async () => {
@@ -116,8 +130,11 @@ describe("TransactionsNewPage", () => {
       searchParams: Promise.resolve({ type: "transfer" }),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
-    expect(element.props).toMatchObject({ initialType: "transfer" });
+    expect(child.props).toMatchObject({ initialType: "transfer" });
   });
 
   it("非法 type 时默认 expense", async () => {
@@ -125,8 +142,11 @@ describe("TransactionsNewPage", () => {
       searchParams: Promise.resolve({ type: "invalid" }),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
-    expect(element.props).toMatchObject({ initialType: "expense" });
+    expect(child.props).toMatchObject({ initialType: "expense" });
   });
 
   it("error=xxx&type=transfer 时保持转账类型", async () => {
@@ -137,8 +157,11 @@ describe("TransactionsNewPage", () => {
       }),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
-    expect(element.props).toMatchObject({
+    expect(child.props).toMatchObject({
       initialType: "transfer",
       errorMessage: "新建错误:create_failed",
     });
@@ -149,13 +172,17 @@ describe("TransactionsNewPage", () => {
       searchParams: Promise.resolve({ error: "create_failed" }),
     });
     const element = result as ReactElement<Record<string, unknown>>;
+    const child = element.props.children as ReactElement<
+      Record<string, unknown>
+    >;
 
     expect(mocks.loadNewTransactionView).toHaveBeenCalledTimes(1);
     expect(mocks.getNewTransactionErrorMessage).toHaveBeenCalledWith(
       "create_failed",
     );
-    expect(element.type).toBe(mocks.NewTransactionTemplate);
-    expect(element.props).toMatchObject({
+    expect(element.type).toBe(mocks.NewTransactionVisualFrame);
+    expect(child.type).toBe(mocks.NewTransactionTemplate);
+    expect(child.props).toMatchObject({
       ...baseView,
       action: mocks.createTransaction,
       errorMessage: "新建错误:create_failed",

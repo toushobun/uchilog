@@ -9,16 +9,20 @@ import {
 } from "react";
 
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Typography from "@mui/material/Typography";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import Link from "next/link";
 
 import {
   TransactionForm,
   type TransactionFormInitialValues,
 } from "organisms/transactions/TransactionForm";
 import { TransactionAmountKeypadLauncher } from "organisms/transactions/TransactionAmountKeypadLauncher";
-import { TransactionFormHeader } from "organisms/transactions/TransactionFormHeader";
 import { TransferTransactionForm } from "organisms/transactions/TransferTransactionForm";
-import { TransactionTypeNavigation } from "molecules/transactions/TransactionTypeNavigation";
 import { routePaths } from "config/paths";
 import type { TransferEditInitialValues } from "server/loaders/transactionForm";
 import type {
@@ -163,18 +167,30 @@ function NewTransactionFormView({
   categoryOptions,
   errorMessage,
   initialType,
-  ledgerName,
   merchantOptions,
   tagOptions,
 }: TransactionFormTemplateProps) {
   const [activeType, setActiveType] = useState<TransactionRecordType>(
     initialType ?? "expense",
   );
-  const [submitDisabledByType, setSubmitDisabledByType] = useState<
+  const lastNormalTypeRef = useRef<TransactionType>(
+    initialType === "income" ? "income" : "expense",
+  );
+  if (activeType !== "transfer") {
+    lastNormalTypeRef.current = activeType;
+  }
+  const [, setSubmitDisabledByType] = useState<
     Record<TransactionRecordType, boolean>
   >({ expense: true, income: true, transfer: true });
 
-  const activeFormId = `new-${activeType}-transaction-form`;
+  function handleNewTypeChange(type: NewTransactionTypeTab) {
+    if (type === "normal") {
+      setActiveType(lastNormalTypeRef.current);
+      return;
+    }
+
+    setActiveType("transfer");
+  }
 
   const panels = useMemo(
     () => ({
@@ -235,57 +251,141 @@ function NewTransactionFormView({
 
   return (
     <Stack spacing={0}>
-      <TransactionFormHeader
-        closeHref={routePaths.transactions}
-        formId={activeFormId}
-        isSubmitDisabled={submitDisabledByType[activeType]}
-        ledgerName={ledgerName}
-        title="新增记账"
-      />
-      <TransactionTypeNavigation
-        activeType={activeType}
-        onChange={setActiveType}
+      <NewTransactionTopBar />
+      <NewTransactionTypeNavigation
+        activeType={activeType === "transfer" ? "transfer" : "normal"}
+        onChange={handleNewTypeChange}
       />
       <TransactionTypeSlidePanels activeType={activeType} panels={panels} />
     </Stack>
   );
 }
 
+function NewTransactionTopBar() {
+  return (
+    <Box sx={newTransactionTopBarSx}>
+      <IconButton
+        aria-label="关闭"
+        component={Link}
+        href={routePaths.transactions}
+        sx={newTransactionCloseButtonSx}
+      >
+        <CloseRoundedIcon />
+      </IconButton>
+      <Typography component="h1" variant="h5" sx={newTransactionTitleSx}>
+        记一笔
+      </Typography>
+      <Box aria-hidden sx={{ width: 40 }} />
+    </Box>
+  );
+}
+
+type NewTransactionTypeTab = "normal" | "transfer";
+
+type NewTransactionTypeNavigationProps = {
+  activeType: NewTransactionTypeTab;
+  onChange: (type: NewTransactionTypeTab) => void;
+};
+
+function NewTransactionTypeNavigation({
+  activeType,
+  onChange,
+}: NewTransactionTypeNavigationProps) {
+  return (
+    <ToggleButtonGroup
+      aria-label="记账类型"
+      exclusive
+      fullWidth
+      value={activeType}
+      onChange={(_, value: NewTransactionTypeTab | null) => {
+        if (value) onChange(value);
+      }}
+    >
+      <ToggleButton value="normal">收支</ToggleButton>
+      <ToggleButton value="transfer">转账</ToggleButton>
+    </ToggleButtonGroup>
+  );
+}
+
+const newTransactionTopBarSx = {
+  alignItems: "center",
+  display: "grid",
+  gridTemplateColumns: "40px minmax(0, 1fr) 40px",
+  pb: 2,
+  pt: 0.25,
+};
+
+const newTransactionCloseButtonSx = {
+  color: "rgba(74, 47, 27, 0.54)",
+  justifySelf: "start",
+};
+
+const newTransactionTitleSx = {
+  color: "#3f2b1f",
+  fontSize: "1.5rem",
+  fontWeight: 900,
+  letterSpacing: 0,
+  lineHeight: 1.25,
+  textAlign: "center",
+};
+
 type EditTransactionShellProps = {
-  activeFormId: string;
   activeType: TransactionRecordType;
-  ledgerName: string;
   panels: Record<TransactionRecordType, ReactNode>;
   setActiveType: (type: TransactionRecordType) => void;
-  submitDisabledByType: Record<TransactionRecordType, boolean>;
 };
 
 function EditTransactionShell({
-  activeFormId,
   activeType,
-  ledgerName,
   panels,
   setActiveType,
-  submitDisabledByType,
 }: EditTransactionShellProps) {
+  const lastNormalTypeRef = useRef<TransactionType>(
+    activeType !== "transfer" ? activeType : "expense",
+  );
+
+  if (activeType !== "transfer") {
+    lastNormalTypeRef.current = activeType;
+  }
+
+  const outerTab: "normal" | "transfer" =
+    activeType === "transfer" ? "transfer" : "normal";
+
+  function handleOuterTabChange(tab: "normal" | "transfer") {
+    setActiveType(tab === "transfer" ? "transfer" : lastNormalTypeRef.current);
+  }
+
   return (
     <PageShell>
       <Stack spacing={0}>
-        <TransactionFormHeader
-          closeHref={routePaths.transactions}
-          formId={activeFormId}
-          isSubmitDisabled={submitDisabledByType[activeType]}
-          ledgerName={ledgerName}
-          title="编辑记账"
-        />
-        <TransactionTypeNavigation
-          activeType={activeType}
-          onChange={setActiveType}
+        <EditTransactionTopBar />
+        <NewTransactionTypeNavigation
+          activeType={outerTab}
+          onChange={handleOuterTabChange}
         />
         <TransactionTypeSlidePanels activeType={activeType} panels={panels} />
       </Stack>
       <TransactionAmountKeypadLauncher />
     </PageShell>
+  );
+}
+
+function EditTransactionTopBar() {
+  return (
+    <Box sx={newTransactionTopBarSx}>
+      <IconButton
+        aria-label="关闭"
+        component={Link}
+        href={routePaths.transactions}
+        sx={newTransactionCloseButtonSx}
+      >
+        <CloseRoundedIcon />
+      </IconButton>
+      <Typography component="h1" variant="h5" sx={newTransactionTitleSx}>
+        编辑记账
+      </Typography>
+      <Box aria-hidden sx={{ width: 40 }} />
+    </Box>
   );
 }
 
@@ -301,9 +401,6 @@ export function EditTransferTransactionTemplate({
 }: EditTransferTransactionTemplateProps) {
   const [activeType, setActiveType] =
     useState<TransactionRecordType>("transfer");
-  const [submitDisabledByType, setSubmitDisabledByType] = useState<
-    Record<TransactionRecordType, boolean>
-  >({ expense: true, income: true, transfer: true });
 
   const panels = useMemo(
     () => ({
@@ -328,12 +425,6 @@ export function EditTransferTransactionTemplate({
               "expense",
             )}
             merchantOptions={merchantOptions}
-            onSubmitDisabledChange={(disabled) =>
-              setSubmitDisabledByType((prev) => ({
-                ...prev,
-                expense: disabled,
-              }))
-            }
             submitLabel="保存修改"
             tagOptions={tagOptions}
           />
@@ -360,9 +451,6 @@ export function EditTransferTransactionTemplate({
               "income",
             )}
             merchantOptions={merchantOptions}
-            onSubmitDisabledChange={(disabled) =>
-              setSubmitDisabledByType((prev) => ({ ...prev, income: disabled }))
-            }
             submitLabel="保存修改"
             tagOptions={tagOptions}
           />
@@ -376,9 +464,6 @@ export function EditTransferTransactionTemplate({
           formId="edit-transfer-transaction-form"
           hideHeader
           initialValues={initialValues}
-          onSubmitDisabledChange={(disabled) =>
-            setSubmitDisabledByType((prev) => ({ ...prev, transfer: disabled }))
-          }
           sourceType="transfer"
         />
       ),
@@ -394,16 +479,11 @@ export function EditTransferTransactionTemplate({
     ],
   );
 
-  const activeFormId = `edit-${activeType}-transaction-form`;
-
   return (
     <EditTransactionShell
-      activeFormId={activeFormId}
       activeType={activeType}
-      ledgerName={ledgerName}
       panels={panels}
       setActiveType={setActiveType}
-      submitDisabledByType={submitDisabledByType}
     />
   );
 }
@@ -421,9 +501,6 @@ export function EditTransactionTemplate({
   const [activeType, setActiveType] = useState<TransactionRecordType>(
     initialValues.type,
   );
-  const [submitDisabledByType, setSubmitDisabledByType] = useState<
-    Record<TransactionRecordType, boolean>
-  >({ expense: true, income: true, transfer: true });
 
   const panels = useMemo(
     () => ({
@@ -448,12 +525,6 @@ export function EditTransactionTemplate({
               "expense",
             )}
             merchantOptions={merchantOptions}
-            onSubmitDisabledChange={(disabled) =>
-              setSubmitDisabledByType((prev) => ({
-                ...prev,
-                expense: disabled,
-              }))
-            }
             submitLabel="保存修改"
             tagOptions={tagOptions}
           />
@@ -480,9 +551,6 @@ export function EditTransactionTemplate({
               "income",
             )}
             merchantOptions={merchantOptions}
-            onSubmitDisabledChange={(disabled) =>
-              setSubmitDisabledByType((prev) => ({ ...prev, income: disabled }))
-            }
             submitLabel="保存修改"
             tagOptions={tagOptions}
           />
@@ -499,9 +567,6 @@ export function EditTransactionTemplate({
             initialValues,
             accountOptions,
           )}
-          onSubmitDisabledChange={(disabled) =>
-            setSubmitDisabledByType((prev) => ({ ...prev, transfer: disabled }))
-          }
           sourceType={initialValues.type}
         />
       ),
@@ -517,16 +582,11 @@ export function EditTransactionTemplate({
     ],
   );
 
-  const activeFormId = `edit-${activeType}-transaction-form`;
-
   return (
     <EditTransactionShell
-      activeFormId={activeFormId}
       activeType={activeType}
-      ledgerName={ledgerName}
       panels={panels}
       setActiveType={setActiveType}
-      submitDisabledByType={submitDisabledByType}
     />
   );
 }

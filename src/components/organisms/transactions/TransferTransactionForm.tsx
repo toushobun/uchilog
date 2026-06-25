@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
@@ -28,6 +36,12 @@ import { isValidPositiveMoneyText } from "utils/transactionAmountInput";
 
 const maxNoteLength = 2000;
 
+type TransferFieldErrors = {
+  accountId?: string;
+  targetAccountId?: string;
+  transferAmount?: string;
+};
+
 type TransferTransactionFormProps = {
   action: (formData: FormData) => Promise<void>;
   accountOptions: TransactionAccountOption[];
@@ -38,6 +52,7 @@ type TransferTransactionFormProps = {
   ledgerName?: string;
   onSubmitDisabledChange?: (disabled: boolean) => void;
   sourceType?: TransactionRecordType;
+  submitLabel?: string;
   title?: string;
   typeNavigation?: ReactNode;
 };
@@ -52,6 +67,7 @@ export function TransferTransactionForm({
   ledgerName,
   onSubmitDisabledChange,
   sourceType,
+  submitLabel,
   title = "新增记账",
   typeNavigation,
 }: TransferTransactionFormProps) {
@@ -68,6 +84,11 @@ export function TransferTransactionForm({
   const [transactionDate, setTransactionDate] = useState("");
   const [transactionTime, setTransactionTime] = useState("");
   const [timeZoneOffsetMinutes, setTimeZoneOffsetMinutes] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<TransferFieldErrors>({});
+  const accountFieldRef = useRef<HTMLDivElement>(null);
+  const targetAccountFieldRef = useRef<HTMLDivElement>(null);
+  const amountFieldRef = useRef<HTMLDivElement>(null);
+  const noteFieldRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const localValue = initialValues?.transactionAt
@@ -103,24 +124,65 @@ export function TransferTransactionForm({
   const isNoteTooLong = note.length > maxNoteLength;
 
   const isSubmitDisabled =
-    hasTooFewAccounts ||
-    isSameAccount ||
-    isDifferentCurrency ||
-    isAmountInvalid ||
-    isNoteTooLong ||
-    !transactionAtValue ||
-    !timeZoneOffsetMinutes;
+    hasTooFewAccounts || !transactionAtValue || !timeZoneOffsetMinutes;
 
   useEffect(() => {
     onSubmitDisabledChange?.(isSubmitDisabled);
   }, [isSubmitDisabled, onSubmitDisabledChange]);
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!transactionAtValue) {
+      event.preventDefault();
+      return;
+    }
+
+    const errors: TransferFieldErrors = {};
+
+    if (!selectedAccountId) {
+      errors.accountId = "请选择转出账户。";
+    }
+    if (!selectedTargetAccountId) {
+      errors.targetAccountId = "请选择转入账户。";
+    }
+    if (isAmountInvalid) {
+      errors.transferAmount = "请输入有效金额。";
+    }
+
+    const hasErrors =
+      Object.keys(errors).length > 0 ||
+      isSameAccount ||
+      isDifferentCurrency ||
+      isNoteTooLong;
+
+    if (hasErrors) {
+      event.preventDefault();
+      setFieldErrors(errors);
+      setTimeout(() => {
+        const firstRef = errors.accountId
+          ? accountFieldRef
+          : errors.targetAccountId || isSameAccount || isDifferentCurrency
+            ? targetAccountFieldRef
+            : errors.transferAmount
+              ? amountFieldRef
+              : noteFieldRef;
+        firstRef.current?.scrollIntoView?.({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 0);
+    } else {
+      setFieldErrors({});
+    }
+  }
+
   const accountHelperText = hasTooFewAccounts
     ? "请先新增至少两个账户。"
     : undefined;
+  const effectiveSubmitLabel =
+    submitLabel ?? (initialValues ? "保存修改" : "保存记账");
 
   return (
-    <form id={formId} action={action}>
+    <form id={formId} action={action} onSubmit={handleSubmit}>
       <Stack spacing={2.5}>
         {hideHeader ? null : (
           <TransactionFormHeader
@@ -167,62 +229,99 @@ export function TransferTransactionForm({
           />
         ) : null}
 
-        <TextField
-          disabled={hasTooFewAccounts}
-          fullWidth
-          helperText={accountHelperText ?? "选择转出账户。"}
-          label="转出账户"
-          name="accountId"
-          onChange={(e) => setSelectedAccountId(e.target.value)}
-          select
-          value={selectedAccountId}
-        >
-          <MenuItem disabled value="">
-            请选择账户
-          </MenuItem>
-          {accountOptions.map((account) => (
-            <MenuItem key={account.id} value={account.id}>
-              {account.name}（{account.currency}）
+        <Box ref={accountFieldRef}>
+          <TextField
+            disabled={hasTooFewAccounts}
+            error={!!fieldErrors.accountId}
+            fullWidth
+            helperText={
+              fieldErrors.accountId ?? accountHelperText ?? "选择转出账户。"
+            }
+            label="转出账户"
+            name="accountId"
+            onChange={(e) => {
+              setSelectedAccountId(e.target.value);
+              if (fieldErrors.accountId) {
+                setFieldErrors((prev) => ({ ...prev, accountId: undefined }));
+              }
+            }}
+            select
+            value={selectedAccountId}
+          >
+            <MenuItem disabled value="">
+              请选择账户
             </MenuItem>
-          ))}
-        </TextField>
+            {accountOptions.map((account) => (
+              <MenuItem key={account.id} value={account.id}>
+                {account.name}（{account.currency}）
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
-        <TextField
-          disabled={hasTooFewAccounts}
-          fullWidth
-          helperText={accountHelperText ?? "选择转入账户。"}
-          label="转入账户"
-          name="transferTargetAccountId"
-          onChange={(e) => setSelectedTargetAccountId(e.target.value)}
-          select
-          value={selectedTargetAccountId}
-        >
-          <MenuItem disabled value="">
-            请选择账户
-          </MenuItem>
-          {accountOptions.map((account) => (
-            <MenuItem key={account.id} value={account.id}>
-              {account.name}（{account.currency}）
+        <Box ref={targetAccountFieldRef}>
+          <TextField
+            disabled={hasTooFewAccounts}
+            error={!!fieldErrors.targetAccountId}
+            fullWidth
+            helperText={
+              fieldErrors.targetAccountId ??
+              accountHelperText ??
+              "选择转入账户。"
+            }
+            label="转入账户"
+            name="transferTargetAccountId"
+            onChange={(e) => {
+              setSelectedTargetAccountId(e.target.value);
+              if (fieldErrors.targetAccountId) {
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  targetAccountId: undefined,
+                }));
+              }
+            }}
+            select
+            value={selectedTargetAccountId}
+          >
+            <MenuItem disabled value="">
+              请选择账户
             </MenuItem>
-          ))}
-        </TextField>
+            {accountOptions.map((account) => (
+              <MenuItem key={account.id} value={account.id}>
+                {account.name}（{account.currency}）
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
-        <TextField
-          fullWidth
-          label="金额"
-          name="transferAmount"
-          onChange={(e) => setTransferAmount(e.target.value)}
-          placeholder="0"
-          slotProps={{
-            htmlInput: {
-              "data-amount-currency": sourceAccount?.currency ?? "",
-              "data-amount-input": "true",
-              inputMode: "decimal" as const,
-            },
-          }}
-          type="text"
-          value={transferAmount}
-        />
+        <Box ref={amountFieldRef}>
+          <TextField
+            error={!!fieldErrors.transferAmount}
+            fullWidth
+            helperText={fieldErrors.transferAmount}
+            label="金额"
+            name="transferAmount"
+            onChange={(e) => {
+              setTransferAmount(e.target.value);
+              if (fieldErrors.transferAmount) {
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  transferAmount: undefined,
+                }));
+              }
+            }}
+            placeholder="0"
+            slotProps={{
+              htmlInput: {
+                "data-amount-currency": sourceAccount?.currency ?? "",
+                "data-amount-input": "true",
+                inputMode: "decimal" as const,
+              },
+            }}
+            type="text"
+            value={transferAmount}
+          />
+        </Box>
 
         <TransactionDateTimePicker
           date={transactionDate}
@@ -231,21 +330,23 @@ export function TransferTransactionForm({
           time={transactionTime}
         />
 
-        <TextField
-          error={isNoteTooLong}
-          fullWidth
-          helperText={
-            isNoteTooLong
-              ? `备注不能超过 ${maxNoteLength} 个字符。`
-              : `${note.length} / ${maxNoteLength}`
-          }
-          label="备注（选填）"
-          multiline
-          name="note"
-          onChange={(e) => setNote(e.target.value)}
-          rows={3}
-          value={note}
-        />
+        <Box ref={noteFieldRef}>
+          <TextField
+            error={isNoteTooLong}
+            fullWidth
+            helperText={
+              isNoteTooLong
+                ? `备注不能超过 ${maxNoteLength} 个字符。`
+                : `${note.length} / ${maxNoteLength}`
+            }
+            label="备注（选填）"
+            multiline
+            name="note"
+            onChange={(e) => setNote(e.target.value)}
+            rows={3}
+            value={note}
+          />
+        </Box>
 
         <Paper variant="outlined" sx={{ p: 2 }}>
           <Stack spacing={1.5}>
@@ -279,6 +380,21 @@ export function TransferTransactionForm({
             />
           </Stack>
         </Paper>
+
+        <Button
+          disabled={isSubmitDisabled}
+          size="large"
+          type="submit"
+          variant="contained"
+          sx={{
+            "&:not(.Mui-disabled)": {
+              background: "var(--user-theme-fab-bg)",
+              color: "white",
+            },
+          }}
+        >
+          {effectiveSubmitLabel}
+        </Button>
       </Stack>
     </form>
   );

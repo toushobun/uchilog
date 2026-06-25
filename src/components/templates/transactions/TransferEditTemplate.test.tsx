@@ -122,10 +122,7 @@ describe("EditTransferTransactionTemplate", () => {
       within(container).getByTestId("transaction-form-income"),
     ).toBeInTheDocument();
     expect(
-      within(container).getByRole("button", { name: "支出" }),
-    ).toBeInTheDocument();
-    expect(
-      within(container).getByRole("button", { name: "收入" }),
+      within(container).getByRole("button", { name: "收支" }),
     ).toBeInTheDocument();
     expect(
       within(container).getByRole("button", { name: "转账" }),
@@ -135,16 +132,16 @@ describe("EditTransferTransactionTemplate", () => {
     ).toHaveAttribute("aria-hidden", "false");
   });
 
-  it("转账编辑页点击收入 tab 后激活收入转换面板", () => {
+  it("转账编辑页点击收支 tab 后激活支出转换面板", () => {
     const { container } = renderTemplate();
 
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
+    fireEvent.click(within(container).getByRole("button", { name: "收支" }));
 
     expect(
       within(container).getByRole("heading", { name: "编辑记账" }),
     ).toBeInTheDocument();
     expect(
-      within(container).getByTestId("transaction-type-slide-panel-income"),
+      within(container).getByTestId("transaction-type-slide-panel-expense"),
     ).toHaveAttribute("aria-hidden", "false");
     expect(
       within(container).getByTestId("transaction-type-slide-panel-transfer"),
@@ -157,7 +154,7 @@ describe("EditTransferTransactionTemplate", () => {
     fireEvent.change(within(container).getByLabelText("转账转换临时输入"), {
       target: { value: "保留转账编辑输入" },
     });
-    fireEvent.click(within(container).getByRole("button", { name: "收入" }));
+    fireEvent.click(within(container).getByRole("button", { name: "收支" }));
     fireEvent.click(within(container).getByRole("button", { name: "转账" }));
 
     expect(within(container).getByLabelText("转账转换临时输入")).toHaveValue(

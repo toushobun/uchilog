@@ -4,6 +4,7 @@ import { editTransactionErrorHref, transactionEditHref } from "config/paths";
 import { createTransaction } from "server/actions/transactions";
 import { loadNewTransactionView } from "server/loaders/transactionForm";
 import { NewTransactionTemplate } from "templates/transactions/TransactionFormPage";
+import { NewTransactionVisualFrame } from "templates/transactions/NewTransactionVisualFrame";
 import type { TransactionRecordType } from "types/transactions";
 import { getNewTransactionErrorMessage } from "utils/pageErrors";
 
@@ -33,11 +34,13 @@ export default async function TransactionsNewPage({
   const view = await loadNewTransactionView();
 
   return (
-    <NewTransactionTemplate
-      action={createTransaction}
-      errorMessage={getNewTransactionErrorMessage(params.error)}
-      initialType={parseInitialType(params.type)}
-      {...view}
-    />
+    <NewTransactionVisualFrame>
+      <NewTransactionTemplate
+        action={createTransaction}
+        errorMessage={getNewTransactionErrorMessage(params.error)}
+        initialType={parseInitialType(params.type)}
+        {...view}
+      />
+    </NewTransactionVisualFrame>
   );
 }
