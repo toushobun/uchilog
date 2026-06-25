@@ -11,13 +11,8 @@ import Typography from "@mui/material/Typography";
 import Link from "next/link";
 
 import { transactionEditHref } from "config/paths";
-import {
-  receiptAccentColor,
-  receiptCardBorder,
-  receiptExpenseColor,
-  receiptTextColor,
-} from "theme/receiptColors";
 import { TransactionRow } from "molecules/transactions/TransactionRow";
+import { ReceiptCard } from "molecules/ui/ReceiptCard";
 import type { ServerAction } from "types/actions";
 import type { TransactionDateGroup } from "types/transactions";
 import { formatNumber } from "utils/transactions";
@@ -26,9 +21,6 @@ type TransactionGroupListProps = {
   groups: TransactionDateGroup[];
   voidAction?: ServerAction;
 };
-
-const cardBorder = receiptCardBorder;
-const textColor = receiptTextColor;
 
 export function TransactionGroupList({
   groups,
@@ -51,7 +43,7 @@ export function TransactionGroupList({
             <Box
               aria-hidden="true"
               sx={{
-                borderTop: "1px solid rgba(133, 77, 14, 0.18)",
+                borderTop: "1px solid var(--user-theme-card-border)",
                 mx: 0.2,
               }}
             />
@@ -68,13 +60,13 @@ export function TransactionGroupList({
               sx={{ alignItems: "center", flex: 1, minWidth: 0 }}
             >
               <Typography
-                sx={{ color: textColor, fontSize: 15, fontWeight: 900 }}
+                sx={{ color: "text.primary", fontSize: 15, fontWeight: 900 }}
               >
                 {group.label}
               </Typography>
               <Box
                 sx={{
-                  bgcolor: "rgba(133, 77, 14, 0.16)",
+                  bgcolor: "var(--user-theme-card-border)",
                   flex: 1,
                   height: 1,
                 }}
@@ -82,7 +74,7 @@ export function TransactionGroupList({
             </Stack>
             <Typography
               sx={{
-                color: "rgba(74, 47, 27, 0.48)",
+                color: "text.secondary",
                 fontSize: 12,
                 fontWeight: 900,
               }}
@@ -95,7 +87,7 @@ export function TransactionGroupList({
             {group.items.map((item) => {
               const isExpanded = expandedId === item.id;
               return (
-                <Box
+                <ReceiptCard
                   key={item.id}
                   role="button"
                   tabIndex={0}
@@ -107,48 +99,18 @@ export function TransactionGroupList({
                     }
                   }}
                   sx={{
-                    bgcolor: "rgba(255, 255, 255, 0.86)",
-                    border: `1px solid ${cardBorder}`,
                     borderRadius: 1.5,
-                    boxShadow: "0 8px 18px rgba(120, 53, 15, 0.05)",
                     cursor: "pointer",
                     outline: "none",
-                    overflow: "hidden",
-                    position: "relative",
-                    pt: "15px",
                     pb: "12px",
+                    pt: "15px",
+                    px: 0,
                     userSelect: "none",
                     WebkitTapHighlightColor: "transparent",
                     "&:focus:not(:focus-visible)": { outline: "none" },
                     "&:focus-visible": {
-                      outline: "2px solid rgba(217, 119, 6, 0.5)",
+                      outline: "2px solid var(--user-theme-action-text)",
                       outlineOffset: "-2px",
-                    },
-                    "&::before": {
-                      backgroundImage: `radial-gradient(circle at 6px 10px, rgba(244, 229, 210, 0.5) 6px, transparent 6px)`,
-                      backgroundRepeat: "repeat-x",
-                      backgroundSize: "12px 10px",
-                      content: '""',
-                      height: 10,
-                      left: 0,
-                      pointerEvents: "none",
-                      position: "absolute",
-                      right: 0,
-                      top: 0,
-                      zIndex: 1,
-                    },
-                    "&::after": {
-                      backgroundImage: `radial-gradient(circle at 6px 0px, rgba(244, 229, 210, 0.18) 6px, transparent 6px)`,
-                      backgroundRepeat: "repeat-x",
-                      backgroundSize: "12px 10px",
-                      bottom: 0,
-                      content: '""',
-                      height: 10,
-                      left: 0,
-                      pointerEvents: "none",
-                      position: "absolute",
-                      right: 0,
-                      zIndex: 1,
                     },
                   }}
                 >
@@ -167,7 +129,8 @@ export function TransactionGroupList({
                         direction="row"
                         spacing={1}
                         sx={{
-                          borderTop: "1px solid rgba(133, 77, 14, 0.1)",
+                          borderTop:
+                            "1px solid var(--user-theme-receipt-border)",
                           p: 1,
                         }}
                       >
@@ -177,14 +140,15 @@ export function TransactionGroupList({
                           size="small"
                           startIcon={<EditRoundedIcon />}
                           sx={{
-                            bgcolor: "rgba(217, 119, 6, 0.09)",
+                            bgcolor: "var(--user-theme-badge-bg)",
                             borderRadius: 2,
-                            color: receiptAccentColor,
+                            color: "var(--user-theme-action-text)",
                             flex: 1,
                             fontSize: 12,
                             fontWeight: 800,
                             "&:hover": {
-                              bgcolor: "rgba(217, 119, 6, 0.16)",
+                              bgcolor:
+                                "var(--user-theme-field-card-selected-bg)",
                             },
                           }}
                           variant="text"
@@ -212,13 +176,13 @@ export function TransactionGroupList({
                               size="small"
                               startIcon={<DeleteRoundedIcon />}
                               sx={{
-                                bgcolor: "rgba(251, 113, 133, 0.09)",
+                                bgcolor: "transparent",
                                 borderRadius: 2,
-                                color: receiptExpenseColor,
+                                color: "var(--user-theme-negative-amount)",
                                 fontSize: 12,
                                 fontWeight: 800,
                                 "&:hover": {
-                                  bgcolor: "rgba(251, 113, 133, 0.16)",
+                                  bgcolor: "action.hover",
                                 },
                               }}
                               type="submit"
@@ -231,7 +195,7 @@ export function TransactionGroupList({
                       </Stack>
                     </Collapse>
                   </Box>
-                </Box>
+                </ReceiptCard>
               );
             })}
           </Stack>

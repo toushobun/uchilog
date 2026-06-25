@@ -4,13 +4,6 @@ import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import {
-  receiptAccentColor,
-  receiptCardBorder,
-  receiptPageBackground,
-  receiptPatternColor,
-  receiptTextColor,
-} from "theme/receiptColors";
 import { TransactionMonthList } from "organisms/transactions/TransactionMonthList";
 import type { ServerAction } from "types/actions";
 import type {
@@ -25,9 +18,6 @@ type TransactionsTemplateProps = {
   voidAction: ServerAction;
 };
 
-const pageBg = receiptPageBackground;
-const textColor = receiptTextColor;
-
 export function TransactionsTemplate({
   errorMessage,
   loadMoreAction,
@@ -37,10 +27,11 @@ export function TransactionsTemplate({
   return (
     <Box
       sx={{
-        bgcolor: pageBg,
-        boxShadow: `0 0 0 100vmax ${pageBg}`,
+        bgcolor: "background.default",
+        boxShadow: (theme) =>
+          `0 0 0 100vmax ${theme.palette.background.default}`,
         clipPath: "inset(0 -100vmax)",
-        color: textColor,
+        color: "text.primary",
         minHeight: "100dvh",
         mx: { xs: -2, sm: 0 },
         px: { xs: 2, sm: 3 },
@@ -60,13 +51,17 @@ export function TransactionsTemplate({
             <Chip
               icon={<FilterListRoundedIcon />}
               label="筛选"
-              sx={{ bgcolor: receiptPatternColor, fontWeight: 800 }}
+              sx={{
+                bgcolor: "var(--user-theme-badge-bg)",
+                color: "var(--user-theme-badge-color)",
+                fontWeight: 800,
+              }}
             />
             <Chip
               label={monthView.monthLabel}
               sx={{
-                bgcolor: "rgba(255, 238, 194, 0.95)",
-                color: receiptAccentColor,
+                bgcolor: "var(--user-theme-bottom-nav-active-bg)",
+                color: "var(--user-theme-action-text)",
                 fontWeight: 900,
               }}
             />

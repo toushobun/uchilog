@@ -71,6 +71,14 @@ describe("getUserThemeCssVariables", () => {
     expect(themeVars["--user-theme-negative-amount"]).toBe("#E8547A");
   });
 
+  it("输出默认主题交易类型背景语义色变量", () => {
+    const themeVars = getUserThemeCssVariables("amberWarmth");
+
+    expect(themeVars["--user-theme-income-bg"]).toBe("#E8F5F0");
+    expect(themeVars["--user-theme-transfer-bg"]).toBe("#E4F0FA");
+    expect(themeVars["--user-theme-negative-bg"]).toBe("#FDE8EE");
+  });
+
   it("所有主题均输出首页金额相关变量", () => {
     userThemeKeys.forEach((themeKey) => {
       const themeVars = getUserThemeCssVariables(themeKey);
@@ -81,6 +89,16 @@ describe("getUserThemeCssVariables", () => {
       expect(themeVars["--user-theme-negative-amount"]).toEqual(
         expect.any(String),
       );
+    });
+  });
+
+  it("所有主题均输出交易类型背景相关变量", () => {
+    userThemeKeys.forEach((themeKey) => {
+      const themeVars = getUserThemeCssVariables(themeKey);
+
+      expect(themeVars["--user-theme-income-bg"]).toEqual(expect.any(String));
+      expect(themeVars["--user-theme-transfer-bg"]).toEqual(expect.any(String));
+      expect(themeVars["--user-theme-negative-bg"]).toEqual(expect.any(String));
     });
   });
 });

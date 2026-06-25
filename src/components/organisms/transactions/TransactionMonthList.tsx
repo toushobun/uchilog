@@ -2,13 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
-import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { receiptCardBorder } from "theme/receiptColors";
 import { TransactionGroupList } from "organisms/transactions/TransactionGroupList";
+import { EmptyState } from "molecules/ui/EmptyState";
 import type { ServerAction } from "types/actions";
 import type {
   TransactionMonthPage,
@@ -90,20 +89,7 @@ export function TransactionMonthList({
   }, [nextOffset]);
 
   if (groups.length === 0) {
-    return (
-      <Box
-        sx={{
-          bgcolor: "rgba(255, 255, 255, 0.82)",
-          border: `1px solid ${receiptCardBorder}`,
-          borderRadius: 2,
-          px: 2,
-          py: 5,
-          textAlign: "center",
-        }}
-      >
-        <Typography color="text.secondary">这个月还没有记账记录。</Typography>
-      </Box>
-    );
+    return <EmptyState title="这个月还没有记账记录。" />;
   }
 
   return (
