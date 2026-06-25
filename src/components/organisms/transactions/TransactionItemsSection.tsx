@@ -49,7 +49,7 @@ export function TransactionItemsSection({
   return (
     <SectionCard ref={itemsFieldRef} sx={sectionCardSx}>
       <Stack spacing={1.5}>
-        <Typography color="text.secondary" variant="subtitle1" sx={titleSx}>
+        <Typography variant="subtitle1" sx={titleSx}>
           📋 {selectedType === "income" ? "收入明细" : "消费明细"}
         </Typography>
 
@@ -274,6 +274,7 @@ const sectionCardSx = {
 };
 
 const titleSx = {
+  color: "text.secondary",
   fontWeight: 800,
 };
 
