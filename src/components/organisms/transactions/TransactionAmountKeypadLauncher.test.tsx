@@ -85,7 +85,7 @@ describe("TransactionAmountKeypadLauncher", () => {
     expect(amountKeypadDrawerSx.zIndex).toBeGreaterThan(
       bottomNavigationLayout.navigationZIndex,
     );
-    expect(Object.hasOwn(amountKeypadDrawerPaperSx, "bottom")).toBe(false);
+    expect("bottom" in amountKeypadDrawerPaperSx).toBe(false);
   });
 
   it("不会仅因 placeholder 为 0 就响应普通输入框", () => {
