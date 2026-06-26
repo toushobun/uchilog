@@ -88,6 +88,12 @@ describe("TransactionAmountKeypadLauncher", () => {
     expect("bottom" in amountKeypadDrawerPaperSx).toBe(false);
   });
 
+  it("抽屉内部会为 safe-area 预留底部内边距", () => {
+    expect(amountKeypadDrawerPaperSx.pb).toBe(
+      `calc(12px + ${bottomNavigationLayout.safeAreaPaddingBottom})`,
+    );
+  });
+
   it("不会仅因 placeholder 为 0 就响应普通输入框", () => {
     render(
       <div>
