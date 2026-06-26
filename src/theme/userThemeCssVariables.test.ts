@@ -79,6 +79,40 @@ describe("getUserThemeCssVariables", () => {
     expect(themeVars["--user-theme-negative-bg"]).toBe("#FDE8EE");
   });
 
+  it("输出首页猫咪头图主题变量", () => {
+    expect(
+      getUserThemeCssVariables("amberWarmth")[
+        "--user-theme-dashboard-hero-image"
+      ],
+    ).toBe(
+      'url("/assets/kura-illustrations/dashboard-hero-cat-amber-warmth.png")',
+    );
+    expect(
+      getUserThemeCssVariables("sakuraStory")[
+        "--user-theme-dashboard-hero-image"
+      ],
+    ).toBe(
+      'url("/assets/kura-illustrations/dashboard-hero-cat-sakura-story.png")',
+    );
+    expect(
+      getUserThemeCssVariables("deepSeaStarlight")[
+        "--user-theme-dashboard-hero-image"
+      ],
+    ).toBe(
+      'url("/assets/kura-illustrations/dashboard-hero-cat-deep-sea-starlight.png")',
+    );
+  });
+
+  it("所有主题均输出单一首页猫咪头图变量", () => {
+    userThemeKeys.forEach((themeKey) => {
+      const themeVars = getUserThemeCssVariables(themeKey);
+
+      expect(themeVars["--user-theme-dashboard-hero-image"]).toMatch(
+        /^url\("\/assets\/kura-illustrations\/dashboard-hero-cat-.+\.png"\)$/,
+      );
+    });
+  });
+
   it("所有主题均输出首页金额相关变量", () => {
     userThemeKeys.forEach((themeKey) => {
       const themeVars = getUserThemeCssVariables(themeKey);
