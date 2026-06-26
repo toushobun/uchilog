@@ -2,13 +2,13 @@
 
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
-import ReceiptLongRoundedIcon from "@mui/icons-material/ReceiptLongRounded";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { KuraIcon } from "atoms/icons";
 import { IconBadge } from "atoms/ui/IconBadge";
 import { SectionCard } from "molecules/ui/SectionCard";
 import { DashboardMonthSummaryCard } from "organisms/dashboard/DashboardMonthSummaryCard";
@@ -184,7 +184,7 @@ function DashboardSummaryPill({
 function DashboardQuickActions() {
   const actions: QuickAction[] = [
     {
-      icon: <ReceiptLongRoundedIcon fontSize="small" />,
+      icon: <KuraIcon name="quickRecord" size="sm" decorative />,
       id: "quick-entry",
       label: "快速记账",
     },

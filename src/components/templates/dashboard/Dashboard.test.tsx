@@ -21,6 +21,20 @@ describe("DashboardTemplate", () => {
     expect(screen.getByText("本月还没有记账记录。")).toBeInTheDocument();
   });
 
+  it("首页快速记账入口使用装饰性自定义图标", () => {
+    const { container } = render(
+      <DashboardTemplate data={createDashboardViewData()} />,
+    );
+
+    const quickRecordIcon = container.querySelector(
+      'img[src="/assets/kura-icons/quick-record.png"]',
+    );
+
+    expect(quickRecordIcon).toBeInTheDocument();
+    expect(quickRecordIcon).toHaveAttribute("alt", "");
+    expect(quickRecordIcon).toHaveAttribute("aria-hidden", "true");
+  });
+
   it("按照指定顺序展示首页模块", () => {
     const { container } = render(
       <DashboardTemplate data={createDashboardViewData()} />,
