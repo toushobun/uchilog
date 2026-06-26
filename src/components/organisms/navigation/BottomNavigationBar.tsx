@@ -1,5 +1,6 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
@@ -24,6 +25,42 @@ const bottomNavigationIconSx = {
   mixBlendMode: "multiply",
 } as const;
 
+const quickRecordIconSx = {
+  bottom: 10,
+  left: "50%",
+  mixBlendMode: "multiply",
+  pointerEvents: "none",
+  position: "absolute",
+  transform: "translateX(-50%)",
+} as const;
+
+const quickRecordPlusSx = {
+  height: 20,
+  left: "50%",
+  pointerEvents: "none",
+  position: "absolute",
+  top: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 20,
+  "&::before, &::after": {
+    bgcolor: "#fff",
+    borderRadius: 999,
+    content: "\"\"",
+    left: "50%",
+    position: "absolute",
+    top: "50%",
+    transform: "translate(-50%, -50%)",
+  },
+  "&::before": {
+    height: 3,
+    width: 20,
+  },
+  "&::after": {
+    height: 20,
+    width: 3,
+  },
+} as const;
+
 export function BottomNavigationBar() {
   const pathname = usePathname();
   const isTransactionFormPage =
@@ -44,6 +81,7 @@ export function BottomNavigationBar() {
         bottom: 0,
         boxShadow: "0 -8px 24px var(--user-theme-fab-shadow)",
         left: 0,
+        overflow: "visible",
         position: "fixed",
         right: 0,
         WebkitBackdropFilter: "blur(20px)",
@@ -58,6 +96,7 @@ export function BottomNavigationBar() {
             alignItems: "center",
             justifyContent: "space-around",
             minHeight: 64,
+            overflow: "visible",
             py: 0.75,
           }}
         >
@@ -80,9 +119,11 @@ export function BottomNavigationBar() {
           <Button
             aria-label="新增记录"
             component={Link}
+            disableRipple
             href={routePaths.transactionsNew}
             variant="text"
             sx={{
+              WebkitTapHighlightColor: "transparent",
               alignItems: "center",
               bgcolor: "transparent",
               borderRadius: 0,
@@ -91,15 +132,28 @@ export function BottomNavigationBar() {
               height: 56,
               justifyContent: "center",
               minWidth: 0,
+              overflow: "visible",
               p: 0,
+              position: "relative",
               width: 56,
-              "&:hover": {
+              "& .MuiTouchRipple-root": {
+                display: "none",
+              },
+              "&:active, &:focus, &:focus-visible, &:hover": {
                 bgcolor: "transparent",
+                boxShadow: "none",
                 filter: "brightness(1.06)",
+                outline: "none",
               },
             }}
           >
-            <KuraIcon decorative name="quickRecord" size={48} />
+            <KuraIcon
+              decorative
+              name="quickRecord"
+              size={80}
+              sx={quickRecordIconSx}
+            />
+            <Box aria-hidden="true" component="span" sx={quickRecordPlusSx} />
           </Button>
           {bottomNavigationRouteGroups.right.map((route) => (
             <BottomNavButton
