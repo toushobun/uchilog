@@ -5,6 +5,18 @@ import {
   userThemeTokens,
 } from "./userThemeTokens";
 
+const dashboardHeroCatAssets = {
+  amberWarmth: "/assets/kura-illustrations/dashboard-hero-cat-amber-warmth.png",
+  lavenderDream:
+    "/assets/kura-illustrations/dashboard-hero-cat-lavender-dream.png",
+  emeraldMorning:
+    "/assets/kura-illustrations/dashboard-hero-cat-emerald-morning.png",
+  sakuraStory: "/assets/kura-illustrations/dashboard-hero-cat-sakura-story.png",
+  deepSeaStarlight:
+    "/assets/kura-illustrations/dashboard-hero-cat-deep-sea-starlight.png",
+  flameRed: "/assets/kura-illustrations/dashboard-hero-cat-flame-red.png",
+} satisfies Record<UserThemeKey, string>;
+
 function createPageBackground(token: KuraThemeToken) {
   const { pageGradientFrom, pageGradientTo } = token.palette;
 
@@ -21,12 +33,17 @@ function createSemanticGradient(background: string, color: string) {
   return `linear-gradient(90deg, ${background}, ${color})`;
 }
 
+function createDashboardHeroImage(themeKey: UserThemeKey) {
+  return `url("${dashboardHeroCatAssets[themeKey]}")`;
+}
+
 export function getUserThemeCssVariables(themeKey: UserThemeKey) {
   const token = userThemeTokens[themeKey];
   const { palette, semantic, component } = token;
 
   return {
     "--user-theme-page-bg": createPageBackground(token),
+    "--user-theme-dashboard-hero-image": createDashboardHeroImage(themeKey),
     "--user-theme-switcher-gradient": component.buttonPrimaryBg,
     "--user-theme-status-text": palette.textMuted,
     "--user-theme-title-gradient": createTitleGradient(token),

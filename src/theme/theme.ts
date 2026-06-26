@@ -36,6 +36,9 @@ export const designTokens = {
   opacity: {
     disabled: 0.56,
   },
+  typography: {
+    serifFontFamily: "'Georgia', 'Noto Serif SC', serif",
+  },
   shadow: {
     card: "0 12px 32px rgba(61, 46, 34, 0.08)",
     dialog: "0 24px 64px rgba(61, 46, 34, 0.16)",
