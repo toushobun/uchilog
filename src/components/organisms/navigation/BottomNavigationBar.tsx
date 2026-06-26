@@ -26,9 +26,6 @@ const bottomNavigationIconSx = {
 
 const quickRecordIconSx = {
   bottom: 6,
-  clipPath:
-    "polygon(28% 0, 72% 0, 72% 12%, 88% 18%, 92% 42%, 86% 82%, 74% 100%, 26% 100%, 14% 82%, 8% 42%, 12% 18%, 28% 12%)",
-  mixBlendMode: "darken",
   left: "50%",
   pointerEvents: "none",
   position: "absolute",
