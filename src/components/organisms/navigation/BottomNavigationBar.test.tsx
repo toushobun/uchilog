@@ -57,7 +57,9 @@ describe("BottomNavigationBar", () => {
     const { container } = renderBottomNavigationBar();
 
     expect(
-      getBottomNavigationIcons(container).map((icon) => icon.getAttribute("src")),
+      getBottomNavigationIcons(container).map((icon) =>
+        icon.getAttribute("src"),
+      ),
     ).toEqual([
       "/assets/kura-icons/home.png",
       "/assets/kura-icons/transactions.png",
