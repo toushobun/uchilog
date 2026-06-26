@@ -7,7 +7,12 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { TransactionAmountKeypadLauncher } from "./TransactionAmountKeypadLauncher";
+import { bottomNavigationLayout } from "organisms/navigation/bottomNavigationLayout";
+
+import {
+  amountKeypadDrawerPaperSx,
+  TransactionAmountKeypadLauncher,
+} from "./TransactionAmountKeypadLauncher";
 
 function renderAmountInput(currency?: string) {
   render(
@@ -71,6 +76,12 @@ describe("TransactionAmountKeypadLauncher", () => {
     fireEvent.click(screen.getByRole("button", { name: "确认" }));
 
     expect(inputValues).toEqual(["1", "12"]);
+  });
+
+  it("抽屉底部预留底部导航和 safe-area 空间", () => {
+    expect(amountKeypadDrawerPaperSx.bottom).toBe(
+      bottomNavigationLayout.shellPaddingBottom,
+    );
   });
 
   it("不会仅因 placeholder 为 0 就响应普通输入框", () => {
