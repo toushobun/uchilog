@@ -5,6 +5,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import { createTheme } from "@mui/material/styles";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { bottomNavigationLayout } from "organisms/navigation/bottomNavigationLayout";
@@ -80,17 +81,20 @@ describe("TransactionAmountKeypadLauncher", () => {
     expect(inputValues).toEqual(["1", "12"]);
   });
 
-  it("抽屉层级高于底部导航并保持面板贴底", () => {
-    expect(amountKeypadDrawerSx.zIndex).toBe(appZIndex.dialog);
+  it("抽屉层级位于底部导航和 snackbar 之间并保持面板贴底", () => {
+    expect(amountKeypadDrawerSx.zIndex).toBe(appZIndex.bottomSheet);
     expect(amountKeypadDrawerSx.zIndex).toBeGreaterThan(
       bottomNavigationLayout.navigationZIndex,
     );
+    expect(amountKeypadDrawerSx.zIndex).toBeLessThan(appZIndex.snackbar);
     expect("bottom" in amountKeypadDrawerPaperSx).toBe(false);
   });
 
-  it("抽屉内部会为 safe-area 预留底部内边距", () => {
-    expect(amountKeypadDrawerPaperSx.pb).toBe(
-      `calc(12px + ${bottomNavigationLayout.safeAreaPaddingBottom})`,
+  it("抽屉内部会用 spacing scale 为 safe-area 预留底部内边距", () => {
+    const theme = createTheme();
+
+    expect(amountKeypadDrawerPaperSx.pb(theme)).toBe(
+      `calc(${theme.spacing(1.5)} + ${bottomNavigationLayout.safeAreaPaddingBottom})`,
     );
   });
 
