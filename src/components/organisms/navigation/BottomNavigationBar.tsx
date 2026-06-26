@@ -20,12 +20,8 @@ const bottomNavigationIconNames = {
   [routePaths.transactions]: "transactions",
 } as const satisfies Record<string, KuraIconName>;
 
-const bottomNavigationIconSx = {
-  mixBlendMode: "darken",
-} as const;
-
 const quickRecordIconSx = {
-  bottom: 6,
+  bottom: "6px",
   left: "50%",
   pointerEvents: "none",
   position: "absolute",
@@ -79,7 +75,6 @@ export function BottomNavigationBar() {
                   decorative
                   name={bottomNavigationIconNames[route.href]}
                   size="sm"
-                  sx={bottomNavigationIconSx}
                 />
               }
               key={route.href}
@@ -134,7 +129,6 @@ export function BottomNavigationBar() {
                   decorative
                   name={bottomNavigationIconNames[route.href]}
                   size="sm"
-                  sx={bottomNavigationIconSx}
                 />
               }
               key={route.href}
