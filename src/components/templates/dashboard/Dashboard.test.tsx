@@ -21,6 +21,15 @@ describe("DashboardTemplate", () => {
     expect(screen.getByText("本月还没有记账记录。")).toBeInTheDocument();
   });
 
+  it("首页快速记账入口使用自定义图标", () => {
+    render(<DashboardTemplate data={createDashboardViewData()} />);
+
+    expect(screen.getByRole("img", { name: "记一笔" })).toHaveAttribute(
+      "src",
+      "/assets/kura-icons/quick-record.png",
+    );
+  });
+
   it("按照指定顺序展示首页模块", () => {
     const { container } = render(
       <DashboardTemplate data={createDashboardViewData()} />,
