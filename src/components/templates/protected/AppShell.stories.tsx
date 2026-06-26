@@ -5,6 +5,14 @@ import { AppShell } from "./AppShell";
 const meta = {
   title: "Templates/Protected/AppShell",
   component: AppShell,
+  parameters: {
+    nextjs: {
+      appDirectory: true,
+      navigation: {
+        pathname: "/dashboard",
+      },
+    },
+  },
   args: {
     email: "user@example.com",
     children: <div style={{ padding: 16 }}>页面内容区域</div>,
@@ -16,13 +24,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "应用外壳（仪表盘）",
-  parameters: {
-    nextjs: {
-      navigation: {
-        pathname: "/dashboard",
-      },
-    },
-  },
 };
 
 export const TransactionsPage: Story = {

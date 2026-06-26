@@ -16,6 +16,7 @@ type RegisterTemplateProps = {
   checkEmailAvailabilityAction: (
     email: string,
   ) => Promise<RegisterEmailAvailabilityState>;
+  initialRequestOtpState?: RequestRegisterOtpActionState;
   requestOtpAction: (
     prevState: RequestRegisterOtpActionState,
     formData: FormData,
@@ -29,6 +30,7 @@ type RegisterTemplateProps = {
 
 export function RegisterTemplate({
   checkEmailAvailabilityAction,
+  initialRequestOtpState,
   requestOtpAction,
   submitOtpAction,
   turnstileSiteKey,
@@ -61,6 +63,7 @@ export function RegisterTemplate({
 
           <RegisterForm
             checkEmailAvailabilityAction={checkEmailAvailabilityAction}
+            initialRequestOtpState={initialRequestOtpState}
             requestOtpAction={requestOtpAction}
             submitOtpAction={submitOtpAction}
             turnstileSiteKey={turnstileSiteKey}

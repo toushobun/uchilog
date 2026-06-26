@@ -22,20 +22,17 @@ async function defaultSubmitOtpAction(): Promise<SubmitRegisterOtpActionState> {
   return {};
 }
 
-async function errorRequestOtpAction(): Promise<RequestRegisterOtpActionState> {
-  return { error: "验证码发送失败，请稍后再试。" };
-}
-
-async function successRequestOtpAction(): Promise<RequestRegisterOtpActionState> {
-  return {
-    status: "success",
-    success: "验证码已发送。",
-  };
-}
-
 const meta = {
   title: "Templates/Register/RegisterTemplate",
   component: RegisterTemplate,
+  parameters: {
+    nextjs: {
+      appDirectory: true,
+      navigation: {
+        pathname: "/register",
+      },
+    },
+  },
   decorators: [
     (Story) => {
       installTurnstileTestDouble();
@@ -60,13 +57,17 @@ export const Default: Story = {
 export const WithError: Story = {
   name: "含错误提示",
   args: {
-    requestOtpAction: errorRequestOtpAction,
+    initialRequestOtpState: {
+      error: "验证码发送失败，请稍后再试。",
+    },
   },
 };
 
 export const WithSuccess: Story = {
   name: "含成功提示",
   args: {
-    requestOtpAction: successRequestOtpAction,
+    initialRequestOtpState: {
+      success: "验证码已发送。",
+    },
   },
 };

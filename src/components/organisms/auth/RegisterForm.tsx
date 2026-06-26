@@ -23,6 +23,7 @@ type RegisterFormProps = {
   checkEmailAvailabilityAction: (
     email: string,
   ) => Promise<RegisterEmailAvailabilityState>;
+  initialRequestOtpState?: RequestRegisterOtpActionState;
   requestOtpAction: (
     prevState: RequestRegisterOtpActionState,
     formData: FormData,

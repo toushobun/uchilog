@@ -47,6 +47,7 @@ type UseRegisterFormParams = {
   checkEmailAvailabilityAction: (
     email: string,
   ) => Promise<RegisterEmailAvailabilityState>;
+  initialRequestOtpState?: RequestRegisterOtpActionState;
   requestOtpAction: (
     prevState: RequestRegisterOtpActionState,
     formData: FormData,
@@ -146,6 +147,7 @@ function isSafeRedirectPath(redirectTo: string) {
 
 export function useRegisterForm({
   checkEmailAvailabilityAction,
+  initialRequestOtpState,
   requestOtpAction,
   submitOtpAction,
   turnstileSiteKey,
@@ -153,7 +155,9 @@ export function useRegisterForm({
   const router = useRouter();
   const [phase, setPhase] = useState<RegisterFormPhase>("initial");
   const [manualRequestOtpState, setManualRequestOtpState] =
-    useState<RequestRegisterOtpActionState>({});
+    useState<RequestRegisterOtpActionState>(
+      initialRequestOtpState ?? requestOtpInitialState,
+    );
   const [isManualRequestOtpPending, setIsManualRequestOtpPending] =
     useState(false);
   const [submitOtpState, setSubmitOtpState] =
