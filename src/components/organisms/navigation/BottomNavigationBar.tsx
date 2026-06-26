@@ -1,6 +1,5 @@
 "use client";
 
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
@@ -8,10 +7,18 @@ import Stack from "@mui/material/Stack";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { KuraIcon, type KuraIconName } from "atoms/icons";
 import { bottomNavigationRouteGroups, routePaths } from "config/paths";
 import { BottomNavButton } from "molecules/navigation/BottomNavButton";
 
 const transactionEditPathPattern = /^\/transactions\/[^/]+\/edit$/;
+
+const bottomNavigationIconNames = {
+  [routePaths.dashboard]: "home",
+  [routePaths.settings]: "settings",
+  [routePaths.statistics]: "statistics",
+  [routePaths.transactions]: "transactions",
+} as const satisfies Record<string, KuraIconName>;
 
 export function BottomNavigationBar() {
   const pathname = usePathname();
@@ -53,6 +60,13 @@ export function BottomNavigationBar() {
           {bottomNavigationRouteGroups.left.map((route) => (
             <BottomNavButton
               href={route.href}
+              icon={
+                <KuraIcon
+                  decorative
+                  name={bottomNavigationIconNames[route.href]}
+                  size="sm"
+                />
+              }
               key={route.href}
               label={route.label}
               selected={isBottomNavSelected(route.href)}
@@ -83,36 +97,18 @@ export function BottomNavigationBar() {
               },
             }}
           >
-            <Box
-              aria-hidden="true"
-              component="span"
-              sx={{
-                height: 20,
-                position: "relative",
-                width: 20,
-                "&::before, &::after": {
-                  bgcolor: "currentColor",
-                  borderRadius: 999,
-                  content: '""',
-                  left: "50%",
-                  position: "absolute",
-                  top: "50%",
-                  transform: "translate(-50%, -50%)",
-                },
-                "&::before": {
-                  height: 3,
-                  width: 20,
-                },
-                "&::after": {
-                  height: 20,
-                  width: 3,
-                },
-              }}
-            />
+            <KuraIcon decorative name="quickRecord" size={32} />
           </Button>
           {bottomNavigationRouteGroups.right.map((route) => (
             <BottomNavButton
               href={route.href}
+              icon={
+                <KuraIcon
+                  decorative
+                  name={bottomNavigationIconNames[route.href]}
+                  size="sm"
+                />
+              }
               key={route.href}
               label={route.label}
               selected={isBottomNavSelected(route.href)}
