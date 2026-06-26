@@ -55,7 +55,7 @@ function BottomNavigationOverlapDemo() {
     >
       <Stack spacing={2} sx={{ maxWidth: 360 }}>
         <Typography sx={{ fontWeight: 800 }} variant="h6">
-          底部导航避让确认
+          底部导航遮挡确认
         </Typography>
         <TextField
           data-amount-currency="JPY"
@@ -67,7 +67,7 @@ function BottomNavigationOverlapDemo() {
           value={amount}
         />
         <Typography color="text.secondary" variant="body2">
-          打开计算器后，面板底部应停在底部导航上方。
+          打开计算器后，面板应贴底显示并覆盖底部导航。
         </Typography>
       </Stack>
       <Box
@@ -130,7 +130,7 @@ export const Default: Story = {
 };
 
 export const BottomNavigationSafeArea: Story = {
-  name: "移动端底部导航避让",
+  name: "移动端底部导航遮挡确认",
   render: () => <BottomNavigationOverlapDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
