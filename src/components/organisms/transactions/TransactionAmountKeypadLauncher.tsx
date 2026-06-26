@@ -4,13 +4,16 @@ import { useEffect, useRef, useState } from "react";
 
 import Drawer from "@mui/material/Drawer";
 
-import { bottomNavigationLayout } from "organisms/navigation/bottomNavigationLayout";
+import { appZIndex } from "theme/zIndex";
 
 import { TransactionAmountKeypad } from "./TransactionAmountKeypad";
 
+export const amountKeypadDrawerSx = {
+  zIndex: appZIndex.dialog,
+};
+
 export const amountKeypadDrawerPaperSx = {
   borderRadius: "18px 18px 0 0",
-  bottom: bottomNavigationLayout.shellPaddingBottom,
   p: 1.5,
 };
 
@@ -93,6 +96,7 @@ export function TransactionAmountKeypadLauncher() {
       open={!!activeInput}
       onClose={closeKeypad}
       ModalProps={{ disableRestoreFocus: true }}
+      sx={amountKeypadDrawerSx}
       slotProps={{
         paper: {
           sx: amountKeypadDrawerPaperSx,
