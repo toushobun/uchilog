@@ -1,6 +1,5 @@
 "use client";
 
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
@@ -22,43 +21,16 @@ const bottomNavigationIconNames = {
 } as const satisfies Record<string, KuraIconName>;
 
 const bottomNavigationIconSx = {
-  mixBlendMode: "multiply",
+  mixBlendMode: "darken",
 } as const;
 
 const quickRecordIconSx = {
-  bottom: 10,
+  bottom: 6,
   left: "50%",
-  mixBlendMode: "multiply",
+  mixBlendMode: "darken",
   pointerEvents: "none",
   position: "absolute",
   transform: "translateX(-50%)",
-} as const;
-
-const quickRecordPlusSx = {
-  height: 20,
-  left: "50%",
-  pointerEvents: "none",
-  position: "absolute",
-  top: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 20,
-  "&::before, &::after": {
-    bgcolor: "#fff",
-    borderRadius: 999,
-    content: "\"\"",
-    left: "50%",
-    position: "absolute",
-    top: "50%",
-    transform: "translate(-50%, -50%)",
-  },
-  "&::before": {
-    height: 3,
-    width: 20,
-  },
-  "&::after": {
-    height: 20,
-    width: 3,
-  },
 } as const;
 
 export function BottomNavigationBar() {
@@ -119,6 +91,7 @@ export function BottomNavigationBar() {
           <Button
             aria-label="新增记录"
             component={Link}
+            disableFocusRipple
             disableRipple
             href={routePaths.transactionsNew}
             variant="text"
@@ -142,7 +115,7 @@ export function BottomNavigationBar() {
               "&:active, &:focus, &:focus-visible, &:hover": {
                 bgcolor: "transparent",
                 boxShadow: "none",
-                filter: "brightness(1.06)",
+                filter: "brightness(1.04)",
                 outline: "none",
               },
             }}
@@ -150,10 +123,9 @@ export function BottomNavigationBar() {
             <KuraIcon
               decorative
               name="quickRecord"
-              size={80}
+              size={70}
               sx={quickRecordIconSx}
             />
-            <Box aria-hidden="true" component="span" sx={quickRecordPlusSx} />
           </Button>
           {bottomNavigationRouteGroups.right.map((route) => (
             <BottomNavButton
