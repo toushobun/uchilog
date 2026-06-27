@@ -8,7 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
-import type { Theme } from "@mui/material/styles";
+import { alpha, type Theme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 
 import { bottomNavigationLayout } from "organisms/navigation/bottomNavigationLayout";
@@ -90,7 +90,16 @@ export function TransactionItemPickerDrawer({
         添加明细
       </Typography>
 
-      <Box sx={{ flex: 1, overflowY: "auto", px: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          flexDirection: "column",
+          overflowY: "auto",
+          overscrollBehaviorY: "none",
+          px: 2,
+        }}
+      >
         {itemSummaries.length > 0 ? (
           <>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
@@ -134,7 +143,10 @@ export function TransactionItemPickerDrawer({
         {filteredCategoryOptions.length === 0 ? (
           <Typography color="text.secondary">请先新增分类。</Typography>
         ) : (
-          <Stack direction="row" sx={{ minHeight: 180 }}>
+          <Stack
+            direction="row"
+            sx={{ flexGrow: 1, flexShrink: 0, minHeight: 180 }}
+          >
             <Box sx={categoryGroupListSx}>
               {categoryGroups.map((group) => {
                 const isSelected = activeCategoryGroup?.id === group.id;
@@ -279,8 +291,8 @@ export const itemPickerDrawerPaperSx = {
 };
 
 const categoryGroupListSx = {
-  borderColor: "divider",
   borderRight: 1,
+  borderColor: (theme: Theme) => alpha(theme.palette.text.primary, 0.12),
   flexShrink: 0,
   width: 112,
 };
@@ -297,8 +309,8 @@ const drawerAddButtonSx = {
 };
 
 export const drawerFooterSx = {
-  borderColor: "divider",
   borderTop: 1,
+  borderColor: (theme: Theme) => alpha(theme.palette.text.primary, 0.12),
   flexShrink: 0,
   px: 2,
   pt: 1.5,
