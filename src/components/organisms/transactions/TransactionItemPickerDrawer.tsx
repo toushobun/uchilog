@@ -25,6 +25,7 @@ import { formatCategoryName } from "./TransactionForm.utils";
 
 type TransactionItemPickerDrawerProps = {
   categoryGroups: CategoryPickerGroup[];
+  editingItemId?: number | null;
   filteredCategoryOptions: TransactionCategoryOption[];
   itemSummaries: TransactionItemSummary[];
   onAmountChange: (amount: string) => void;
@@ -43,6 +44,7 @@ type TransactionItemPickerDrawerProps = {
 
 export function TransactionItemPickerDrawer({
   categoryGroups,
+  editingItemId = null,
   filteredCategoryOptions,
   itemSummaries,
   onAmountChange,
@@ -87,7 +89,7 @@ export function TransactionItemPickerDrawer({
         variant="h6"
         sx={{ flexShrink: 0, fontWeight: 700, px: 2, py: 1.5 }}
       >
-        添加明细
+        {editingItemId === null ? "添加明细" : "编辑明细"}
       </Typography>
 
       <Box
@@ -239,7 +241,7 @@ export function TransactionItemPickerDrawer({
                   variant="contained"
                   sx={drawerAddButtonSx}
                 >
-                  追加
+                  {editingItemId === null ? "追加" : "更新"}
                 </Button>
               </Stack>
             </Stack>

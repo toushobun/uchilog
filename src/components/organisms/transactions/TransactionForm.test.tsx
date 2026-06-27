@@ -304,8 +304,59 @@ describe("TransactionForm", () => {
     addItemViaSheet("日用品", "45");
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
-    expect(within(container).getByText("共 2 项")).toBeInTheDocument();
-    expect(within(container).getByText("合计 -331")).toBeInTheDocument();
+    expect(within(container).getByText("消费明细（2）")).toBeInTheDocument();
+    expect(within(container).getByText("本次合计")).toBeInTheDocument();
+    expect(within(container).getByText("合计 - 331")).toBeInTheDocument();
+  });
+
+  it("点击明细分类可在同一弹框更新原明细", () => {
+    const { container } = renderForm();
+
+    openSheet(container);
+    addItemViaSheet("餐饮", "286");
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
+
+    const editCategoryButton = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="编辑明细 1 分类"]',
+    );
+    if (!editCategoryButton) throw new Error("明细分类编辑按钮不存在");
+    fireEvent.click(editCategoryButton);
+
+    expect(
+      screen.getByRole("heading", { name: "编辑明细" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "金额" })).toHaveValue("286");
+
+    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+      target: { value: "320" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "更新" }));
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
+
+    expect(within(container).getByText("消费明细（1）")).toBeInTheDocument();
+    expect(
+      container.querySelector('button[aria-label="编辑明细 1 金额"]'),
+    ).toHaveTextContent("320");
+    expect(
+      within(container).queryByRole("button", { name: "删除明细 1" }),
+    ).toBeNull();
+    expect(within(container).getByText("合计 - 320")).toBeInTheDocument();
+  });
+
+  it("收入明细和合计显示正号与账户币种", () => {
+    const { container } = renderForm({ initialType: "income" });
+
+    fireEvent.mouseDown(getCombobox(container, "账户"));
+    fireEvent.click(screen.getByText("日元现金（JPY）"));
+    openSheet(container);
+    fireEvent.click(screen.getByRole("button", { name: "固定收入" }));
+    addItemViaSheet("工资", "68.9");
+    fireEvent.click(screen.getByRole("button", { name: "完成" }));
+
+    expect(
+      container.querySelector('button[aria-label="编辑明细 1 金额"]'),
+    ).toHaveTextContent("+ ¥ 68.9");
+    expect(within(container).getByText("合计 + ¥ 68.9")).toBeInTheDocument();
   });
 
   it("未选小分类时点击追加显示错误提示", () => {
@@ -339,6 +390,9 @@ describe("TransactionForm", () => {
     expect(
       within(container).getByText("食材/调料 / 餐饮 / 1200"),
     ).toBeInTheDocument();
+    expect(
+      within(container).getAllByText("- ¥ 1200", { exact: true }),
+    ).toHaveLength(2);
   });
 
   it("可选择已有标签并随表单提交", () => {

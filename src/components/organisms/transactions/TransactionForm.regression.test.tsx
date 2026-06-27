@@ -104,7 +104,7 @@ describe("TransactionForm regression", () => {
     addItemViaSheet("日用品", "0.20");
     fireEvent.click(screen.getByRole("button", { name: "完成" }));
 
-    expect(within(container).getByText("合计 -0.3")).toBeInTheDocument();
+    expect(within(container).getByText("合计 - 0.3")).toBeInTheDocument();
   });
 
   it("打开添加明细时金额默认是空，显式输入 0 可追加", () => {

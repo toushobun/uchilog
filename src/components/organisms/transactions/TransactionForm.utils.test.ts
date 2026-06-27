@@ -5,6 +5,7 @@ import type { TransactionCategoryOption } from "types/transactions";
 import {
   buildCategoryPickerGroups,
   formatCategoryName,
+  formatSignedCurrencyAmount,
   formatSummaryDateTime,
   isValidMoneyText,
 } from "./TransactionForm.utils";
@@ -120,6 +121,17 @@ describe("formatSummaryDateTime", () => {
 
   it("时间格式不正确时返回未选择", () => {
     expect(formatSummaryDateTime("2026-06-23", "")).toBe("未选择");
+  });
+});
+
+describe("formatSignedCurrencyAmount", () => {
+  it("按收支符号和币种格式化金额", () => {
+    expect(formatSignedCurrencyAmount("-68.9", "JPY")).toBe("- ¥ 68.9");
+    expect(formatSignedCurrencyAmount("+68.9", "JPY")).toBe("+ ¥ 68.9");
+  });
+
+  it("未填写金额时保留原文", () => {
+    expect(formatSignedCurrencyAmount("未填写金额", "JPY")).toBe("未填写金额");
   });
 });
 

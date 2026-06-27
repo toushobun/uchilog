@@ -59,6 +59,13 @@ import {
   buildCategoryPickerGroups,
   isValidMoneyText,
 } from "./TransactionForm.utils";
+import {
+  transactionFieldGroupSx,
+  transactionFormStackSx,
+  transactionNoteFieldSx,
+  transactionSectionTitleSx,
+  transactionSubmitButtonSx,
+} from "./TransactionForm.styles";
 import { TransactionSummarySection } from "./TransactionSummarySection";
 import { TransactionTagSection } from "./TransactionTagSection";
 
@@ -126,6 +133,7 @@ export function TransactionForm({
     ),
   );
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [selectedCategoryGroupId, setSelectedCategoryGroupId] = useState("");
   const [pickerCategoryId, setPickerCategoryId] = useState("");
   const [pickerAmount, setPickerAmount] = useState("");
@@ -161,6 +169,7 @@ export function TransactionForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- 新增页外层 tab 切换时同步内部类型，编辑页有 initialValues 时忽略。
       setSelectedType(initialType);
       setIsSheetOpen(false);
+      setEditingItemId(null);
       setPickerCategoryId("");
       setPickerAmount("");
       setPickerErrors({});
@@ -272,6 +281,28 @@ export function TransactionForm({
     }));
   }
 
+  function replaceItem(itemId: number, categoryId: string, amount: string) {
+    const categoryType = categoryById.get(categoryId)?.type ?? selectedType;
+
+    setItemsByType((current) => {
+      const existingItem = [...current.expense, ...current.income].find(
+        (item) => item.id === itemId,
+      );
+      if (!existingItem) return current;
+
+      const nextItems: Record<TransactionType, TransactionFormItem[]> = {
+        expense: current.expense.filter((item) => item.id !== itemId),
+        income: current.income.filter((item) => item.id !== itemId),
+      };
+      nextItems[categoryType] = [
+        ...nextItems[categoryType],
+        { ...existingItem, amount, categoryId },
+      ];
+
+      return nextItems;
+    });
+  }
+
   function removeItem(itemId: number) {
     setItemsByType((current) => ({
       expense: current.expense.filter((item) => item.id !== itemId),
@@ -279,6 +310,12 @@ export function TransactionForm({
     }));
     if (fieldErrors.items) {
       setFieldErrors((prev) => ({ ...prev, items: undefined }));
+    }
+    if (editingItemId === itemId) {
+      setEditingItemId(null);
+      setPickerCategoryId("");
+      setPickerAmount("");
+      setPickerErrors({});
     }
   }
 
@@ -317,6 +354,7 @@ export function TransactionForm({
   }
 
   function openSheet() {
+    setEditingItemId(null);
     setPickerCategoryId("");
     setPickerAmount("");
     setPickerErrors({});
@@ -324,8 +362,29 @@ export function TransactionForm({
     setIsSheetOpen(true);
   }
 
+  function openItemSheet(itemId: number) {
+    const item = allDisplayItems.find(
+      (currentItem) => currentItem.id === itemId,
+    );
+    if (!item) return;
+
+    const categoryGroup = categoryGroups.find((group) =>
+      group.categories.some((category) => category.id === item.categoryId),
+    );
+
+    setEditingItemId(itemId);
+    setPickerCategoryId(item.categoryId);
+    setPickerAmount(item.amount);
+    setPickerErrors({});
+    setSelectedCategoryGroupId(
+      categoryGroup?.id ?? categoryGroups[0]?.id ?? "",
+    );
+    setIsSheetOpen(true);
+  }
+
   function closeSheet() {
     setIsSheetOpen(false);
+    setEditingItemId(null);
   }
 
   function handlePickerGroupSelect(groupId: string) {
@@ -364,7 +423,12 @@ export function TransactionForm({
     }
 
     setPickerErrors({});
-    addItem(pickerCategoryId, pickerAmount);
+    if (editingItemId === null) {
+      addItem(pickerCategoryId, pickerAmount);
+    } else {
+      replaceItem(editingItemId, pickerCategoryId, pickerAmount);
+    }
+    setEditingItemId(null);
     setPickerCategoryId("");
     setPickerAmount("");
   }
@@ -414,7 +478,7 @@ export function TransactionForm({
 
   return (
     <form id={formId} action={action} onSubmit={handleSubmit}>
-      <Stack spacing={2.5}>
+      <Stack spacing={0} sx={transactionFormStackSx}>
         {hideHeader ? null : (
           <TransactionFormHeader
             closeHref={closeHref}
@@ -572,8 +636,8 @@ export function TransactionForm({
           hasCategoryOptions={allNormalCategoryOptions.length > 0}
           itemsFieldRef={itemsFieldRef}
           itemSummaries={itemSummaries}
+          onOpenItem={openItemSheet}
           onOpenSheet={openSheet}
-          onRemoveItem={removeItem}
           onUpdateItem={updateItem}
           selectedAccountCurrency={selectedAccount?.currency}
           selectedType={selectedType}
@@ -597,15 +661,20 @@ export function TransactionForm({
           tagsFieldRef={tagsFieldRef}
         />
 
-        <TextField
-          defaultValue={initialValues?.note ?? ""}
-          fullWidth
-          hiddenLabel
-          name="note"
-          placeholder="✎ 备注..."
-          size="small"
-          sx={noteFieldSx}
-        />
+        <Box sx={transactionFieldGroupSx}>
+          <SectionTitle>备注</SectionTitle>
+          <TextField
+            defaultValue={initialValues?.note ?? ""}
+            fullWidth
+            hiddenLabel
+            multiline
+            name="note"
+            placeholder="记录这次生活的小片段…"
+            rows={1}
+            size="small"
+            sx={transactionNoteFieldSx}
+          />
+        </Box>
 
         <TransactionDateTimePicker
           date={transactionDate}
@@ -629,12 +698,7 @@ export function TransactionForm({
           size="large"
           type="submit"
           variant="contained"
-          sx={{
-            "&:not(.Mui-disabled)": {
-              background: "var(--user-theme-fab-bg)",
-              color: "var(--user-theme-fab-text)",
-            },
-          }}
+          sx={transactionSubmitButtonSx}
         >
           {submitLabel}
         </Button>
@@ -644,6 +708,7 @@ export function TransactionForm({
         categoryGroups={categoryGroups}
         filteredCategoryOptions={allNormalCategoryOptions}
         itemSummaries={itemSummaries}
+        editingItemId={editingItemId}
         onAmountChange={handlePickerAmountChange}
         onCategoryToggle={handlePickerCategoryToggle}
         onClose={closeSheet}
@@ -764,18 +829,9 @@ function hasTagName(tagNames: string[], tagName: string) {
   );
 }
 
-const selectionFieldGroupSx = {
-  display: "grid",
-  gap: 0.75,
-};
+const selectionFieldGroupSx = transactionFieldGroupSx;
 
-const sectionTitleSx = {
-  color: "text.secondary",
-  fontSize: "1rem",
-  fontWeight: 800,
-  lineHeight: 1.2,
-  px: 0.25,
-};
+const sectionTitleSx = transactionSectionTitleSx;
 
 const selectionValueSx = {
   alignItems: "center",
@@ -802,7 +858,8 @@ const selectionSelectSx = {
   },
   "& .MuiOutlinedInput-root": {
     ...outlinedInputTokenSx["& .MuiOutlinedInput-root"],
-    minHeight: 54,
+    borderRadius: 1.25,
+    minHeight: 50,
     pr: 4.5,
   },
   "& .MuiSelect-icon": {
@@ -813,7 +870,7 @@ const selectionSelectSx = {
   "& .MuiSelect-select": {
     alignItems: "center",
     display: "flex",
-    minHeight: "54px !important",
+    minHeight: "50px !important",
     py: 0,
   },
   "& legend": {
@@ -829,10 +886,4 @@ const merchantSelectionIconSx = {
 const accountSelectionIconSx = {
   bgcolor: "var(--user-theme-transfer-bg)",
   color: "var(--user-theme-tx-accent)",
-};
-
-const noteFieldSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: 2,
-  },
 };
