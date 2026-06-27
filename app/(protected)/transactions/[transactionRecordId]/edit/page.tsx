@@ -7,6 +7,8 @@ import {
 import { NewTransactionVisualFrame } from "templates/transactions/NewTransactionVisualFrame";
 import { getEditTransactionErrorMessage } from "utils/pageErrors";
 
+const editVisualFrameProps = { fullBleed: false } as const;
+
 export default async function TransactionEditPage({
   params,
   searchParams,
@@ -24,7 +26,7 @@ export default async function TransactionEditPage({
 
   if (initialValues.type === "transfer") {
     return (
-      <NewTransactionVisualFrame>
+      <NewTransactionVisualFrame {...editVisualFrameProps}>
         <EditTransferTransactionTemplate
           accountOptions={view.accountOptions}
           action={saveEditTransaction}
@@ -40,7 +42,7 @@ export default async function TransactionEditPage({
   }
 
   return (
-    <NewTransactionVisualFrame>
+    <NewTransactionVisualFrame {...editVisualFrameProps}>
       <EditTransactionTemplate
         accountOptions={view.accountOptions}
         action={saveEditTransaction}
