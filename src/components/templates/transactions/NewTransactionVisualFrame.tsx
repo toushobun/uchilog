@@ -4,30 +4,23 @@ import type { ReactNode } from "react";
 
 import Box from "@mui/material/Box";
 
-type NewTransactionVisualFrameProps = {
-  children: ReactNode;
-  fullBleed?: boolean;
-};
-
 export function NewTransactionVisualFrame({
   children,
-  fullBleed = true,
-}: NewTransactionVisualFrameProps) {
+}: {
+  children: ReactNode;
+}) {
   return (
     <Box
-      sx={(theme) => ({
-        ...(fullBleed
-          ? {
-              bgcolor: "background.default",
-              boxShadow: `0 0 0 100vmax ${theme.palette.background.default}`,
-              clipPath: "inset(0 -100vmax)",
-              minHeight: "100dvh",
-              mx: { xs: -2, sm: 0 },
-              px: { xs: 2, sm: 0 },
-              py: { xs: 2, sm: 3 },
-            }
-          : {}),
+      sx={{
+        bgcolor: "background.default",
+        boxShadow: (theme) =>
+          `0 0 0 100vmax ${theme.palette.background.default}`,
+        clipPath: "inset(0 -100vmax)",
         color: "text.primary",
+        minHeight: "100dvh",
+        mx: { xs: -2, sm: 0 },
+        px: { xs: 2, sm: 0 },
+        py: { xs: 2, sm: 3 },
         "& .MuiToggleButtonGroup-root": {
           bgcolor: "var(--user-theme-segment-bg)",
           border: 0,
@@ -78,7 +71,7 @@ export function NewTransactionVisualFrame({
           bgcolor: "var(--user-theme-action-text)",
           boxShadow: "0 8px 18px var(--user-theme-fab-shadow)",
         },
-      })}
+      }}
     >
       {children}
     </Box>
