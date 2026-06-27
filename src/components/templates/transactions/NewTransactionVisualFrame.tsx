@@ -20,7 +20,7 @@ export function NewTransactionVisualFrame({
       data-testid="new-transaction-visual-frame"
       sx={[
         newTransactionVisualFrameScopeSx,
-        fullBleed ? newTransactionVisualFrameFullBleedSx : null,
+        fullBleed && newTransactionVisualFrameFullBleedSx,
       ]}
     >
       {children}
