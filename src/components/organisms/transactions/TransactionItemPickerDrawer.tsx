@@ -8,8 +8,11 @@ import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import type { Theme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 
+import { bottomNavigationLayout } from "organisms/navigation/bottomNavigationLayout";
+import { appZIndex } from "theme/zIndex";
 import type { TransactionCategoryOption } from "types/transactions";
 
 import type {
@@ -64,7 +67,8 @@ export function TransactionItemPickerDrawer({
       anchor="bottom"
       onClose={onClose}
       open={open}
-      slotProps={{ paper: { sx: drawerPaperSx } }}
+      sx={itemPickerDrawerSx}
+      slotProps={{ paper: { sx: itemPickerDrawerPaperSx } }}
     >
       <Box
         sx={{
@@ -262,7 +266,11 @@ const sheetItemIconButtonSx = {
   borderRadius: 1,
 };
 
-const drawerPaperSx = {
+export const itemPickerDrawerSx = {
+  zIndex: appZIndex.bottomSheet,
+};
+
+export const itemPickerDrawerPaperSx = {
   borderRadius: "16px 16px 0 0",
   display: "flex",
   flexDirection: "column",
@@ -288,12 +296,14 @@ const drawerAddButtonSx = {
   height: 40,
 };
 
-const drawerFooterSx = {
+export const drawerFooterSx = {
   borderColor: "divider",
   borderTop: 1,
   flexShrink: 0,
-  p: 2,
+  px: 2,
   pt: 1.5,
+  pb: (theme: Theme) =>
+    `calc(${theme.spacing(2)} + ${bottomNavigationLayout.safeAreaPaddingBottom})`,
 };
 
 const drawerCancelButtonSx = {
