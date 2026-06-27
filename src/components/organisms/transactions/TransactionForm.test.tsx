@@ -279,6 +279,7 @@ describe("TransactionForm", () => {
       bottomNavigationLayout.navigationZIndex,
     );
     expect(itemPickerDrawerSx.zIndex).toBeLessThan(appZIndex.snackbar);
+    // 防止未来通过 paper bottom offset 避让底部导航，导致弹框和导航之间出现空隙。
     expect("bottom" in itemPickerDrawerPaperSx).toBe(false);
     expect(drawerFooterSx.pb(theme)).toBe(
       `calc(${theme.spacing(2)} + ${bottomNavigationLayout.safeAreaPaddingBottom})`,
