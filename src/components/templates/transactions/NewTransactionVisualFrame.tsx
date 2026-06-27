@@ -79,4 +79,4 @@ const transactionPageFrameSx = {
     bgcolor: "var(--user-theme-action-text)",
     boxShadow: "0 8px 18px var(--user-theme-fab-shadow)",
   },
-};
+} as const;
