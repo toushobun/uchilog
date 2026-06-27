@@ -24,7 +24,7 @@ export default async function TransactionEditPage({
 
   if (initialValues.type === "transfer") {
     return (
-      <NewTransactionVisualFrame fullBleed={false}>
+      <NewTransactionVisualFrame>
         <EditTransferTransactionTemplate
           accountOptions={view.accountOptions}
           action={saveEditTransaction}
@@ -40,7 +40,7 @@ export default async function TransactionEditPage({
   }
 
   return (
-    <NewTransactionVisualFrame fullBleed={false}>
+    <NewTransactionVisualFrame>
       <EditTransactionTemplate
         accountOptions={view.accountOptions}
         action={saveEditTransaction}
