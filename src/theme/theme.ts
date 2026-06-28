@@ -87,12 +87,13 @@ export const theme = createTheme({
       letterSpacing: "-0.02em",
     },
     body1: {
-      ...typographyStyles.body,
+      fontFamily,
+      fontWeight: 400,
+      letterSpacing: "0.01em",
       lineHeight: 1.7,
     },
     body2: {
       ...typographyStyles.body,
-      lineHeight: 1.6,
     },
     button: {
       ...typographyStyles.button,
@@ -199,7 +200,6 @@ export const theme = createTheme({
     MuiPopover: {
       styleOverrides: {
         root: {
-          // 普通下拉菜单需低于固定底部导航；Dialog 内下拉场景后续需要单独处理层级。
           zIndex: appZIndex.dropdown,
         },
       },
