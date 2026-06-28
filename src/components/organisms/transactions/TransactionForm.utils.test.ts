@@ -7,6 +7,7 @@ import {
   formatCategoryName,
   formatSignedCurrencyAmount,
   formatSummaryDateTime,
+  getCurrencySymbol,
   isValidMoneyText,
 } from "./TransactionForm.utils";
 
@@ -124,10 +125,29 @@ describe("formatSummaryDateTime", () => {
   });
 });
 
+describe("getCurrencySymbol", () => {
+  it("根据币种返回对应符号", () => {
+    expect(getCurrencySymbol("JPY")).toBe("¥");
+    expect(getCurrencySymbol("USD")).toBe("$");
+    expect(getCurrencySymbol("EUR")).toBe("€");
+    expect(getCurrencySymbol("KRW")).toBe("₩");
+  });
+
+  it("未知币种返回币种代码，未指定时默认日元半角符号", () => {
+    expect(getCurrencySymbol("ABC")).toBe("ABC");
+    expect(getCurrencySymbol()).toBe("¥");
+  });
+});
+
 describe("formatSignedCurrencyAmount", () => {
   it("按收支符号和币种格式化金额", () => {
     expect(formatSignedCurrencyAmount("-68.9", "JPY")).toBe("- ¥ 68.9");
     expect(formatSignedCurrencyAmount("+68.9", "JPY")).toBe("+ ¥ 68.9");
+    expect(formatSignedCurrencyAmount("+68.9", "USD")).toBe("+ $ 68.9");
+  });
+
+  it("未传币种时不额外追加默认符号", () => {
+    expect(formatSignedCurrencyAmount("-68.9")).toBe("- 68.9");
   });
 
   it("未填写金额时保留原文", () => {
