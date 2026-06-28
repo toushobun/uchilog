@@ -1,9 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 
-import {
-  typographyFontFamilies,
-  typographyStyles,
-} from "./typographyTokens";
+import { typographyFontFamilies, typographyStyles } from "./typographyTokens";
 import { appZIndex } from "./zIndex";
 
 const fontFamily = typographyFontFamilies.body;
