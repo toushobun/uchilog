@@ -87,10 +87,7 @@ export const theme = createTheme({
       letterSpacing: "-0.02em",
     },
     body1: {
-      fontFamily,
-      fontWeight: 400,
-      letterSpacing: "0.01em",
-      lineHeight: 1.7,
+      ...typographyStyles.bodyRelaxed,
     },
     body2: {
       ...typographyStyles.body,
