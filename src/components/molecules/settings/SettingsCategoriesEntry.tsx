@@ -45,5 +45,5 @@ const settingsTitleSx = {
 };
 
 const settingsDescriptionSx = {
-  ...typographyStyles.settingEntry,
+  ...typographyStyles.listText,
 };
