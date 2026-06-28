@@ -46,12 +46,16 @@ export function formatSignedCurrencyAmount(value: string, currency?: string) {
       ? "+"
       : "";
   const amount = sign ? trimmedValue.slice(1) : trimmedValue;
-  const normalizedCurrency = currency?.trim().toUpperCase();
-  const symbol = normalizedCurrency
-    ? (currencySymbols[normalizedCurrency] ?? normalizedCurrency)
-    : "";
+  const symbol = currency ? getCurrencySymbol(currency) : "";
 
   return [sign, symbol, amount].filter(Boolean).join(" ");
+}
+
+export function getCurrencySymbol(currency?: string) {
+  const normalizedCurrency = currency?.trim().toUpperCase();
+  if (!normalizedCurrency) return "¥";
+
+  return currencySymbols[normalizedCurrency] ?? normalizedCurrency;
 }
 
 export function isValidMoneyText(value: string) {
@@ -79,7 +83,11 @@ const currencySymbols: Record<string, string> = {
   CNY: "¥",
   EUR: "€",
   GBP: "£",
+  HKD: "HK$",
   JPY: "¥",
   KRW: "₩",
+  SGD: "S$",
+  THB: "฿",
+  TWD: "NT$",
   USD: "$",
 };
