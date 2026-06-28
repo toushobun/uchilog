@@ -231,6 +231,22 @@ describe("NewTransactionTemplate", () => {
     ).toHaveAttribute("aria-hidden", "true");
   });
 
+  it("initialType=income 时切到转账后再回到收支仍显示收入面板", () => {
+    const { container } = render(
+      <NewTransactionTemplate {...baseProps} initialType="income" />,
+    );
+
+    fireEvent.click(within(container).getByRole("button", { name: "转账" }));
+    fireEvent.click(within(container).getByRole("button", { name: "收支" }));
+
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-income"),
+    ).toHaveAttribute("aria-hidden", "false");
+    expect(
+      within(container).getByTestId("transaction-type-slide-panel-transfer"),
+    ).toHaveAttribute("aria-hidden", "true");
+  });
+
   it("切换类型后保留已挂载表单的输入状态", () => {
     const { container } = render(<NewTransactionTemplate {...baseProps} />);
 

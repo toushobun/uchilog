@@ -87,22 +87,24 @@ function TransactionTypeSlidePanels({
   activeType,
   panels,
 }: TransactionTypeSlidePanelsProps) {
-  const panelRefs = useRef<
-    Record<TransactionRecordType, HTMLDivElement | null>
-  >({
-    expense: null,
-    income: null,
-    transfer: null,
-  });
+  const expensePanelRef = useRef<HTMLDivElement>(null);
+  const incomePanelRef = useRef<HTMLDivElement>(null);
+  const transferPanelRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState<number | null>(null);
   const activeIndex = transactionTypeOrder.indexOf(activeType);
 
   useLayoutEffect(() => {
-    const activePanel = panelRefs.current[activeType];
+    function getActivePanel() {
+      if (activeType === "expense") return expensePanelRef.current;
+      if (activeType === "income") return incomePanelRef.current;
+      return transferPanelRef.current;
+    }
+
+    const activePanel = getActivePanel();
     if (!activePanel) return;
 
     function updateContainerHeight() {
-      const currentPanel = panelRefs.current[activeType];
+      const currentPanel = getActivePanel();
       if (!currentPanel) return;
 
       setContainerHeight(currentPanel.getBoundingClientRect().height);
@@ -148,9 +150,13 @@ function TransactionTypeSlidePanels({
         {transactionTypeOrder.map((type) => (
           <Box
             key={type}
-            ref={(element: HTMLDivElement | null) => {
-              panelRefs.current[type] = element;
-            }}
+            ref={
+              type === "expense"
+                ? expensePanelRef
+                : type === "income"
+                  ? incomePanelRef
+                  : transferPanelRef
+            }
             aria-hidden={type !== activeType}
             data-testid={`transaction-type-slide-panel-${type}`}
             inert={type !== activeType ? true : undefined}
@@ -188,12 +194,15 @@ function NewTransactionFormView({
   const lastNormalTypeRef = useRef<TransactionType>(
     initialType === "income" ? "income" : "expense",
   );
-  if (activeType !== "transfer") {
-    lastNormalTypeRef.current = activeType;
-  }
   const [, setSubmitDisabledByType] = useState<
     Record<TransactionRecordType, boolean>
   >({ expense: true, income: true, transfer: true });
+
+  useEffect(() => {
+    if (activeType !== "transfer") {
+      lastNormalTypeRef.current = activeType;
+    }
+  }, [activeType]);
 
   function handleNewTypeChange(type: NewTransactionTypeTab) {
     if (type === "normal") {
@@ -375,14 +384,16 @@ function EditTransactionShell({
     activeType !== "transfer" ? activeType : "expense",
   );
 
-  if (activeType !== "transfer") {
-    lastNormalTypeRef.current = activeType;
-  }
-
   const outerTab: "normal" | "transfer" =
     activeType === "transfer" ? "transfer" : "normal";
 
   const markDirty = useCallback(() => setHasUnsavedChanges(true), []);
+
+  useEffect(() => {
+    if (activeType !== "transfer") {
+      lastNormalTypeRef.current = activeType;
+    }
+  }, [activeType]);
 
   useEffect(() => {
     if (!hasUnsavedChanges) return;
@@ -402,11 +413,14 @@ function EditTransactionShell({
   }
 
   function handleSaveAndExit() {
-    setIsExitDialogOpen(false);
-    document
+    const form = document
       .getElementById(`edit-${activeType}-transaction-form`)
-      ?.closest("form")
-      ?.requestSubmit();
+      ?.closest("form");
+
+    if (!(form instanceof HTMLFormElement)) return;
+
+    setIsExitDialogOpen(false);
+    form.requestSubmit();
   }
 
   return (
