@@ -73,10 +73,4 @@ export const typographyStyles = {
     letterSpacing: "0.01em",
     lineHeight: 1.4,
   },
-  settingEntry: {
-    fontFamily: typographyFontFamilies.body,
-    fontWeight: 500,
-    letterSpacing: "0.01em",
-    lineHeight: 1.4,
-  },
 } as const;
