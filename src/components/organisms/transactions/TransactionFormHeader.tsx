@@ -5,6 +5,8 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 
+import { typographyStyles } from "theme/typographyTokens";
+
 type TransactionFormHeaderProps = {
   closeHref: string;
   formId?: string;
@@ -35,7 +37,11 @@ export function TransactionFormHeader({
         >
           关闭
         </Button>
-        <Typography component="h1" variant="h5" sx={{ fontWeight: 700 }}>
+        <Typography
+          component="h1"
+          variant="h5"
+          sx={{ ...typographyStyles.pageTitle, textAlign: "center" }}
+        >
           {title}
         </Typography>
         <Button
@@ -56,7 +62,7 @@ export function TransactionFormHeader({
       {ledgerName ? (
         <Typography
           color="text.secondary"
-          sx={{ textAlign: "center" }}
+          sx={{ ...typographyStyles.body, textAlign: "center" }}
           variant="body2"
         >
           当前账本：{ledgerName}
