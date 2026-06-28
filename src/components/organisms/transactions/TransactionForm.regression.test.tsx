@@ -157,7 +157,9 @@ describe("TransactionForm regression", () => {
     addItemViaSheet(container, "日用品", "200");
 
     const itemInputsBefore = Array.from(
-      container.querySelectorAll<HTMLInputElement>('input[name="itemCategoryId"]'),
+      container.querySelectorAll<HTMLInputElement>(
+        'input[name="itemCategoryId"]',
+      ),
     ).map((input) => input.value);
     expect(itemInputsBefore[0]).toBe(expenseCategories[0].id);
     expect(itemInputsBefore[1]).toBe(expenseCategories[1].id);
@@ -170,7 +172,9 @@ describe("TransactionForm regression", () => {
     fireEvent.click(screen.getByRole("button", { name: "保存修改" }));
 
     const itemInputsAfter = Array.from(
-      container.querySelectorAll<HTMLInputElement>('input[name="itemCategoryId"]'),
+      container.querySelectorAll<HTMLInputElement>(
+        'input[name="itemCategoryId"]',
+      ),
     ).map((input) => input.value);
     expect(itemInputsAfter[0]).toBe(expenseCategories[0].id);
     expect(itemInputsAfter[1]).toBe(expenseCategories[1].id);

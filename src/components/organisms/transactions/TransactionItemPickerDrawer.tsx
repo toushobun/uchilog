@@ -73,10 +73,7 @@ export function TransactionItemPickerDrawer({
           (category) =>
             matchesCategorySearch(group.name, searchText) ||
             matchesCategorySearch(category.name, searchText) ||
-            matchesCategorySearch(
-              `${group.name}/${category.name}`,
-              searchText,
-            ),
+            matchesCategorySearch(`${group.name}/${category.name}`, searchText),
         ),
       }))
       .filter((group) => group.categories.length > 0);
