@@ -72,16 +72,19 @@ export const theme = createTheme({
   typography: {
     fontFamily,
     h1: {
-      ...typographyStyles.pageTitle,
       fontSize: "2rem",
+      fontWeight: 700,
+      letterSpacing: "-0.04em",
     },
     h2: {
-      ...typographyStyles.pageTitle,
       fontSize: "1.5rem",
+      fontWeight: 700,
+      letterSpacing: "-0.03em",
     },
     h3: {
-      ...typographyStyles.pageTitle,
       fontSize: "1.25rem",
+      fontWeight: 700,
+      letterSpacing: "-0.02em",
     },
     body1: {
       ...typographyStyles.body,
