@@ -260,7 +260,7 @@ describe("TransferTransactionForm", () => {
     expect(within(container).getAllByText("三井住友银行（JPY）")).toHaveLength(
       2,
     );
-    expect(within(container).getByText("￥ 500")).toBeInTheDocument();
+    expect(within(container).getByText("¥ 500")).toBeInTheDocument();
   });
 
   it("转账金额 input 带有 data-amount-input 属性", () => {
@@ -274,7 +274,7 @@ describe("TransferTransactionForm", () => {
 
     expect(amountInput).toHaveAttribute("data-amount-input", "true");
     expect(amountInputRoot).not.toBeNull();
-    expect(within(amountInputRoot!).getByText("￥")).toBeInTheDocument();
+    expect(within(amountInputRoot!).getByText("¥")).toBeInTheDocument();
   });
 
   it("选择转出账户后金额 input 的 data-amount-currency 为该账户币种", () => {

@@ -292,21 +292,33 @@ export function TransactionForm({
     const categoryType = categoryById.get(categoryId)?.type ?? selectedType;
 
     setItemsByType((current) => {
-      const existingItem = [...current.expense, ...current.income].find(
+      const inExpense = current.expense.some((item) => item.id === itemId);
+      const sourceType: TransactionType = inExpense ? "expense" : "income";
+
+      if (sourceType === categoryType) {
+        return {
+          ...current,
+          [categoryType]: current[categoryType].map((item) =>
+            item.id === itemId ? { ...item, amount, categoryId } : item,
+          ),
+        };
+      }
+
+      const existingItem = current[sourceType].find(
         (item) => item.id === itemId,
       );
       if (!existingItem) return current;
 
-      const nextItems: Record<TransactionType, TransactionFormItem[]> = {
+      const moved: Record<TransactionType, TransactionFormItem[]> = {
         expense: current.expense.filter((item) => item.id !== itemId),
         income: current.income.filter((item) => item.id !== itemId),
       };
-      nextItems[categoryType] = [
-        ...nextItems[categoryType],
+      moved[categoryType] = [
+        ...moved[categoryType],
         { ...existingItem, amount, categoryId },
       ];
 
-      return nextItems;
+      return moved;
     });
   }
 

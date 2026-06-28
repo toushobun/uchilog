@@ -57,7 +57,7 @@ const currencySymbols: Record<string, string> = {
   EUR: "€",
   GBP: "£",
   HKD: "HK$",
-  JPY: "￥",
+  JPY: "¥",
   KRW: "₩",
   SGD: "S$",
   THB: "฿",
@@ -103,7 +103,7 @@ export function TransactionAmountKeypad({
   const syncedState = getSyncedAmountKeypadState(state, value);
   const previewValue = getAmountKeypadPreviewValue(syncedState, { currency });
   const expressionText = getAmountKeypadExpressionText(syncedState);
-  const currencySymbol = getCurrencySymbol(currency) || "￥";
+  const currencySymbol = getCurrencySymbol(currency) || "¥";
 
   function handleKeyClick(key: AmountKeypadKey) {
     const nextState = applyAmountKeypadKey(syncedState, key, { currency });

@@ -376,7 +376,7 @@ export function TransferTransactionForm({
               },
               input: {
                 startAdornment: (
-                  <InputAdornment position="start">￥</InputAdornment>
+                  <InputAdornment position="start">¥</InputAdornment>
                 ),
               },
             }}
@@ -452,7 +452,7 @@ export function TransferTransactionForm({
             <Divider />
             <SummaryRow
               label="转账金额"
-              value={transferAmount ? `￥ ${transferAmount}` : "未填写金额"}
+              value={transferAmount ? `¥ ${transferAmount}` : "未填写金额"}
               strong
             />
           </Stack>

@@ -98,6 +98,16 @@ function addItemViaSheet(
   clickSheetAddButton();
 }
 
+const trafficCategories = [
+  {
+    id: "33333333-3333-4333-8333-333333333341",
+    name: "电车",
+    parentId: "33333333-3333-4333-8333-333333333340",
+    parentName: "交通出行",
+    type: "expense" as const,
+  },
+];
+
 describe("TransactionForm regression", () => {
   it("小数明细合计正确舍入显示，不出现浮点精度问题", () => {
     const { container } = renderForm();
@@ -138,5 +148,63 @@ describe("TransactionForm regression", () => {
     expect(
       within(container).getByRole("button", { name: "保存记账" }),
     ).toBeDisabled();
+  });
+
+  it("编辑已有明细后明细在列表中的顺序不变", () => {
+    const { container } = renderForm();
+
+    addItemViaSheet(container, "餐饮", "100");
+    addItemViaSheet(container, "日用品", "200");
+
+    const itemInputsBefore = Array.from(
+      container.querySelectorAll<HTMLInputElement>('input[name="itemCategoryId"]'),
+    ).map((input) => input.value);
+    expect(itemInputsBefore[0]).toBe(expenseCategories[0].id);
+    expect(itemInputsBefore[1]).toBe(expenseCategories[1].id);
+
+    // 打开第一条明细进行编辑，修改金额（同类型），不改变分类
+    fireEvent.click(screen.getByLabelText("编辑明细 1 分类"));
+    fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
+      target: { value: "150" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "保存修改" }));
+
+    const itemInputsAfter = Array.from(
+      container.querySelectorAll<HTMLInputElement>('input[name="itemCategoryId"]'),
+    ).map((input) => input.value);
+    expect(itemInputsAfter[0]).toBe(expenseCategories[0].id);
+    expect(itemInputsAfter[1]).toBe(expenseCategories[1].id);
+  });
+
+  it("搜索状态下选择其他大分类的小分类后清空搜索仍显示该大分类", () => {
+    const allCategories = [
+      ...expenseCategories,
+      ...incomeCategories,
+      ...trafficCategories,
+    ];
+    const { container } = renderForm({ categoryOptions: allCategories });
+
+    openSheet(container);
+
+    // 搜索"电车"，命中交通出行大分类
+    fireEvent.change(screen.getByRole("textbox", { name: "搜索小分类" }), {
+      target: { value: "电车" },
+    });
+
+    // 右侧显示的电车按钮存在（交通出行大分类下）
+    expect(screen.getByRole("button", { name: "电车" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "电车" }));
+
+    // 清空搜索
+    fireEvent.change(screen.getByRole("textbox", { name: "搜索小分类" }), {
+      target: { value: "" },
+    });
+
+    // 左侧大分类应显示交通出行为选中状态（完全一致名称以避免与快捷分类 chip 冲突）
+    expect(
+      screen.getByRole("button", { name: "交通出行" }),
+    ).toBeInTheDocument();
+    // 右侧应仍显示电车（交通出行下的小分类）
+    expect(screen.getByRole("button", { name: "电车" })).toBeInTheDocument();
   });
 });

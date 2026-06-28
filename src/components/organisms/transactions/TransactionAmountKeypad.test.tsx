@@ -90,7 +90,7 @@ describe("TransactionAmountKeypad", () => {
     );
 
     expect(screen.getByLabelText("计算器显示金额")).toHaveTextContent(
-      "￥ 8520",
+      "¥ 8520",
     );
   });
 

@@ -19,4 +19,10 @@ describe("TransactionCategorySearch", () => {
   it("不匹配无关分类", () => {
     expect(matchesCategorySearch("餐饮", "gongzi")).toBe(false);
   });
+
+  it("父子分类组合文本可匹配（UI 过滤侧使用 group/category 拼接文本）", () => {
+    expect(matchesCategorySearch("食材/调料", "sctl")).toBe(true);
+    expect(matchesCategorySearch("食材/调料", "食材调料")).toBe(true);
+    expect(matchesCategorySearch("食材/调料", "shicaitiaoliao")).toBe(true);
+  });
 });

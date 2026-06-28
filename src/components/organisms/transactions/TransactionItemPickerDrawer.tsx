@@ -72,7 +72,11 @@ export function TransactionItemPickerDrawer({
         categories: group.categories.filter(
           (category) =>
             matchesCategorySearch(group.name, searchText) ||
-            matchesCategorySearch(category.name, searchText),
+            matchesCategorySearch(category.name, searchText) ||
+            matchesCategorySearch(
+              `${group.name}/${category.name}`,
+              searchText,
+            ),
         ),
       }))
       .filter((group) => group.categories.length > 0);
@@ -223,7 +227,11 @@ export function TransactionItemPickerDrawer({
                   {activeCategoryGroup?.categories.map((category) => (
                     <Button
                       key={category.id}
-                      onClick={() => onCategoryToggle(category.id)}
+                      onClick={() =>
+                        activeCategoryGroup
+                          ? selectCategory(activeCategoryGroup.id, category.id)
+                          : onCategoryToggle(category.id)
+                      }
                       type="button"
                       sx={categoryOptionSx(pickerCategoryId === category.id)}
                     >
