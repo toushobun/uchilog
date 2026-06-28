@@ -1,16 +1,18 @@
+import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { SectionCard } from "molecules/ui/SectionCard";
 import type {
   TransactionAccountOption,
   TransactionMerchantOption,
 } from "types/transactions";
 
 import type { TransactionItemSummary } from "./TransactionForm.types";
+import { transactionSummarySurfaceSx } from "./TransactionForm.styles";
 import {
   formatCategoryName,
+  formatSignedCurrencyAmount,
   formatSummaryDateTime,
 } from "./TransactionForm.utils";
 
@@ -34,9 +36,9 @@ export function TransactionSummarySection({
   transactionTime,
 }: TransactionSummarySectionProps) {
   return (
-    <SectionCard sx={{ p: 2 }}>
-      <Stack spacing={1.5}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+    <Box sx={transactionSummarySurfaceSx}>
+      <Stack spacing={1}>
+        <Typography variant="subtitle1" sx={summaryTitleSx}>
           保存前汇总
         </Typography>
         <SummaryRow label="商家" value={selectedMerchant?.name ?? "未选择"} />
@@ -66,9 +68,16 @@ export function TransactionSummarySection({
           value={formatSummaryDateTime(transactionDate, transactionTime)}
         />
         <Divider />
-        <SummaryRow label="合计金额" value={signedTotalAmount} strong />
+        <SummaryRow
+          label="合计金额"
+          value={formatSignedCurrencyAmount(
+            signedTotalAmount,
+            selectedAccount?.currency,
+          )}
+          strong
+        />
       </Stack>
-    </SectionCard>
+    </Box>
   );
 }
 
@@ -87,15 +96,28 @@ function SummaryRow({
       spacing={2}
       sx={{ alignItems: "center", justifyContent: "space-between" }}
     >
-      <Typography color="text.secondary" variant="body2">
+      <Typography color="text.secondary" sx={summaryLabelSx}>
         {label}
       </Typography>
       <Typography
-        sx={{ fontWeight: strong ? 700 : 500, textAlign: "right" }}
-        variant={strong ? "subtitle1" : "body2"}
+        sx={{
+          color: strong ? "var(--user-theme-action-text)" : "text.primary",
+          fontSize: strong ? "0.9375rem" : "0.75rem",
+          fontWeight: strong ? 800 : 500,
+          textAlign: "right",
+        }}
       >
         {value}
       </Typography>
     </Stack>
   );
 }
+
+const summaryTitleSx = {
+  fontSize: "0.8125rem",
+  fontWeight: 800,
+};
+
+const summaryLabelSx = {
+  fontSize: "0.75rem",
+};

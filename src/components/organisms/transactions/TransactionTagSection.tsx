@@ -1,6 +1,6 @@
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import LocalOfferRoundedIcon from "@mui/icons-material/LocalOfferRounded";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import FormHelperText from "@mui/material/FormHelperText";
@@ -10,7 +10,6 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useState, type KeyboardEvent, type RefObject } from "react";
 
-import { SectionCard } from "molecules/ui/SectionCard";
 import type { TransactionTagOption } from "types/transactions";
 
 type TransactionTagSectionProps = {
@@ -27,7 +26,6 @@ type TransactionTagSectionProps = {
 
 export function TransactionTagSection({
   fieldError,
-  helperText,
   newTagName,
   onAddTag,
   onNewTagNameChange,
@@ -55,20 +53,17 @@ export function TransactionTagSection({
   }
 
   return (
-    <SectionCard ref={tagsFieldRef} sx={tagCardSx}>
-      <Stack spacing={1.5}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          <LocalOfferRoundedIcon sx={titleIconSx} />
-          <Typography variant="subtitle1" sx={titleSx}>
-            标签（整体）
-          </Typography>
-        </Stack>
+    <Box ref={tagsFieldRef} sx={tagCardSx}>
+      <Stack spacing={1}>
+        <Typography variant="subtitle1" sx={titleSx}>
+          整体标签
+        </Typography>
 
         <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
           {selectedTagNames.map((tagName, index) => (
             <Chip
               key={tagName}
-              label={`${tagName} ✔`}
+              label={tagName}
               onDelete={() => onRemoveTag(tagName)}
               size="small"
               sx={getSelectedTagSx(index)}
@@ -123,7 +118,7 @@ export function TransactionTagSection({
               variant="outlined"
               sx={tagAddButtonSx}
             >
-              + 添加
+              +
             </Button>
           )}
         </Stack>
@@ -134,7 +129,7 @@ export function TransactionTagSection({
           </FormHelperText>
         ) : null}
       </Stack>
-    </SectionCard>
+    </Box>
   );
 }
 
@@ -189,18 +184,12 @@ function getSuggestedTagSx(index: number, tagColor: string | null) {
 }
 
 const tagCardSx = {
-  borderRadius: 2.5,
-  p: 2.5,
-};
-
-const titleIconSx = {
-  color: "var(--user-theme-action-text)",
-  fontSize: "1.25rem",
+  px: 0.25,
 };
 
 const titleSx = {
-  color: "text.secondary",
-  fontSize: "1.05rem",
+  color: "text.primary",
+  fontSize: "0.8125rem",
   fontWeight: 800,
 };
 
@@ -229,12 +218,12 @@ const tagCancelButtonSx = {
 const tagAddButtonSx = {
   bgcolor: "var(--user-theme-badge-bg)",
   borderColor: "transparent",
-  borderRadius: 999,
+  borderRadius: 1.5,
   color: "var(--user-theme-badge-color)",
   flexShrink: 0,
   fontSize: "0.95rem",
   fontWeight: 900,
   height: 36,
-  minWidth: 88,
-  px: 1.75,
+  minWidth: 36,
+  px: 1,
 };

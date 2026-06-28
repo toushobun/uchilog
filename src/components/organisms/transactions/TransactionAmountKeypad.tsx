@@ -20,6 +20,8 @@ import {
 } from "utils/transactionAmountInput";
 import { transactionFormValidationMessages } from "utils/transactionMessages";
 
+import { getCurrencySymbol } from "./TransactionForm.utils";
+
 type TransactionAmountKeypadProps = {
   currency?: string;
   onChange: (value: string) => void;
@@ -49,21 +51,6 @@ const keypadKeys: AmountKeypadKey[] = [
   "0",
   "backspace",
 ];
-
-const currencySymbols: Record<string, string> = {
-  AUD: "A$",
-  CAD: "C$",
-  CNY: "¥",
-  EUR: "€",
-  GBP: "£",
-  HKD: "HK$",
-  JPY: "¥",
-  KRW: "₩",
-  SGD: "S$",
-  THB: "฿",
-  TWD: "NT$",
-  USD: "$",
-};
 
 const keyLabels: Record<AmountKeypadKey, string> = {
   "+": "+",
@@ -244,14 +231,6 @@ export function TransactionAmountKeypad({
       </Stack>
     </Paper>
   );
-}
-
-function getCurrencySymbol(currency?: string) {
-  const normalizedCurrency = currency?.trim().toUpperCase();
-
-  if (!normalizedCurrency) return "";
-
-  return currencySymbols[normalizedCurrency] ?? normalizedCurrency;
 }
 
 function withExternalValue(

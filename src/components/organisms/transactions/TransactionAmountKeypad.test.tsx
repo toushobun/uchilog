@@ -80,6 +80,18 @@ describe("TransactionAmountKeypad", () => {
     );
   });
 
+  it("未指定币种时默认显示日元符号", () => {
+    render(
+      <TransactionAmountKeypad
+        value="8520"
+        onChange={vi.fn()}
+        onConfirm={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("计算器显示金额")).toHaveTextContent("¥ 8520");
+  });
+
   it("支持清空当前输入", () => {
     const handleChange = vi.fn();
 

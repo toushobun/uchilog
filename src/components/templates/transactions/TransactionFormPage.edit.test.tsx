@@ -1,19 +1,29 @@
-import { cleanup, fireEvent, render, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { routePaths } from "config/paths";
 
 import { EditTransactionTemplate } from "./TransactionFormPage";
 
 vi.mock("organisms/transactions/TransactionForm", () => ({
   TransactionForm: ({
+    formId,
     initialValues,
   }: {
+    formId: string;
     initialValues: { type: "expense" | "income" };
   }): ReactNode => {
     const label = initialValues.type === "income" ? "收入" : "支出";
 
     return (
-      <form>
+      <form id={formId}>
         <div data-testid={`transaction-form-${initialValues.type}`}>
           <input aria-label={`${label}编辑临时输入`} defaultValue="" />
           <input name="type" type="hidden" value={initialValues.type} />
@@ -24,10 +34,10 @@ vi.mock("organisms/transactions/TransactionForm", () => ({
 }));
 
 vi.mock("organisms/transactions/TransferTransactionForm", () => ({
-  TransferTransactionForm: (): ReactNode => (
-    <div data-testid="transfer-transaction-form">
+  TransferTransactionForm: ({ formId }: { formId: string }): ReactNode => (
+    <form data-testid="transfer-transaction-form" id={formId}>
       <input aria-label="转账编辑临时输入" defaultValue="" />
-    </div>
+    </form>
   ),
 }));
 
@@ -77,6 +87,7 @@ vi.mock("organisms/transactions/TransactionFormHeader", () => ({
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
 
 const accountOptions = [
@@ -223,5 +234,46 @@ describe("EditTransactionTemplate", () => {
     expect(within(container).getByLabelText("支出编辑临时输入")).toHaveValue(
       "保留普通编辑输入",
     );
+  });
+
+  it("内容修改后退出时提示保存、放弃或继续编辑", () => {
+    const { container } = render(
+      <EditTransactionTemplate {...createProps()} />,
+    );
+
+    fireEvent.change(within(container).getByLabelText("支出编辑临时输入"), {
+      target: { value: "已修改" },
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "关闭" }));
+
+    expect(
+      screen.getByText("修正的内容尚未保存，是否保存？"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "放弃修改" })).toHaveAttribute(
+      "href",
+      routePaths.transactions,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "继续编辑" }));
+    expect(
+      screen.getByText("修正的内容尚未保存，是否保存？"),
+    ).not.toBeVisible();
+  });
+
+  it("未保存提示中点击保存会提交当前编辑表单", () => {
+    const requestSubmit = vi
+      .spyOn(HTMLFormElement.prototype, "requestSubmit")
+      .mockImplementation(() => undefined);
+    const { container } = render(
+      <EditTransactionTemplate {...createProps()} />,
+    );
+
+    fireEvent.change(within(container).getByLabelText("支出编辑临时输入"), {
+      target: { value: "已修改" },
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "关闭" }));
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    expect(requestSubmit).toHaveBeenCalledTimes(1);
   });
 });

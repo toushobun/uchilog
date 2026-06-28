@@ -5,6 +5,7 @@ import {
   EditTransferTransactionTemplate,
   NewTransactionTemplate,
 } from "./TransactionFormPage";
+import { NewTransactionVisualFrame } from "./NewTransactionVisualFrame";
 
 const accountOptions = [
   {
@@ -77,6 +78,13 @@ const baseArgs = {
 const meta = {
   title: "Templates/Transactions/TransactionFormPage",
   component: NewTransactionTemplate,
+  decorators: [
+    (Story) => (
+      <NewTransactionVisualFrame>
+        <Story />
+      </NewTransactionVisualFrame>
+    ),
+  ],
   args: baseArgs,
 } satisfies Meta<typeof NewTransactionTemplate>;
 

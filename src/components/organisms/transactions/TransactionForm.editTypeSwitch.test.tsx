@@ -177,15 +177,17 @@ function openSheet(container: HTMLElement) {
 }
 
 function clickSheetAddButton() {
-  const buttons = screen.getAllByRole("button", { name: "追加" });
-  const button = buttons.at(-1);
-
-  if (!button) throw new Error("明细追加按钮不存在");
-
-  fireEvent.click(button);
+  fireEvent.click(screen.getByRole("button", { name: "确定" }));
 }
 
-function addItemViaSheet(categoryName: string, amount: string) {
+function addItemViaSheet(
+  container: HTMLElement,
+  categoryName: string,
+  amount: string,
+) {
+  if (!screen.queryByRole("heading", { name: "添加明细" })) {
+    openSheet(container);
+  }
   fireEvent.click(screen.getByRole("button", { name: categoryName }));
   fireEvent.change(screen.getByRole("textbox", { name: "金额" }), {
     target: { value: amount },
@@ -247,7 +249,7 @@ describe("TransactionForm 编辑类型切换", () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "固定收入" }));
-    addItemViaSheet("工资", "300000");
+    addItemViaSheet(container, "工资", "300000");
 
     expect(getSubmittedCategoryIds(container)).toEqual([
       expenseCategoryId,
@@ -271,7 +273,7 @@ describe("TransactionForm 编辑类型切换", () => {
       screen.getByRole("button", { name: "固定收入" }),
     ).toBeInTheDocument();
 
-    addItemViaSheet("餐饮", "800");
+    addItemViaSheet(container, "餐饮", "800");
 
     expect(getSubmittedCategoryIds(container)).toEqual([expenseCategoryId]);
   });
@@ -280,10 +282,10 @@ describe("TransactionForm 编辑类型切换", () => {
     const { container } = renderForm();
 
     openSheet(container);
-    addItemViaSheet("餐饮", "500");
+    addItemViaSheet(container, "餐饮", "500");
 
     fireEvent.click(screen.getByRole("button", { name: "固定收入" }));
-    addItemViaSheet("工资", "300000");
+    addItemViaSheet(container, "工资", "300000");
 
     expect(getSubmittedCategoryIds(container)).toEqual([
       expenseCategoryId,

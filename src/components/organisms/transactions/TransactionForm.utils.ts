@@ -36,6 +36,28 @@ export function formatSummaryDateTime(date: string, time: string) {
   return `${dateParts[0]}/${dateParts[1]}/${dateParts[2]} ${timeParts[0]}:${timeParts[1]}:${timeParts[2] ?? "00"}`;
 }
 
+export function formatSignedCurrencyAmount(value: string, currency?: string) {
+  const trimmedValue = value.trim();
+  if (!trimmedValue || trimmedValue === "未填写金额") return value;
+
+  const sign = trimmedValue.startsWith("-")
+    ? "-"
+    : trimmedValue.startsWith("+")
+      ? "+"
+      : "";
+  const amount = sign ? trimmedValue.slice(1) : trimmedValue;
+  const symbol = currency ? getCurrencySymbol(currency) : "";
+
+  return [sign, symbol, amount].filter(Boolean).join(" ");
+}
+
+export function getCurrencySymbol(currency?: string) {
+  const normalizedCurrency = currency?.trim().toUpperCase();
+  if (!normalizedCurrency) return "¥";
+
+  return currencySymbols[normalizedCurrency] ?? normalizedCurrency;
+}
+
 export function isValidMoneyText(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return false;
@@ -56,3 +78,16 @@ export function isValidMoneyText(value: string) {
 function isDigitText(value: string) {
   return Array.from(value).every((char) => char >= "0" && char <= "9");
 }
+
+const currencySymbols: Record<string, string> = {
+  CNY: "¥",
+  EUR: "€",
+  GBP: "£",
+  HKD: "HK$",
+  JPY: "¥",
+  KRW: "₩",
+  SGD: "S$",
+  THB: "฿",
+  TWD: "NT$",
+  USD: "$",
+};

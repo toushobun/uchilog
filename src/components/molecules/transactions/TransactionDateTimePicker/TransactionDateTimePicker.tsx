@@ -189,8 +189,8 @@ export function TransactionDateTimePicker({
     <>
       <Box>
         <Typography
-          color="text.secondary"
-          sx={{ fontWeight: 700, mb: 0.75 }}
+          color="text.primary"
+          sx={{ fontSize: "0.8125rem", fontWeight: 800, mb: 0.75, px: 0.25 }}
           variant="body2"
         >
           {messages.fieldLabel}
@@ -209,11 +209,13 @@ export function TransactionDateTimePicker({
           type="button"
           variant="outlined"
           sx={{
-            bgcolor: "background.paper",
+            bgcolor: "var(--user-theme-card-bg)",
+            borderColor: "var(--user-theme-card-border)",
+            borderRadius: 1.25,
             color: "text.primary",
             justifyContent: "flex-start",
-            minHeight: 56,
-            px: 2,
+            minHeight: 50,
+            px: 1.5,
           }}
         >
           {formatDateTimeLabel(date, time, today)}

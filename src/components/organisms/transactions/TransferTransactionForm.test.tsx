@@ -72,12 +72,20 @@ function getSaveButton(container: HTMLElement) {
 describe("TransferTransactionForm", () => {
   it("能渲染转出账户、转入账户、金额、日期时间、备注、保存按钮", () => {
     const { container } = renderForm();
+    const sourceAccountSelect = within(container).getByRole("combobox", {
+      name: "转出账户",
+    });
+    const targetAccountSelect = within(container).getByRole("combobox", {
+      name: "转入账户",
+    });
 
+    expect(sourceAccountSelect).toHaveTextContent("选择转出账户");
+    expect(targetAccountSelect).toHaveTextContent("选择转入账户");
     expect(
-      within(container).getByRole("combobox", { name: "转出账户" }),
+      within(sourceAccountSelect).getByRole("img", { name: "转出账户" }),
     ).toBeInTheDocument();
     expect(
-      within(container).getByRole("combobox", { name: "转入账户" }),
+      within(targetAccountSelect).getByRole("img", { name: "转入账户" }),
     ).toBeInTheDocument();
     expect(
       within(container).getByRole("textbox", { name: "金额" }),
@@ -252,7 +260,7 @@ describe("TransferTransactionForm", () => {
     expect(within(container).getAllByText("三井住友银行（JPY）")).toHaveLength(
       2,
     );
-    expect(within(container).getByText("500")).toBeInTheDocument();
+    expect(within(container).getByText("¥ 500")).toBeInTheDocument();
   });
 
   it("转账金额 input 带有 data-amount-input 属性", () => {
@@ -261,8 +269,12 @@ describe("TransferTransactionForm", () => {
     const amountInput = within(container).getByRole("textbox", {
       name: "金额",
     });
+    const amountInputRoot =
+      amountInput.closest<HTMLElement>(".MuiInputBase-root");
 
     expect(amountInput).toHaveAttribute("data-amount-input", "true");
+    expect(amountInputRoot).not.toBeNull();
+    expect(within(amountInputRoot!).getByText("¥")).toBeInTheDocument();
   });
 
   it("选择转出账户后金额 input 的 data-amount-currency 为该账户币种", () => {

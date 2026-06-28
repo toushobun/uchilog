@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -6,25 +12,27 @@ import { EditTransferTransactionTemplate } from "./TransactionFormPage";
 
 vi.mock("organisms/transactions/TransactionForm", () => ({
   TransactionForm: ({
+    formId,
     initialValues,
   }: {
+    formId: string;
     initialValues: { type: "expense" | "income" };
   }): ReactNode => {
     const label = initialValues.type === "income" ? "收入" : "支出";
 
     return (
-      <div data-testid={`transaction-form-${initialValues.type}`}>
+      <form data-testid={`transaction-form-${initialValues.type}`} id={formId}>
         <input aria-label={`${label}转换临时输入`} defaultValue="" />
-      </div>
+      </form>
     );
   },
 }));
 
 vi.mock("organisms/transactions/TransferTransactionForm", () => ({
-  TransferTransactionForm: (): ReactNode => (
-    <div data-testid="transfer-transaction-form">
+  TransferTransactionForm: ({ formId }: { formId: string }): ReactNode => (
+    <form data-testid="transfer-transaction-form" id={formId}>
       <input aria-label="转账转换临时输入" defaultValue="" />
-    </div>
+    </form>
   ),
 }));
 
@@ -74,6 +82,7 @@ vi.mock("organisms/transactions/TransactionFormHeader", () => ({
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
 
 function renderTemplate() {
@@ -160,5 +169,18 @@ describe("EditTransferTransactionTemplate", () => {
     expect(within(container).getByLabelText("转账转换临时输入")).toHaveValue(
       "保留转账编辑输入",
     );
+  });
+
+  it("转账内容修改后退出时显示未保存提示", () => {
+    const { container } = renderTemplate();
+
+    fireEvent.change(within(container).getByLabelText("转账转换临时输入"), {
+      target: { value: "已修改" },
+    });
+    fireEvent.click(within(container).getByRole("button", { name: "关闭" }));
+
+    expect(
+      screen.getByText("修正的内容尚未保存，是否保存？"),
+    ).toBeInTheDocument();
   });
 });
