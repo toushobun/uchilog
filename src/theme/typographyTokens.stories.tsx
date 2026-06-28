@@ -60,7 +60,7 @@ const typographyItems = [
     style: typographyStyles.body,
   },
   {
-    label: "表单 Label / 列表文字",
+    label: "表单 Label",
     sample: "请选择分类",
     style: typographyStyles.formLabel,
   },
@@ -78,6 +78,11 @@ const typographyItems = [
     label: "Chip / Badge",
     sample: "日常",
     style: typographyStyles.chipBadge,
+  },
+  {
+    label: "列表 / 设置说明",
+    sample: "管理当前账本的现金、银行卡、信用卡等账户。",
+    style: typographyStyles.listText,
   },
 ] as const;
 
