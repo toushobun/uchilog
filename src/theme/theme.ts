@@ -1,14 +1,12 @@
 import { createTheme } from "@mui/material/styles";
 
+import {
+  typographyFontFamilies,
+  typographyStyles,
+} from "./typographyTokens";
 import { appZIndex } from "./zIndex";
 
-const fontFamily = [
-  "system-ui",
-  "-apple-system",
-  "BlinkMacSystemFont",
-  '"Segoe UI"',
-  "sans-serif",
-].join(",");
+const fontFamily = typographyFontFamilies.body;
 
 export const designTokens = {
   color: {
@@ -39,7 +37,9 @@ export const designTokens = {
     disabled: 0.56,
   },
   typography: {
-    serifFontFamily: "'Georgia', 'Noto Serif SC', serif",
+    fontFamily: typographyFontFamilies,
+    serifFontFamily: typographyFontFamilies.brand,
+    style: typographyStyles,
   },
   shadow: {
     card: "0 12px 32px rgba(61, 46, 34, 0.08)",
@@ -75,29 +75,31 @@ export const theme = createTheme({
   typography: {
     fontFamily,
     h1: {
+      ...typographyStyles.pageTitle,
       fontSize: "2rem",
-      fontWeight: 700,
-      letterSpacing: "-0.04em",
     },
     h2: {
+      ...typographyStyles.pageTitle,
       fontSize: "1.5rem",
-      fontWeight: 700,
-      letterSpacing: "-0.03em",
     },
     h3: {
+      ...typographyStyles.pageTitle,
       fontSize: "1.25rem",
-      fontWeight: 700,
-      letterSpacing: "-0.02em",
     },
     body1: {
+      ...typographyStyles.body,
       lineHeight: 1.7,
     },
     body2: {
+      ...typographyStyles.body,
       lineHeight: 1.6,
     },
     button: {
-      fontWeight: 700,
-      textTransform: "none",
+      ...typographyStyles.button,
+    },
+    caption: {
+      ...typographyStyles.chipBadge,
+      fontSize: "0.75rem",
     },
   },
   spacing: 8,
