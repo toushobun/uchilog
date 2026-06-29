@@ -11,7 +11,9 @@ import type {
 } from "server/db-types";
 import type {
   TransactionAccountOption,
+  TransactionCategoryOption,
   TransactionMerchantOption,
+  TransactionType,
 } from "types/transactions";
 
 const uuidPattern =
@@ -53,7 +55,7 @@ export async function loadEditTransactionView(transactionRecordId: string) {
       .eq("ledger_id", currentLedger.id)
       .eq("id", transactionRecordId)
       .eq("status", "active")
-      .in("type", ["expense", "income", "transfer"])
+      .in("type", ["normal", "transfer"])
       .limit(1),
   ]);
 
@@ -73,7 +75,7 @@ export async function loadEditTransactionView(transactionRecordId: string) {
       .select("account_id, amount, balance_delta")
       .eq("ledger_id", currentLedger.id)
       .eq("transaction_record_id", transactionRecordId)
-      .eq("stat_type", "transfer");
+      .is("category_id", null);
 
     if (itemResult.error) {
       throw new Error("Failed to load transfer items for edit");
@@ -127,7 +129,7 @@ export async function loadEditTransactionView(transactionRecordId: string) {
     };
   }
 
-  if (record.type !== "expense" && record.type !== "income") {
+  if (record.type !== "normal") {
     notFound();
   }
 
@@ -137,7 +139,6 @@ export async function loadEditTransactionView(transactionRecordId: string) {
       .select("transaction_record_id, account_id, category_id, amount, note")
       .eq("ledger_id", currentLedger.id)
       .eq("transaction_record_id", transactionRecordId)
-      .in("stat_type", ["expense", "income"])
       .order("sort_order", { ascending: true })
       .order("id", { ascending: true }),
     supabase
@@ -191,7 +192,7 @@ export async function loadEditTransactionView(transactionRecordId: string) {
       tagNames: selectedTagNames,
       transactionAt: record.transaction_at,
       transactionRecordId: record.id,
-      type: record.type,
+      type: resolveNormalTransactionDisplayType(items, options.categoryOptions),
     },
     ledgerName: currentLedger.name,
   };
@@ -307,6 +308,37 @@ export function buildCategoryOptions(rows: CategoryOptionDbRow[]) {
       parentName: parentNameById.get(row.parent_id!) ?? null,
       type: row.type,
     }));
+}
+
+function resolveNormalTransactionDisplayType(
+  items: TransactionItemDbRow[],
+  categoryOptions: TransactionCategoryOption[],
+): TransactionType {
+  const categoryTypeById = new Map(
+    categoryOptions.map((category) => [category.id, category.type] as const),
+  );
+  let expenseTotal = 0;
+  let incomeTotal = 0;
+
+  for (const item of items) {
+    const amount = Number(item.amount);
+
+    if (!Number.isFinite(amount)) continue;
+
+    const categoryType = item.category_id
+      ? categoryTypeById.get(item.category_id)
+      : undefined;
+
+    if (categoryType === "income") {
+      incomeTotal += amount;
+    } else if (categoryType === "expense") {
+      expenseTotal += amount;
+    }
+  }
+
+  if (incomeTotal > expenseTotal) return "income";
+  if (expenseTotal > incomeTotal) return "expense";
+  return "income";
 }
 
 function formatEditableAmount(amount: string) {

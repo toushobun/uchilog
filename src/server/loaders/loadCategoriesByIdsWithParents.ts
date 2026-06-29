@@ -15,7 +15,7 @@ export async function loadCategoriesByIdsWithParents(
 
   const { data: categoryData, error: categoryError } = await supabase
     .from("category")
-    .select("id, name, parent_id")
+    .select("id, name, parent_id, type")
     .eq("ledger_id", ledgerId)
     .in("id", uniqueCategoryIds);
 
@@ -39,7 +39,7 @@ export async function loadCategoriesByIdsWithParents(
   const { data: parentCategoryData, error: parentCategoryError } =
     await supabase
       .from("category")
-      .select("id, name, parent_id")
+      .select("id, name, parent_id, type")
       .eq("ledger_id", ledgerId)
       .in("id", parentCategoryIds);
 

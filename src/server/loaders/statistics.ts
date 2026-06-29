@@ -22,7 +22,7 @@ export async function loadStatisticsView(month?: string | null) {
     .select("id, type, merchant_id")
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income"])
+    .eq("type", "normal")
     .gte("transaction_at", startIso)
     .lt("transaction_at", endIso);
 

@@ -8,7 +8,6 @@ import type {
 } from "server/db-types";
 import type {
   TransactionCategoryType,
-  TransactionItemSummaryStatType,
   TransactionListItem,
 } from "types/transactions";
 
@@ -51,13 +50,8 @@ export function buildTransactionListItem({
   const merchant = record.merchant_id
     ? merchantById.get(record.merchant_id)
     : undefined;
-  const netAmount = recordItems.reduce(
-    (sum, item) => sum + getSignedItemAmount(record, item),
-    0,
-  );
-  const fallbackType: TransactionCategoryType =
-    record.type === "income" ? "income" : "expense";
-  const displayType = getDisplayTransactionType(fallbackType, netAmount);
+  const normalAmountSummary = getNormalAmountSummary(recordItems, categoryById);
+  const displayType = getDisplayTransactionType(normalAmountSummary);
 
   const categoryItems = recordItems.flatMap((item) => {
     if (item.category_id === null) return [];
@@ -72,7 +66,7 @@ export function buildTransactionListItem({
         amount: item.amount,
         categoryName: category?.name ?? "",
         parentCategoryName: parent?.name ?? null,
-        statType: getCategorySummaryStatType(record, item),
+        statType: category?.type,
       },
     ];
   });
@@ -80,7 +74,7 @@ export function buildTransactionListItem({
   return {
     account_currency: account?.currency ?? fallbackCurrency,
     account_name: account?.name ?? "未知账户",
-    amount: String(Math.abs(netAmount)),
+    amount: String(Math.abs(normalAmountSummary.netAmount)),
     categoryItems,
     created_at: record.created_at,
     id: record.id,
@@ -153,45 +147,46 @@ function buildTransferListItem({
   };
 }
 
-function getSignedItemAmount(
-  record: TransactionRecordDbRow,
-  item: TransactionItemDbRow,
+function getNormalAmountSummary(
+  items: TransactionItemDbRow[],
+  categoryById: Map<string, CategorySummaryDbRow>,
 ) {
-  const amount = Number(item.amount);
+  let expenseTotal = 0;
+  let incomeTotal = 0;
 
-  if (!Number.isFinite(amount)) return 0;
+  for (const item of items) {
+    const amount = Number(item.amount);
 
-  const statType = item.stat_type ?? record.type;
+    if (!Number.isFinite(amount)) continue;
 
-  if (statType === "income" || statType === "expense_offset") {
-    return amount;
+    const categoryType = item.category_id
+      ? categoryById.get(item.category_id)?.type
+      : undefined;
+
+    if (categoryType === "income") {
+      incomeTotal += amount;
+    } else if (categoryType === "expense") {
+      expenseTotal += amount;
+    }
   }
 
-  return -amount;
+  return {
+    expenseTotal,
+    incomeTotal,
+    netAmount: incomeTotal - expenseTotal,
+  };
 }
 
-function getDisplayTransactionType(
-  fallbackType: TransactionCategoryType,
-  netAmount: number,
-): TransactionCategoryType {
+function getDisplayTransactionType({
+  expenseTotal,
+  incomeTotal,
+  netAmount,
+}: {
+  expenseTotal: number;
+  incomeTotal: number;
+  netAmount: number;
+}): TransactionCategoryType {
   if (netAmount > 0) return "income";
   if (netAmount < 0) return "expense";
-  return fallbackType;
-}
-
-function getCategorySummaryStatType(
-  record: TransactionRecordDbRow,
-  item: TransactionItemDbRow,
-): TransactionItemSummaryStatType | undefined {
-  const statType = item.stat_type ?? record.type;
-
-  if (statType === "income" || statType === "expense_offset") {
-    return statType;
-  }
-
-  if (statType === "expense") {
-    return "expense";
-  }
-
-  return undefined;
+  return incomeTotal >= expenseTotal ? "income" : "expense";
 }

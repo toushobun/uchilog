@@ -5,77 +5,41 @@ import { describe, expect, it } from "vitest";
 
 const migrationPath = path.join(
   process.cwd(),
-  "supabase/migrations/20260625000000_allow_mixed_category_types_in_normal_transactions.sql",
+  "supabase/migrations/20260630010000_refactor_transaction_type_model.sql",
 );
-
-type NormalRecordTypeItem = {
-  amount: number;
-  type: "expense" | "income";
-};
 
 function readMigration(filePath: string) {
   return readFileSync(filePath, "utf8");
 }
 
-function resolveNormalRecordType(items: NormalRecordTypeItem[]) {
-  const totals = items.reduce(
-    (currentTotals, item) => {
-      currentTotals[item.type] += item.amount;
-      return currentTotals;
-    },
-    { expense: 0, income: 0 },
-  );
-
-  return totals.income >= totals.expense ? "income" : "expense";
-}
-
-describe("普通记账混合收支后端规则", () => {
-  it.each([
-    {
-      expectedType: "income",
-      items: [
-        { amount: 500, type: "expense" as const },
-        { amount: 300000, type: "income" as const },
-      ],
-      name: "收入合计大于支出合计时主记录为 income",
-    },
-    {
-      expectedType: "expense",
-      items: [
-        { amount: 300000, type: "expense" as const },
-        { amount: 500, type: "income" as const },
-      ],
-      name: "支出合计大于收入合计时主记录为 expense",
-    },
-    {
-      expectedType: "income",
-      items: [
-        { amount: 1000, type: "expense" as const },
-        { amount: 1000, type: "income" as const },
-      ],
-      name: "收入合计等于支出合计时主记录为 income",
-    },
-  ])("净额规则：$name", ({ expectedType, items }) => {
-    expect(resolveNormalRecordType(items)).toBe(expectedType);
-  });
-
-  it("按净额决定 transaction_record.type", () => {
+describe("普通记账 normal 类型后端规则", () => {
+  it("将 transaction_record.type 收敛为 normal / transfer", () => {
     const migration = readMigration(migrationPath);
 
+    expect(migration).toContain("type in ('normal', 'transfer')");
+    expect(migration).toContain("when type = 'transfer' then 'transfer'");
+    expect(migration).toContain("else 'normal'");
+    expect(migration).toContain("'normal'");
+  });
+
+  it("普通明细统计方向改由 category.type 决定", () => {
+    const migration = readMigration(migrationPath);
+
+    expect(migration).toContain("select c.type");
+    expect(migration).toContain("v_item_category_type");
+    expect(migration).toContain("when v_item_category_type = 'expense'");
     expect(migration).toContain(
-      "incomeTotal >= expenseTotal ? 'income' : 'expense'",
+      "drop index if exists public.transaction_item_stat_type_idx",
     );
-    expect(migration).toContain(
-      "when v_income_total >= v_expense_total then 'income'",
-    );
-    expect(migration).toContain("else 'expense'");
-    expect(migration).toContain("transaction_item_sync_normal_record_type");
-    expect(migration).toContain(
-      "coalesce(sum(ti.amount) filter (where ti.stat_type = 'expense'), 0)",
-    );
-    expect(migration).toContain(
-      "coalesce(sum(ti.amount) filter (where ti.stat_type = 'income'), 0)",
-    );
+    expect(migration).toContain("alter column stat_type drop not null");
+  });
+
+  it("已被引用的分类不能跨收入 / 支出方向修改", () => {
+    const migration = readMigration(migrationPath);
+
+    expect(migration).toContain("prevent_used_category_type_change");
+    expect(migration).toContain("category_type_locked");
+    expect(migration).toContain("category_prevent_used_type_change");
   });
 
   it("保留带标签参数的 create / update RPC 签名", () => {

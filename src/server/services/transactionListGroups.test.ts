@@ -16,10 +16,10 @@ const accounts: AccountOptionDbRow[] = [
 ];
 
 const categories: CategorySummaryDbRow[] = [
-  { id: "food", name: "饮食", parent_id: null },
-  { id: "salary", name: "收入", parent_id: null },
-  { id: "dinner", name: "晚餐", parent_id: "food" },
-  { id: "bonus", name: "奖金", parent_id: "salary" },
+  { id: "food", name: "饮食", parent_id: null, type: "expense" },
+  { id: "salary", name: "收入", parent_id: null, type: "income" },
+  { id: "dinner", name: "晚餐", parent_id: "food", type: "expense" },
+  { id: "bonus", name: "奖金", parent_id: "salary", type: "income" },
 ];
 
 const merchants = [
@@ -41,7 +41,7 @@ function record(
     merchant_id: "merchant-a",
     note: null,
     transaction_at: "2026-06-01T00:00:00.000Z",
-    type: "expense",
+    type: "normal",
     ...value,
   };
 }
@@ -72,11 +72,13 @@ describe("transactionListGroups", () => {
         item({ amount: "120", transaction_record_id: "june" }),
         item({
           amount: "300",
+          category_id: null,
           stat_type: "transfer",
           transaction_record_id: "transfer",
         }),
         item({
           amount: "500",
+          category_id: "bonus",
           stat_type: "income",
           transaction_record_id: "july",
         }),
@@ -94,7 +96,6 @@ describe("transactionListGroups", () => {
         record({
           id: "july",
           transaction_at: "2026-07-02T10:00:00.000Z",
-          type: "income",
         }),
       ],
       recorders,
@@ -181,7 +182,6 @@ describe("transactionListGroups", () => {
           id: "mixed",
           merchant_id: "merchant-b",
           transaction_at: "2026-06-28T10:00:00.000Z",
-          type: "income",
         }),
       ],
       recorders,
@@ -227,7 +227,6 @@ describe("transactionListGroups", () => {
           id: "negative-mixed",
           merchant_id: "merchant-b",
           transaction_at: "2026-06-28T10:00:00.000Z",
-          type: "expense",
         }),
       ],
       recorders,
@@ -244,18 +243,19 @@ describe("transactionListGroups", () => {
     });
   });
 
-  it("expense_offset 明细按支出冲减处理", () => {
+  it("普通明细方向按 category.type 处理，不再依赖 stat_type", () => {
     const result = buildTransactionGroupSummaryPage({
       accounts,
       categories,
       currency: "JPY",
       groupBy: "merchant",
       items: [
-        item({ amount: "300", transaction_record_id: "offset" }),
+        item({ amount: "300", transaction_record_id: "category-type" }),
         item({
           amount: "80",
+          category_id: "bonus",
           stat_type: "expense_offset",
-          transaction_record_id: "offset",
+          transaction_record_id: "category-type",
         }),
       ],
       merchants,
@@ -263,7 +263,7 @@ describe("transactionListGroups", () => {
       pageSize: 20,
       records: [
         record({
-          id: "offset",
+          id: "category-type",
           merchant_id: "merchant-a",
           transaction_at: "2026-06-28T10:00:00.000Z",
         }),
@@ -310,7 +310,6 @@ describe("transactionListGroups", () => {
           created_by: "user-b",
           id: "user-b-income",
           transaction_at: "2026-06-28T10:00:00.000Z",
-          type: "income",
         }),
       ],
       recorders,
@@ -372,7 +371,6 @@ describe("transactionListGroups", () => {
         record({
           id: "mixed",
           transaction_at: "2026-06-28T10:00:00.000Z",
-          type: "income",
         }),
       ],
       recorders,

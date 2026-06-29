@@ -124,7 +124,7 @@ describe("loadEditTransactionView 普通交易类型", () => {
             merchant_id: merchantId,
             note: "工资入账",
             transaction_at: "2026-06-04T10:30:05.000Z",
-            type: "income",
+            type: "normal",
           },
         ],
         error: null,

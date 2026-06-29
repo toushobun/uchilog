@@ -36,6 +36,7 @@ import {
 const transactionListPageSize = 20;
 const monthPageSize = 20;
 const transactionGroupPageSize = 20;
+const activeTransactionRecordTypes = ["normal", "transfer"] as const;
 
 async function loadTransactionItems(
   records: TransactionRecordDbRow[],
@@ -51,7 +52,7 @@ async function loadTransactionItems(
   const { data: itemData, error: itemError } = await supabase
     .from("transaction_item")
     .select(
-      "transaction_record_id, account_id, category_id, stat_type, amount, balance_delta, note",
+      "transaction_record_id, account_id, category_id, amount, balance_delta, note",
     )
     .eq("ledger_id", currentLedger.id)
     .in("transaction_record_id", recordIds)
@@ -218,7 +219,7 @@ export async function loadTransactionGroupPage(
     )
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income", "transfer"])
+    .in("type", activeTransactionRecordTypes)
     .order("transaction_at", { ascending: false })
     .order("created_at", { ascending: false })
     .order("id", { ascending: false });
@@ -241,7 +242,7 @@ export async function loadTransactionGroupPage(
   const { data: itemData, error: itemError } = await supabase
     .from("transaction_item")
     .select(
-      "transaction_record_id, account_id, category_id, stat_type, amount, balance_delta, note",
+      "transaction_record_id, account_id, category_id, amount, balance_delta, note",
     )
     .eq("ledger_id", currentLedger.id)
     .in("transaction_record_id", recordIds)
@@ -390,7 +391,7 @@ export async function loadTransactionMonthView(
     )
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income", "transfer"])
+    .in("type", activeTransactionRecordTypes)
     .gte("transaction_at", startIso)
     .lt("transaction_at", endIso)
     .order("transaction_at", { ascending: false })
@@ -435,7 +436,7 @@ export async function loadTransactionMonthPage(
     )
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income", "transfer"])
+    .in("type", activeTransactionRecordTypes)
     .gte("transaction_at", startIso)
     .lt("transaction_at", endIso)
     .order("transaction_at", { ascending: false })
@@ -473,7 +474,7 @@ export async function loadTransactionListPage(
     )
     .eq("ledger_id", currentLedger.id)
     .eq("status", "active")
-    .in("type", ["expense", "income", "transfer"])
+    .in("type", activeTransactionRecordTypes)
     .order("transaction_at", { ascending: false })
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })

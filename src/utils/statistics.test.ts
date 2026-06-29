@@ -6,22 +6,22 @@ const records = [
   {
     id: "expense-1",
     merchant_id: "merchant-super",
-    type: "expense" as const,
+    type: "normal" as const,
   },
   {
     id: "expense-2",
     merchant_id: "merchant-cafe",
-    type: "expense" as const,
+    type: "normal" as const,
   },
   {
     id: "expense-3",
     merchant_id: "merchant-missing",
-    type: "expense" as const,
+    type: "normal" as const,
   },
   {
     id: "income-1",
     merchant_id: "merchant-company",
-    type: "income" as const,
+    type: "normal" as const,
   },
 ];
 
@@ -70,10 +70,30 @@ const merchants = [
 ];
 
 const categories = [
-  { id: "category-parent-food", name: "食费", parent_id: null },
-  { id: "category-food", name: "外食", parent_id: "category-parent-food" },
-  { id: "category-daily", name: "日用品", parent_id: null },
-  { id: "category-salary", name: "工资", parent_id: null },
+  {
+    id: "category-parent-food",
+    name: "食费",
+    parent_id: null,
+    type: "expense" as const,
+  },
+  {
+    id: "category-food",
+    name: "外食",
+    parent_id: "category-parent-food",
+    type: "expense" as const,
+  },
+  {
+    id: "category-daily",
+    name: "日用品",
+    parent_id: null,
+    type: "expense" as const,
+  },
+  {
+    id: "category-salary",
+    name: "工资",
+    parent_id: null,
+    type: "income" as const,
+  },
 ];
 
 describe("statistics utils", () => {
@@ -95,9 +115,9 @@ describe("statistics utils", () => {
       nextMonth: "2026-07",
       previousMonth: "2026-05",
       summary: {
-        balance: "246600",
+        balance: "246900",
         currency: "JPY",
-        expense: "3400",
+        expense: "3100",
         income: "250000",
       },
     });
@@ -114,12 +134,6 @@ describe("statistics utils", () => {
         name: "咖啡店",
         transactionCount: 1,
       },
-      {
-        amount: "300",
-        id: "merchant-missing",
-        name: "未指定商家",
-        transactionCount: 1,
-      },
     ]);
     expect(view.categoryExpenseRanking).toEqual([
       {
@@ -132,12 +146,6 @@ describe("statistics utils", () => {
         amount: "600",
         id: "category-daily",
         name: "日用品",
-        transactionCount: 1,
-      },
-      {
-        amount: "300",
-        id: "__no_category__",
-        name: "未指定分类",
         transactionCount: 1,
       },
     ]);
