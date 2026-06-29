@@ -29,6 +29,7 @@ const merchants = [
 
 const recorders: AppUserSummaryDbRow[] = [
   { display_name: "淞文", id: "user-a" },
+  { display_name: "家庭成员", id: "user-b" },
 ];
 
 function record(
@@ -117,6 +118,46 @@ describe("transactionListGroups", () => {
     ]);
   });
 
+  it("支持季度和周时间分组", () => {
+    const commonParams = {
+      accounts,
+      categories,
+      currency: "JPY",
+      items: [item({ amount: "120", transaction_record_id: "time-group" })],
+      merchants,
+      offset: 0,
+      pageSize: 20,
+      records: [
+        record({
+          id: "time-group",
+          transaction_at: "2026-06-28T10:00:00.000Z",
+        }),
+      ],
+      recorders,
+      tagAssignments: [],
+    };
+
+    const quarterResult = buildTransactionGroupSummaryPage({
+      ...commonParams,
+      groupBy: "quarter",
+    });
+    const weekResult = buildTransactionGroupSummaryPage({
+      ...commonParams,
+      groupBy: "week",
+    });
+
+    expect(quarterResult.groups[0]).toMatchObject({
+      id: "quarter:2026-Q2",
+      key: "2026-Q2",
+      label: "2026年第2季度",
+    });
+    expect(weekResult.groups[0]).toMatchObject({
+      id: "week:2026-06-22",
+      key: "2026-06-22",
+      label: "2026年6月22日周",
+    });
+  });
+
   it("按商家分组时用整笔流水净额计算收入和支出", () => {
     const result = buildTransactionGroupSummaryPage({
       accounts,
@@ -157,6 +198,147 @@ describe("transactionListGroups", () => {
           currency: "JPY",
           expense: "0",
           income: "200",
+        },
+        transactionCount: 1,
+      },
+    ]);
+  });
+
+  it("混合收支净额为负数时按支出统计", () => {
+    const result = buildTransactionGroupSummaryPage({
+      accounts,
+      categories,
+      currency: "JPY",
+      groupBy: "merchant",
+      items: [
+        item({ amount: "300", transaction_record_id: "negative-mixed" }),
+        item({
+          amount: "100",
+          category_id: "bonus",
+          stat_type: "income",
+          transaction_record_id: "negative-mixed",
+        }),
+      ],
+      merchants,
+      offset: 0,
+      pageSize: 20,
+      records: [
+        record({
+          id: "negative-mixed",
+          merchant_id: "merchant-b",
+          transaction_at: "2026-06-28T10:00:00.000Z",
+          type: "expense",
+        }),
+      ],
+      recorders,
+      tagAssignments: [],
+    });
+
+    expect(result.groups[0]).toMatchObject({
+      summary: {
+        balance: "-200",
+        currency: "JPY",
+        expense: "200",
+        income: "0",
+      },
+    });
+  });
+
+  it("expense_offset 明细按支出冲减处理", () => {
+    const result = buildTransactionGroupSummaryPage({
+      accounts,
+      categories,
+      currency: "JPY",
+      groupBy: "merchant",
+      items: [
+        item({ amount: "300", transaction_record_id: "offset" }),
+        item({
+          amount: "80",
+          stat_type: "expense_offset",
+          transaction_record_id: "offset",
+        }),
+      ],
+      merchants,
+      offset: 0,
+      pageSize: 20,
+      records: [
+        record({
+          id: "offset",
+          merchant_id: "merchant-a",
+          transaction_at: "2026-06-28T10:00:00.000Z",
+        }),
+      ],
+      recorders,
+      tagAssignments: [],
+    });
+
+    expect(result.groups[0]).toMatchObject({
+      summary: {
+        balance: "-220",
+        currency: "JPY",
+        expense: "220",
+        income: "0",
+      },
+    });
+  });
+
+  it("按成员分组时按记录人统计整笔流水", () => {
+    const result = buildTransactionGroupSummaryPage({
+      accounts,
+      categories,
+      currency: "JPY",
+      groupBy: "member",
+      items: [
+        item({ amount: "120", transaction_record_id: "user-a-expense" }),
+        item({
+          amount: "500",
+          category_id: "bonus",
+          stat_type: "income",
+          transaction_record_id: "user-b-income",
+        }),
+      ],
+      merchants,
+      offset: 0,
+      pageSize: 20,
+      records: [
+        record({
+          created_by: "user-a",
+          id: "user-a-expense",
+          transaction_at: "2026-06-27T10:00:00.000Z",
+        }),
+        record({
+          created_by: "user-b",
+          id: "user-b-income",
+          transaction_at: "2026-06-28T10:00:00.000Z",
+          type: "income",
+        }),
+      ],
+      recorders,
+      tagAssignments: [],
+    });
+
+    expect(result.groups).toEqual([
+      {
+        id: "member:user-b",
+        key: "user-b",
+        label: "家庭成员",
+        summary: {
+          balance: "500",
+          currency: "JPY",
+          expense: "0",
+          income: "500",
+        },
+        transactionCount: 1,
+      },
+      {
+        id: "member:user-a",
+        key: "user-a",
+        label: "淞文",
+        summary: {
+          balance: "-120",
+          currency: "JPY",
+          expense: "120",
+          income: "0",
         },
         transactionCount: 1,
       },
