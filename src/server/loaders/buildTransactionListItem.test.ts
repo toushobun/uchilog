@@ -13,8 +13,18 @@ const baseRecord = {
 
 const accountA = { currency: "JPY", id: "acct-a", name: "日元现金" };
 const accountB = { currency: "JPY", id: "acct-b", name: "储蓄账户" };
-const categoryA = { id: "cat-a", name: "餐饮", parent_id: null };
-const categoryB = { id: "cat-b", name: "工资", parent_id: null };
+const categoryA = {
+  id: "cat-a",
+  name: "餐饮",
+  parent_id: null,
+  type: "expense" as const,
+};
+const categoryB = {
+  id: "cat-b",
+  name: "工资",
+  parent_id: null,
+  type: "income" as const,
+};
 const accountById = new Map([
   [accountA.id, accountA],
   [accountB.id, accountB],
@@ -133,11 +143,11 @@ describe("buildTransactionListItem", () => {
     expect(item.amount).toBe("2000");
   });
 
-  it("支出记录仍按原逻辑构建", () => {
+  it("普通支出记录按分类方向构建", () => {
     const merchantId = "merchant-001";
     const item = buildTransactionListItem({
       accountById,
-      categoryById: new Map(),
+      categoryById,
       fallbackCurrency: "JPY",
       merchantById: new Map([
         [merchantId, { icon_url: null, id: merchantId, name: "便利店" }],
@@ -145,13 +155,13 @@ describe("buildTransactionListItem", () => {
       record: {
         ...baseRecord,
         merchant_id: merchantId,
-        type: "expense" as const,
+        type: "normal" as const,
       },
       recordItems: [
         {
           account_id: accountA.id,
           amount: "1200",
-          category_id: null,
+          category_id: categoryA.id,
           transaction_record_id: baseRecord.id,
         },
       ],
@@ -163,7 +173,7 @@ describe("buildTransactionListItem", () => {
     expect(item.amount).toBe("1200");
   });
 
-  it("分类摘要保留 stat_type 并按净额构建金额和展示方向", () => {
+  it("分类摘要按 category.type 构建金额和展示方向", () => {
     const item = buildTransactionListItem({
       accountById,
       categoryById,
@@ -171,21 +181,21 @@ describe("buildTransactionListItem", () => {
       merchantById: new Map(),
       record: {
         ...baseRecord,
-        type: "expense" as const,
+        type: "normal" as const,
       },
       recordItems: [
         {
           account_id: accountA.id,
           amount: "1200",
           category_id: categoryA.id,
-          stat_type: "expense",
+          stat_type: "income",
           transaction_record_id: baseRecord.id,
         },
         {
           account_id: accountA.id,
           amount: "260000",
           category_id: categoryB.id,
-          stat_type: "income",
+          stat_type: "expense",
           transaction_record_id: baseRecord.id,
         },
       ],
