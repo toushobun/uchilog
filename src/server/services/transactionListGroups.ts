@@ -91,7 +91,7 @@ export function buildTransactionGroupSummaryPage({
         label: timeGroup.label,
         transactionAt: record.transaction_at,
       });
-      addRecordToGroup(group, record, recordItems);
+      addRecordToGroup(group, record, recordItems, categoryById);
       continue;
     }
 
@@ -107,7 +107,7 @@ export function buildTransactionGroupSummaryPage({
           : "未知商家",
         transactionAt: record.transaction_at,
       });
-      addRecordToGroup(group, record, recordItems);
+      addRecordToGroup(group, record, recordItems, categoryById);
       continue;
     }
 
@@ -123,7 +123,7 @@ export function buildTransactionGroupSummaryPage({
           : "未知成员",
         transactionAt: record.transaction_at,
       });
-      addRecordToGroup(group, record, recordItems);
+      addRecordToGroup(group, record, recordItems, categoryById);
       continue;
     }
 
@@ -145,7 +145,7 @@ export function buildTransactionGroupSummaryPage({
           label: tag.tagName,
           transactionAt: record.transaction_at,
         });
-        addRecordToGroup(group, record, recordItems);
+        addRecordToGroup(group, record, recordItems, categoryById);
       }
       continue;
     }
@@ -160,7 +160,7 @@ export function buildTransactionGroupSummaryPage({
           label: accountById.get(item.account_id)?.name ?? "未知账户",
           transactionAt: record.transaction_at,
         });
-        addItemToGroup(group, record, item);
+        addItemToGroup(group, record, item, categoryById);
         continue;
       }
 
@@ -180,7 +180,7 @@ export function buildTransactionGroupSummaryPage({
           label: parent?.name ?? "未知大分类",
           transactionAt: record.transaction_at,
         });
-        addItemToGroup(group, record, item);
+        addItemToGroup(group, record, item, categoryById);
         continue;
       }
 
@@ -197,7 +197,7 @@ export function buildTransactionGroupSummaryPage({
           label: category?.name ?? "未知小分类",
           transactionAt: record.transaction_at,
         });
-        addItemToGroup(group, record, item);
+        addItemToGroup(group, record, item, categoryById);
       }
     }
   }
@@ -293,21 +293,26 @@ function addRecordToGroup(
   group: MutableGroup,
   record: TransactionRecordDbRow,
   items: TransactionItemDbRow[],
+  categoryById: Map<string, CategorySummaryDbRow>,
 ) {
   group.recordIds.add(record.id);
 
   if (record.type === "transfer") return;
 
-  addSignedAmount(group.summary, calculateRecordNetAmount(record, items));
+  addSignedAmount(group.summary, calculateRecordNetAmount(items, categoryById));
 }
 
 function addItemToGroup(
   group: MutableGroup,
   record: TransactionRecordDbRow,
   item: TransactionItemDbRow,
+  categoryById: Map<string, CategorySummaryDbRow>,
 ) {
   group.recordIds.add(record.id);
-  addSignedAmount(group.summary, getSignedItemAmount(record, item));
+
+  if (record.type === "transfer") return;
+
+  addSignedAmount(group.summary, getSignedItemAmount(item, categoryById));
 }
 
 function createSummary(currency: string): TransactionAmountSummary {
@@ -320,29 +325,31 @@ function createSummary(currency: string): TransactionAmountSummary {
 }
 
 function calculateRecordNetAmount(
-  record: TransactionRecordDbRow,
   items: TransactionItemDbRow[],
+  categoryById: Map<string, CategorySummaryDbRow>,
 ) {
   return items.reduce(
-    (sum, item) => sum + getSignedItemAmount(record, item),
+    (sum, item) => sum + getSignedItemAmount(item, categoryById),
     0,
   );
 }
 
 function getSignedItemAmount(
-  record: TransactionRecordDbRow,
   item: TransactionItemDbRow,
+  categoryById: Map<string, CategorySummaryDbRow>,
 ) {
   const amount = Number(item.amount);
 
   if (!Number.isFinite(amount)) return 0;
 
-  const statType = item.stat_type ?? record.type;
+  const categoryType = item.category_id
+    ? categoryById.get(item.category_id)?.type
+    : undefined;
 
-  if (statType === "transfer") return 0;
-  if (statType === "income" || statType === "expense_offset") return amount;
+  if (categoryType === "income") return amount;
+  if (categoryType === "expense") return -amount;
 
-  return -amount;
+  return 0;
 }
 
 function addSignedAmount(summary: TransactionAmountSummary, amount: number) {
