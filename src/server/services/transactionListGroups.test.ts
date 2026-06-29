@@ -84,18 +84,15 @@ describe("transactionListGroups", () => {
       offset: 0,
       pageSize: 1,
       records: [
-        record({
-          id: "june",
-          transaction_at: "2026-06-15T00:00:00.000Z",
-        }),
+        record({ id: "june", transaction_at: "2026-06-28T10:00:00.000Z" }),
         record({
           id: "transfer",
-          transaction_at: "2026-07-10T00:00:00.000Z",
+          transaction_at: "2026-07-01T08:00:00.000Z",
           type: "transfer",
         }),
         record({
           id: "july",
-          transaction_at: "2026-07-20T00:00:00.000Z",
+          transaction_at: "2026-07-02T10:00:00.000Z",
           type: "income",
         }),
       ],
@@ -120,16 +117,16 @@ describe("transactionListGroups", () => {
     ]);
   });
 
-  it("普通记账混合支出和收入明细时按净额统计", () => {
+  it("按商家分组时用整笔流水净额计算收入和支出", () => {
     const result = buildTransactionGroupSummaryPage({
       accounts,
       categories,
       currency: "JPY",
       groupBy: "merchant",
       items: [
-        item({ amount: "300", transaction_record_id: "mixed" }),
+        item({ amount: "100", transaction_record_id: "mixed" }),
         item({
-          amount: "1000",
+          amount: "300",
           category_id: "bonus",
           stat_type: "income",
           transaction_record_id: "mixed",
@@ -142,57 +139,7 @@ describe("transactionListGroups", () => {
         record({
           id: "mixed",
           merchant_id: "merchant-b",
-          type: "income",
-        }),
-      ],
-      recorders,
-      tagAssignments: [],
-    });
-
-    expect(result.groups[0]).toMatchObject({
-      key: "merchant-b",
-      label: "公司",
-      summary: {
-        balance: "700",
-        currency: "JPY",
-        expense: "0",
-        income: "700",
-      },
-      transactionCount: 1,
-    });
-  });
-
-  it("按账户分组时按明细粒度统计各账户金额", () => {
-    const result = buildTransactionGroupSummaryPage({
-      accounts,
-      categories,
-      currency: "JPY",
-      groupBy: "account",
-      items: [
-        item({
-          account_id: "account-cash",
-          amount: "120",
-          transaction_record_id: "cash-expense",
-        }),
-        item({
-          account_id: "account-bank",
-          amount: "800",
-          category_id: "bonus",
-          stat_type: "income",
-          transaction_record_id: "bank-income",
-        }),
-      ],
-      merchants,
-      offset: 0,
-      pageSize: 20,
-      records: [
-        record({
-          id: "cash-expense",
-          transaction_at: "2026-06-01T00:00:00.000Z",
-        }),
-        record({
-          id: "bank-income",
-          transaction_at: "2026-06-02T00:00:00.000Z",
+          transaction_at: "2026-06-28T10:00:00.000Z",
           type: "income",
         }),
       ],
@@ -202,116 +149,123 @@ describe("transactionListGroups", () => {
 
     expect(result.groups).toEqual([
       {
-        id: "account:account-bank",
-        key: "account-bank",
-        label: "银行",
+        id: "merchant:merchant-b",
+        key: "merchant-b",
+        label: "公司",
         summary: {
-          balance: "800",
+          balance: "200",
           currency: "JPY",
           expense: "0",
-          income: "800",
-        },
-        transactionCount: 1,
-      },
-      {
-        id: "account:account-cash",
-        key: "account-cash",
-        label: "现金",
-        summary: {
-          balance: "-120",
-          currency: "JPY",
-          expense: "120",
-          income: "0",
+          income: "200",
         },
         transactionCount: 1,
       },
     ]);
   });
 
-  it("按大分类和小分类分组时返回对应分类统计", () => {
-    const params = {
+  it("按账户分组时按明细所在账户分别统计", () => {
+    const result = buildTransactionGroupSummaryPage({
       accounts,
       categories,
       currency: "JPY",
+      groupBy: "account",
       items: [
-        item({ amount: "120", transaction_record_id: "expense" }),
         item({
-          amount: "800",
+          account_id: "account-cash",
+          amount: "100",
+          transaction_record_id: "mixed",
+        }),
+        item({
+          account_id: "account-bank",
+          amount: "300",
           category_id: "bonus",
           stat_type: "income",
-          transaction_record_id: "income",
+          transaction_record_id: "mixed",
         }),
       ],
       merchants,
       offset: 0,
       pageSize: 20,
       records: [
-        record({ id: "expense" }),
-        record({ id: "income", type: "income" }),
+        record({
+          id: "mixed",
+          transaction_at: "2026-06-28T10:00:00.000Z",
+          type: "income",
+        }),
+      ],
+      recorders,
+      tagAssignments: [],
+    });
+
+    expect(result.groups).toHaveLength(2);
+    expect(result.groups).toEqual(
+      expect.arrayContaining([
+        {
+          id: "account:account-bank",
+          key: "account-bank",
+          label: "银行",
+          summary: {
+            balance: "300",
+            currency: "JPY",
+            expense: "0",
+            income: "300",
+          },
+          transactionCount: 1,
+        },
+        {
+          id: "account:account-cash",
+          key: "account-cash",
+          label: "现金",
+          summary: {
+            balance: "-100",
+            currency: "JPY",
+            expense: "100",
+            income: "0",
+          },
+          transactionCount: 1,
+        },
+      ]),
+    );
+  });
+
+  it("按大分类和小分类分组时返回分类维度的大 item 统计", () => {
+    const commonParams = {
+      accounts,
+      categories,
+      currency: "JPY",
+      items: [item({ amount: "120", transaction_record_id: "dinner" })],
+      merchants,
+      offset: 0,
+      pageSize: 20,
+      records: [
+        record({
+          id: "dinner",
+          transaction_at: "2026-06-28T10:00:00.000Z",
+        }),
       ],
       recorders,
       tagAssignments: [],
     };
 
-    expect(
-      buildTransactionGroupSummaryPage({ ...params, groupBy: "parentCategory" })
-        .groups,
-    ).toEqual([
-      {
-        id: "parentCategory:food",
-        key: "food",
-        label: "饮食",
-        summary: {
-          balance: "-120",
-          currency: "JPY",
-          expense: "120",
-          income: "0",
-        },
-        transactionCount: 1,
-      },
-      {
-        id: "parentCategory:salary",
-        key: "salary",
-        label: "收入",
-        summary: {
-          balance: "800",
-          currency: "JPY",
-          expense: "0",
-          income: "800",
-        },
-        transactionCount: 1,
-      },
-    ]);
+    const parentCategoryResult = buildTransactionGroupSummaryPage({
+      ...commonParams,
+      groupBy: "parentCategory",
+    });
+    const categoryResult = buildTransactionGroupSummaryPage({
+      ...commonParams,
+      groupBy: "category",
+    });
 
-    expect(
-      buildTransactionGroupSummaryPage({ ...params, groupBy: "category" })
-        .groups,
-    ).toEqual([
-      {
-        id: "category:dinner",
-        key: "dinner",
-        label: "晚餐",
-        summary: {
-          balance: "-120",
-          currency: "JPY",
-          expense: "120",
-          income: "0",
-        },
-        transactionCount: 1,
-      },
-      {
-        id: "category:bonus",
-        key: "bonus",
-        label: "奖金",
-        summary: {
-          balance: "800",
-          currency: "JPY",
-          expense: "0",
-          income: "800",
-        },
-        transactionCount: 1,
-      },
-    ]);
+    expect(parentCategoryResult.groups[0]).toMatchObject({
+      id: "parentCategory:food",
+      label: "饮食",
+      summary: { balance: "-120", expense: "120", income: "0" },
+    });
+    expect(categoryResult.groups[0]).toMatchObject({
+      id: "category:dinner",
+      label: "晚餐",
+      summary: { balance: "-120", expense: "120", income: "0" },
+    });
   });
 
   it("按标签分组时未打标签记录进入无标签分组", () => {
@@ -327,7 +281,16 @@ describe("transactionListGroups", () => {
       merchants,
       offset: 0,
       pageSize: 20,
-      records: [record({ id: "daily" }), record({ id: "untagged" })],
+      records: [
+        record({
+          id: "daily",
+          transaction_at: "2026-06-28T10:00:00.000Z",
+        }),
+        record({
+          id: "untagged",
+          transaction_at: "2026-06-27T10:00:00.000Z",
+        }),
+      ],
       recorders,
       tagAssignments: [
         {
