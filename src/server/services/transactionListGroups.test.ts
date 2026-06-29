@@ -254,7 +254,7 @@ describe("transactionListGroups", () => {
         item({
           amount: "80",
           category_id: "bonus",
-          stat_type: "expense_offset",
+          stat_type: "expense",
           transaction_record_id: "category-type",
         }),
       ],
