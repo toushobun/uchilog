@@ -95,3 +95,30 @@ export type TransactionListPage = {
   items: TransactionListItem[];
   nextOffset: number | null;
 };
+
+export type TransactionGroupBy =
+  | "year"
+  | "quarter"
+  | "month"
+  | "week"
+  | "day"
+  | "merchant"
+  | "account"
+  | "parentCategory"
+  | "category"
+  | "tag"
+  | "member";
+
+export type TransactionGroupSummaryItem = {
+  id: string;
+  key: string;
+  label: string;
+  summary: TransactionAmountSummary;
+  transactionCount: number;
+};
+
+export type TransactionGroupPage = {
+  groupBy: TransactionGroupBy;
+  groups: TransactionGroupSummaryItem[];
+  nextOffset: number | null;
+};
