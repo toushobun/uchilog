@@ -6,11 +6,7 @@ import type {
   TransactionItemDbRow,
   TransactionRecordDbRow,
 } from "server/db-types";
-import type {
-  TransactionCategoryType,
-  TransactionItemSummaryStatType,
-  TransactionListItem,
-} from "types/transactions";
+import type { TransactionCategoryType, TransactionListItem } from "types/transactions";
 
 export function buildTransactionListItem({
   accountById,
@@ -52,12 +48,10 @@ export function buildTransactionListItem({
     ? merchantById.get(record.merchant_id)
     : undefined;
   const netAmount = recordItems.reduce(
-    (sum, item) => sum + getSignedItemAmount(record, item),
+    (sum, item) => sum + getSignedItemAmount(item, categoryById),
     0,
   );
-  const fallbackType: TransactionCategoryType =
-    record.type === "income" ? "income" : "expense";
-  const displayType = getDisplayTransactionType(fallbackType, netAmount);
+  const displayType = getDisplayTransactionType("expense", netAmount);
 
   const categoryItems = recordItems.flatMap((item) => {
     if (item.category_id === null) return [];
@@ -72,7 +66,7 @@ export function buildTransactionListItem({
         amount: item.amount,
         categoryName: category?.name ?? "",
         parentCategoryName: parent?.name ?? null,
-        statType: getCategorySummaryStatType(record, item),
+        statType: category?.type,
       },
     ];
   });
@@ -154,20 +148,21 @@ function buildTransferListItem({
 }
 
 function getSignedItemAmount(
-  record: TransactionRecordDbRow,
   item: TransactionItemDbRow,
+  categoryById: Map<string, CategorySummaryDbRow>,
 ) {
   const amount = Number(item.amount);
 
   if (!Number.isFinite(amount)) return 0;
 
-  const statType = item.stat_type ?? record.type;
+  const categoryType = item.category_id
+    ? categoryById.get(item.category_id)?.type
+    : undefined;
 
-  if (statType === "income" || statType === "expense_offset") {
-    return amount;
-  }
+  if (categoryType === "income") return amount;
+  if (categoryType === "expense") return -amount;
 
-  return -amount;
+  return 0;
 }
 
 function getDisplayTransactionType(
@@ -177,21 +172,4 @@ function getDisplayTransactionType(
   if (netAmount > 0) return "income";
   if (netAmount < 0) return "expense";
   return fallbackType;
-}
-
-function getCategorySummaryStatType(
-  record: TransactionRecordDbRow,
-  item: TransactionItemDbRow,
-): TransactionItemSummaryStatType | undefined {
-  const statType = item.stat_type ?? record.type;
-
-  if (statType === "income" || statType === "expense_offset") {
-    return statType;
-  }
-
-  if (statType === "expense") {
-    return "expense";
-  }
-
-  return undefined;
 }
