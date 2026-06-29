@@ -47,11 +47,8 @@ export function buildTransactionListItem({
   const merchant = record.merchant_id
     ? merchantById.get(record.merchant_id)
     : undefined;
-  const netAmount = recordItems.reduce(
-    (sum, item) => sum + getSignedItemAmount(item, categoryById),
-    0,
-  );
-  const displayType = getDisplayTransactionType("expense", netAmount);
+  const normalAmountSummary = getNormalAmountSummary(recordItems, categoryById);
+  const displayType = getDisplayTransactionType(normalAmountSummary);
 
   const categoryItems = recordItems.flatMap((item) => {
     if (item.category_id === null) return [];
@@ -74,7 +71,7 @@ export function buildTransactionListItem({
   return {
     account_currency: account?.currency ?? fallbackCurrency,
     account_name: account?.name ?? "未知账户",
-    amount: String(Math.abs(netAmount)),
+    amount: String(Math.abs(normalAmountSummary.netAmount)),
     categoryItems,
     created_at: record.created_at,
     id: record.id,
@@ -147,29 +144,46 @@ function buildTransferListItem({
   };
 }
 
-function getSignedItemAmount(
-  item: TransactionItemDbRow,
+function getNormalAmountSummary(
+  items: TransactionItemDbRow[],
   categoryById: Map<string, CategorySummaryDbRow>,
 ) {
-  const amount = Number(item.amount);
+  let expenseTotal = 0;
+  let incomeTotal = 0;
 
-  if (!Number.isFinite(amount)) return 0;
+  for (const item of items) {
+    const amount = Number(item.amount);
 
-  const categoryType = item.category_id
-    ? categoryById.get(item.category_id)?.type
-    : undefined;
+    if (!Number.isFinite(amount)) continue;
 
-  if (categoryType === "income") return amount;
-  if (categoryType === "expense") return -amount;
+    const categoryType = item.category_id
+      ? categoryById.get(item.category_id)?.type
+      : undefined;
 
-  return 0;
+    if (categoryType === "income") {
+      incomeTotal += amount;
+    } else if (categoryType === "expense") {
+      expenseTotal += amount;
+    }
+  }
+
+  return {
+    expenseTotal,
+    incomeTotal,
+    netAmount: incomeTotal - expenseTotal,
+  };
 }
 
-function getDisplayTransactionType(
-  fallbackType: TransactionCategoryType,
-  netAmount: number,
-): TransactionCategoryType {
+function getDisplayTransactionType({
+  expenseTotal,
+  incomeTotal,
+  netAmount,
+}: {
+  expenseTotal: number;
+  incomeTotal: number;
+  netAmount: number;
+}): TransactionCategoryType {
   if (netAmount > 0) return "income";
   if (netAmount < 0) return "expense";
-  return fallbackType;
+  return incomeTotal >= expenseTotal ? "income" : "expense";
 }
