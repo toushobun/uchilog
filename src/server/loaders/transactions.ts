@@ -254,9 +254,13 @@ export async function loadTransactionGroupPage(
 
   const items = (itemData ?? []) as TransactionItemDbRow[];
   const accountIds = [...new Set(items.map((item) => item.account_id))];
-  const categoryIds = items
-    .map((item) => item.category_id)
-    .filter((categoryId): categoryId is string => categoryId !== null);
+  const categoryIds = [
+    ...new Set(
+      items
+        .map((item) => item.category_id)
+        .filter((categoryId): categoryId is string => categoryId !== null),
+    ),
+  ];
   const merchantIds = [
     ...new Set(
       records
@@ -290,7 +294,7 @@ export async function loadTransactionGroupPage(
     merchantIds.length > 0
       ? supabase
           .from("merchant")
-          .select("id, name, icon_url")
+          .select("id, name")
           .eq("ledger_id", currentLedger.id)
           .in("id", merchantIds)
       : Promise.resolve({ data: [], error: null }),
@@ -350,7 +354,7 @@ export async function loadTransactionGroupPage(
     currency: currentLedger.baseCurrency,
     groupBy,
     items,
-    merchants: (merchantResult.data ?? []) as MerchantSummaryDbRow[],
+    merchants: (merchantResult.data ?? []) as { id: string; name: string }[],
     offset: safeOffset,
     pageSize: transactionGroupPageSize,
     records,
