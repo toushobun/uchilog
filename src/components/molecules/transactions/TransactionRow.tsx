@@ -10,7 +10,7 @@ import { Fragment, useSyncExternalStore } from "react";
 import { serverFallbackTimeZone } from "config/dateTime";
 import type {
   CategorySummaryItem,
-  TransactionItemSummaryStatType,
+  TransactionCategoryType,
   TransactionRowItem,
 } from "types/transactions";
 import { getMerchantInitial } from "utils/merchants";
@@ -65,9 +65,7 @@ export function TransactionRow({
   const time = formatTransactionTime(item.transaction_at, { timeZone });
   const signedAmount = formatRowAmount(item);
   const categorySummaryText = getTransactionCategorySummaryText(item);
-  const detailText = [categorySummaryText, item.note]
-    .filter(Boolean)
-    .join(" | ");
+  const detailText = [categorySummaryText, item.note].filter(Boolean).join(" | ");
   const nonTagMetaItems = [
     showAccount ? item.account_name : null,
     showRecorder ? (item.recorder_name ?? null) : null,
@@ -260,7 +258,7 @@ function getTransactionCategorySummaryText(item: TransactionRowItem) {
   const topCategories = item.categoryItems
     .filter(
       (category) =>
-        getCategoryTone(category.statType, item.type) === targetTone,
+        getCategoryTone(category.categoryType, item.type) === targetTone,
     )
     .sort(compareCategoryAmountDesc)
     .slice(0, 3);
@@ -277,12 +275,12 @@ function getCategoryTargetTone(item: TransactionRowItem): "income" | "expense" {
 }
 
 function getCategoryTone(
-  statType: TransactionItemSummaryStatType | undefined,
+  categoryType: TransactionCategoryType | undefined,
   fallbackType: TransactionRowItem["type"],
 ): "income" | "expense" {
-  const normalizedType = statType ?? fallbackType;
+  const normalizedType = categoryType ?? fallbackType;
 
-  if (normalizedType === "income" || normalizedType === "expense_offset") {
+  if (normalizedType === "income") {
     return "income";
   }
 
