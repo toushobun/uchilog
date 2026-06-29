@@ -35,7 +35,6 @@ function renderPage(errorMessage: string | null = null) {
       errorMessage={errorMessage}
       loadMoreAction={vi.fn(async () => ({ groups: [], nextOffset: null }))}
       monthView={monthView}
-      voidAction={vi.fn()}
     />,
   );
 }

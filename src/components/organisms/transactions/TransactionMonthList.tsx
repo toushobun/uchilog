@@ -8,7 +8,6 @@ import Typography from "@mui/material/Typography";
 
 import { TransactionGroupList } from "organisms/transactions/TransactionGroupList";
 import { EmptyState } from "molecules/ui/EmptyState";
-import type { ServerAction } from "types/actions";
 import type {
   TransactionMonthPage,
   TransactionMonthView,
@@ -19,13 +18,11 @@ import { mergeTransactionDateGroups } from "./transactionMonthListUtils";
 type TransactionMonthListProps = {
   loadMoreAction?: (offset: number) => Promise<TransactionMonthPage>;
   monthView: TransactionMonthView;
-  voidAction?: ServerAction;
 };
 
 export function TransactionMonthList({
   loadMoreAction,
   monthView,
-  voidAction,
 }: TransactionMonthListProps) {
   const [prevMonthView, setPrevMonthView] = useState(monthView);
   const [groups, setGroups] = useState(monthView.groups);
@@ -94,7 +91,7 @@ export function TransactionMonthList({
 
   return (
     <Stack spacing={2.3}>
-      <TransactionGroupList groups={groups} voidAction={voidAction} />
+      <TransactionGroupList groups={groups} />
 
       {nextOffset !== null ? (
         <Stack ref={sentinelRef} sx={{ alignItems: "center", py: 2 }}>

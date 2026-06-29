@@ -6,7 +6,11 @@ import type {
   TransactionItemDbRow,
   TransactionRecordDbRow,
 } from "server/db-types";
-import type { TransactionListItem } from "types/transactions";
+import type {
+  TransactionCategoryType,
+  TransactionItemSummaryStatType,
+  TransactionListItem,
+} from "types/transactions";
 
 export function buildTransactionListItem({
   accountById,
@@ -47,10 +51,13 @@ export function buildTransactionListItem({
   const merchant = record.merchant_id
     ? merchantById.get(record.merchant_id)
     : undefined;
-  const totalAmount = recordItems.reduce(
-    (sum, item) => sum + Number(item.amount),
+  const netAmount = recordItems.reduce(
+    (sum, item) => sum + getSignedItemAmount(record, item),
     0,
   );
+  const fallbackType: TransactionCategoryType =
+    record.type === "income" ? "income" : "expense";
+  const displayType = getDisplayTransactionType(fallbackType, netAmount);
 
   const categoryItems = recordItems.flatMap((item) => {
     if (item.category_id === null) return [];
@@ -65,6 +72,7 @@ export function buildTransactionListItem({
         amount: item.amount,
         categoryName: category?.name ?? "",
         parentCategoryName: parent?.name ?? null,
+        statType: getCategorySummaryStatType(record, item),
       },
     ];
   });
@@ -72,7 +80,7 @@ export function buildTransactionListItem({
   return {
     account_currency: account?.currency ?? fallbackCurrency,
     account_name: account?.name ?? "未知账户",
-    amount: String(totalAmount),
+    amount: String(Math.abs(netAmount)),
     categoryItems,
     created_at: record.created_at,
     id: record.id,
@@ -82,7 +90,7 @@ export function buildTransactionListItem({
     recorder_name: recorder?.display_name ?? null,
     tagNames: tagNamesByRecordId?.get(record.id) ?? [],
     transaction_at: record.transaction_at,
-    type: record.type,
+    type: displayType,
   };
 }
 
@@ -143,4 +151,47 @@ function buildTransferListItem({
     transaction_at: record.transaction_at,
     type: "transfer",
   };
+}
+
+function getSignedItemAmount(
+  record: TransactionRecordDbRow,
+  item: TransactionItemDbRow,
+) {
+  const amount = Number(item.amount);
+
+  if (!Number.isFinite(amount)) return 0;
+
+  const statType = item.stat_type ?? record.type;
+
+  if (statType === "income" || statType === "expense_offset") {
+    return amount;
+  }
+
+  return -amount;
+}
+
+function getDisplayTransactionType(
+  fallbackType: TransactionCategoryType,
+  netAmount: number,
+): TransactionCategoryType {
+  if (netAmount > 0) return "income";
+  if (netAmount < 0) return "expense";
+  return fallbackType;
+}
+
+function getCategorySummaryStatType(
+  record: TransactionRecordDbRow,
+  item: TransactionItemDbRow,
+): TransactionItemSummaryStatType | undefined {
+  const statType = item.stat_type ?? record.type;
+
+  if (statType === "income" || statType === "expense_offset") {
+    return statType;
+  }
+
+  if (statType === "expense") {
+    return "expense";
+  }
+
+  return undefined;
 }

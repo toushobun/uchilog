@@ -13,7 +13,7 @@ function createItem(index: number): TransactionListItem {
 
   return {
     account_currency: "JPY",
-    account_name: index % 2 === 0 ? "日元现金" : "📘 Debit",
+    account_name: index % 2 === 0 ? "日元现金" : "Debit",
     amount,
     categoryItems: [
       {
@@ -55,13 +55,6 @@ async function loadMoreAction(offset: number): Promise<TransactionListPage> {
   };
 }
 
-function voidAction(formData: FormData) {
-  const transactionRecordId = formData.get("transactionRecordId");
-
-  // Storybook 中只确认表单状态，不执行真实删除。
-  console.info("void transaction", transactionRecordId);
-}
-
 const meta = {
   title: "Organisms/Transactions/TransactionList",
   component: TransactionList,
@@ -76,12 +69,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-
-export const WithVoidAction: Story = {
-  args: {
-    voidAction,
-  },
-};
 
 export const Empty: Story = {
   args: {

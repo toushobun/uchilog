@@ -217,10 +217,6 @@ async function loadMoreAction(): Promise<TransactionMonthPage> {
   return { groups: [], nextOffset: null };
 }
 
-function voidAction(formData: FormData) {
-  console.info("void transaction", formData.get("transactionRecordId"));
-}
-
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -271,7 +267,6 @@ const meta = {
     monthView,
     errorMessage: null,
     loadMoreAction,
-    voidAction,
   },
 } satisfies Meta<typeof TransactionsTemplate>;
 

@@ -16,7 +16,7 @@ function createItem(
 
   return {
     account_currency: "JPY",
-    account_name: index % 2 === 0 ? "日元现金" : "📘 Debit",
+    account_name: index % 2 === 0 ? "日元现金" : "Debit",
     amount,
     categoryItems: [
       {
@@ -91,10 +91,6 @@ const emptyMonthView: TransactionMonthView = {
   groups: [],
 };
 
-function voidAction(formData: FormData) {
-  console.info("void transaction", formData.get("transactionRecordId"));
-}
-
 const meta = {
   title: "Organisms/Transactions/TransactionMonthList",
   component: TransactionMonthList,
@@ -108,12 +104,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-
-export const WithVoidAction: Story = {
-  args: {
-    voidAction,
-  },
-};
 
 export const Empty: Story = {
   args: {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -13,19 +12,14 @@ import Link from "next/link";
 import { transactionEditHref } from "config/paths";
 import { TransactionRow } from "molecules/transactions/TransactionRow";
 import { ReceiptCard } from "molecules/ui/ReceiptCard";
-import type { ServerAction } from "types/actions";
 import type { TransactionDateGroup } from "types/transactions";
 import { formatNumber } from "utils/transactions";
 
 type TransactionGroupListProps = {
   groups: TransactionDateGroup[];
-  voidAction?: ServerAction;
 };
 
-export function TransactionGroupList({
-  groups,
-  voidAction,
-}: TransactionGroupListProps) {
+export function TransactionGroupList({ groups }: TransactionGroupListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -119,7 +113,6 @@ export function TransactionGroupList({
                     receiptCard
                     showAccount
                     showTime
-                    showNote
                     showRecorder
                   />
 
@@ -155,43 +148,6 @@ export function TransactionGroupList({
                         >
                           编辑
                         </Button>
-                        {voidAction ? (
-                          <Box
-                            component="form"
-                            action={voidAction}
-                            onSubmit={(event) => {
-                              if (!window.confirm("确定要删除这条记录吗？")) {
-                                event.preventDefault();
-                              }
-                            }}
-                            sx={{ flex: 1 }}
-                          >
-                            <input
-                              name="transactionRecordId"
-                              type="hidden"
-                              value={item.id}
-                            />
-                            <Button
-                              fullWidth
-                              size="small"
-                              startIcon={<DeleteRoundedIcon />}
-                              sx={{
-                                bgcolor: "transparent",
-                                borderRadius: 2,
-                                color: "var(--user-theme-negative-amount)",
-                                fontSize: 12,
-                                fontWeight: 800,
-                                "&:hover": {
-                                  bgcolor: "action.hover",
-                                },
-                              }}
-                              type="submit"
-                              variant="text"
-                            >
-                              删除
-                            </Button>
-                          </Box>
-                        ) : null}
                       </Stack>
                     </Collapse>
                   </Box>
