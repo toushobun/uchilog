@@ -1,4 +1,3 @@
-import { voidTransaction } from "server/actions/transactions";
 import {
   loadTransactionMonthPage,
   loadTransactionMonthView,
@@ -19,7 +18,6 @@ export default async function TransactionsPage({
       errorMessage={getTransactionErrorMessage(params.error)}
       loadMoreAction={loadTransactionMonthPage.bind(null, monthView.month)}
       monthView={monthView}
-      voidAction={voidTransaction}
     />
   );
 }

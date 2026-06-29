@@ -53,13 +53,7 @@ export function DashboardRecentTransactions({
         {transactions.length > 0 ? (
           <Stack spacing={0}>
             {transactions.slice(0, 3).map((item) => (
-              <TransactionRow
-                item={item}
-                key={item.id}
-                showAccount
-                showTime
-                showNote
-              />
+              <TransactionRow item={item} key={item.id} showAccount showTime />
             ))}
           </Stack>
         ) : (

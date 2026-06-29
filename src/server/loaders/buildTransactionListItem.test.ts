@@ -13,9 +13,15 @@ const baseRecord = {
 
 const accountA = { currency: "JPY", id: "acct-a", name: "日元现金" };
 const accountB = { currency: "JPY", id: "acct-b", name: "储蓄账户" };
+const categoryA = { id: "cat-a", name: "餐饮", parent_id: null };
+const categoryB = { id: "cat-b", name: "工资", parent_id: null };
 const accountById = new Map([
   [accountA.id, accountA],
   [accountB.id, accountB],
+]);
+const categoryById = new Map([
+  [categoryA.id, categoryA],
+  [categoryB.id, categoryB],
 ]);
 
 describe("buildTransactionListItem", () => {
@@ -155,5 +161,51 @@ describe("buildTransactionListItem", () => {
     expect(item.merchant_name).toBe("便利店");
     expect(item.account_name).toBe("日元现金");
     expect(item.amount).toBe("1200");
+  });
+
+  it("分类摘要保留 stat_type 并按净额构建金额和展示方向", () => {
+    const item = buildTransactionListItem({
+      accountById,
+      categoryById,
+      fallbackCurrency: "JPY",
+      merchantById: new Map(),
+      record: {
+        ...baseRecord,
+        type: "expense" as const,
+      },
+      recordItems: [
+        {
+          account_id: accountA.id,
+          amount: "1200",
+          category_id: categoryA.id,
+          stat_type: "expense",
+          transaction_record_id: baseRecord.id,
+        },
+        {
+          account_id: accountA.id,
+          amount: "260000",
+          category_id: categoryB.id,
+          stat_type: "income",
+          transaction_record_id: baseRecord.id,
+        },
+      ],
+    });
+
+    expect(item.type).toBe("income");
+    expect(item.amount).toBe("258800");
+    expect(item.categoryItems).toEqual([
+      {
+        amount: "1200",
+        categoryName: "餐饮",
+        parentCategoryName: null,
+        statType: "expense",
+      },
+      {
+        amount: "260000",
+        categoryName: "工资",
+        parentCategoryName: null,
+        statType: "income",
+      },
+    ]);
   });
 });

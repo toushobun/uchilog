@@ -23,7 +23,11 @@ const groups: TransactionDateGroup[] = [
         account_name: "日元现金",
         account_currency: "JPY",
         categoryItems: [
-          { categoryName: "餐饮", parentCategoryName: "饮食", amount: "1200" },
+          {
+            categoryName: "餐饮",
+            parentCategoryName: "饮食",
+            amount: "1200",
+          },
         ],
         merchant_name: "便利店",
         merchant_icon_url: null,
@@ -49,13 +53,4 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "按日期分组的记账列表",
-};
-
-export const WithVoidAction: Story = {
-  name: "带删除操作",
-  args: {
-    voidAction: (formData: FormData) => {
-      console.info("void", formData.get("transactionRecordId"));
-    },
-  },
 };

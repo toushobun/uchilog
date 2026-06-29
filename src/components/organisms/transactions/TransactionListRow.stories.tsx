@@ -54,15 +54,6 @@ export const Income: Story = {
   },
 };
 
-export const WithVoidAction: Story = {
-  name: "带删除按钮",
-  args: {
-    voidAction: (formData: FormData) => {
-      console.info("void", formData.get("transactionRecordId"));
-    },
-  },
-};
-
 export const NoMerchant: Story = {
   name: "无商家信息",
   args: {

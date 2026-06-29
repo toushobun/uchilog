@@ -7,7 +7,6 @@ import Typography from "@mui/material/Typography";
 
 import { TransactionMonthList } from "organisms/transactions/TransactionMonthList";
 import { designTokens } from "theme/theme";
-import type { ServerAction } from "types/actions";
 import type {
   TransactionMonthPage,
   TransactionMonthViewData,
@@ -17,14 +16,12 @@ type TransactionsTemplateProps = {
   errorMessage: string | null;
   loadMoreAction: (offset: number) => Promise<TransactionMonthPage>;
   monthView: TransactionMonthViewData;
-  voidAction: ServerAction;
 };
 
 export function TransactionsTemplate({
   errorMessage,
   loadMoreAction,
   monthView,
-  voidAction,
 }: TransactionsTemplateProps) {
   return (
     <Stack spacing={2.2} sx={pageContentSx}>
@@ -66,7 +63,6 @@ export function TransactionsTemplate({
       <TransactionMonthList
         loadMoreAction={loadMoreAction}
         monthView={monthView}
-        voidAction={voidAction}
       />
     </Stack>
   );

@@ -22,6 +22,8 @@ describe("DashboardRecentTransactions", () => {
     );
 
     expect(screen.getByText("便利店")).toBeInTheDocument();
-    expect(screen.getByText("饮食·餐饮 · 测试备注")).toBeInTheDocument();
+    expect(screen.getByText(/餐饮/)).toBeInTheDocument();
+    expect(screen.queryByText(/饮食 > 餐饮/)).toBeNull();
+    expect(screen.getByText(/测试备注/)).toBeInTheDocument();
   });
 });

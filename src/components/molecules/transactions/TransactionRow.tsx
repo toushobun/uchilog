@@ -3,18 +3,14 @@
 import SyncAltIcon from "@mui/icons-material/SyncAlt";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { Fragment, useSyncExternalStore } from "react";
 
 import { serverFallbackTimeZone } from "config/dateTime";
-import { transactionEditHref } from "config/paths";
-import type { ServerAction } from "types/actions";
 import type {
   CategorySummaryItem,
+  TransactionItemSummaryStatType,
   TransactionRowItem,
 } from "types/transactions";
 import { getMerchantInitial } from "utils/merchants";
@@ -22,28 +18,21 @@ import {
   formatNumber,
   formatTransactionRowAmount,
   formatTransactionTime,
-  getCategoryLabel,
 } from "utils/transactions";
 
 export type TransactionRowProps = {
   item: TransactionRowItem;
   receiptCard?: boolean;
   showAccount?: boolean;
-  showEdit?: boolean;
-  showNote?: boolean;
   showRecorder?: boolean;
   showTime?: boolean;
-  showType?: boolean;
-  voidAction?: ServerAction;
 };
 
-type ReceiptCategoryItem = CategorySummaryItem & {
-  specialLabel?: string;
-  specialTone?: "blue" | "orange" | "pink" | "teal";
-};
+type TagItem = { name: string; color?: string | null };
 
 type ReceiptTransactionRowItem = TransactionRowItem & {
   tagNames?: string[];
+  tagItems?: TagItem[];
 };
 
 const textColor = "var(--user-theme-tx-name)";
@@ -56,18 +45,14 @@ export function TransactionRow({
   item,
   receiptCard = false,
   showAccount = false,
-  showEdit = false,
-  showNote = false,
   showRecorder = false,
   showTime = false,
-  showType = false,
-  voidAction,
 }: TransactionRowProps) {
   const receiptItem = item as ReceiptTransactionRowItem;
   const isTransfer = item.type === "transfer";
   const merchantName = isTransfer
     ? "账户周转"
-    : (item.merchant_name ?? "未指定商家");
+    : (item.merchant_name ?? "未知商家");
   const amountColor = isTransfer
     ? themeDotColor
     : item.type === "income"
@@ -79,22 +64,33 @@ export function TransactionRow({
     getServerTimeZone,
   );
   const time = formatTransactionTime(item.transaction_at, { timeZone });
-  const signedAmount = formatTransactionRowAmount(item.type, item.amount);
-  const categoryLabel = getCategoryLabel(item.categoryItems);
-  const receiptCategoryItems = item.categoryItems as ReceiptCategoryItem[];
-  const categoryTags = getCategoryTags(receiptItem.tagNames);
-  const shouldShowBreakdown = receiptCard && receiptCategoryItems.length > 0;
-
-  const metaItems = [
-    showTime ? time : null,
+  const signedAmount = formatRowAmount(item);
+  const categorySummaryText = getTransactionCategorySummaryText(item);
+  const detailText = [categorySummaryText, item.note]
+    .filter(Boolean)
+    .join(" | ");
+  const nonTagMetaItems = [
     showAccount ? item.account_name : null,
     showRecorder ? (item.recorder_name ?? null) : null,
-  ].filter(Boolean);
-  const metaText = metaItems.join(" · ");
+  ].filter(Boolean) as string[];
+  const timeItem = showTime ? time : null;
+
+  const resolvedTagItems: TagItem[] = receiptItem.tagItems
+    ? receiptItem.tagItems
+    : (receiptItem.tagNames ?? []).map((name) => ({ name, color: null }));
+  const uniqueTagItems = Array.from(
+    new Map(resolvedTagItems.map((t) => [t.name, t])).values(),
+  );
+
+  const metaSegments: Array<string | "tags"> = [
+    ...nonTagMetaItems,
+    ...(uniqueTagItems.length > 0 ? (["tags"] as const) : []),
+    ...(timeItem ? [timeItem] : []),
+  ];
 
   return (
-    <Stack spacing={receiptCard ? 1 : 0.3} sx={{ px: 1.4, py: 1.45 }}>
-      <Stack direction="row" spacing={1.3} sx={{ alignItems: "flex-start" }}>
+    <Stack spacing={receiptCard ? 1 : 0.8} sx={{ px: 1.4, py: 1.45 }}>
+      <Stack direction="row" spacing={1.2} sx={{ alignItems: "flex-start" }}>
         <Avatar
           alt={merchantName}
           src={isTransfer ? undefined : (item.merchant_icon_url ?? undefined)}
@@ -110,220 +106,210 @@ export function TransactionRow({
             width: receiptCard ? 44 : 38,
           }}
         >
-          {isTransfer ? (
-            <SyncAltIcon fontSize="small" />
-          ) : (
-            getMerchantInitial(item.merchant_name, "记")
-          )}
+          {getAvatarFallback(item, merchantName)}
         </Avatar>
 
-        <Stack spacing={0.35} sx={{ flex: 1, minWidth: 0 }}>
-          {showType ? (
-            <Chip
-              color={getTypeChipColor(item.type)}
-              label={getTypeLabel(item.type)}
-              size="small"
-              sx={{ alignSelf: "flex-start" }}
-            />
-          ) : null}
-
+        <Stack spacing={0.55} sx={{ flex: 1, minWidth: 0 }}>
           <Stack
             direction="row"
             spacing={1}
-            sx={{ alignItems: "flex-start", justifyContent: "space-between" }}
+            sx={{
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              minWidth: 0,
+            }}
           >
-            <Stack spacing={0.12} sx={{ minWidth: 0 }}>
-              <Stack
-                direction="row"
-                spacing={0.8}
-                sx={{ alignItems: "baseline", minWidth: 0 }}
-              >
-                <Typography
-                  noWrap
-                  sx={{ color: textColor, fontSize: 15, fontWeight: 900 }}
-                >
-                  {merchantName}
-                </Typography>
-                {receiptCard && showNote && item.note ? (
-                  <Typography
-                    noWrap
-                    sx={{
-                      color: mutedText,
-                      fontSize: 11,
-                      flexShrink: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    {item.note}
-                  </Typography>
-                ) : null}
-              </Stack>
-              {metaText || categoryTags.length > 0 ? (
-                <Stack
-                  direction="row"
-                  spacing={0.7}
-                  sx={{ alignItems: "center", flexWrap: "wrap", rowGap: 0.4 }}
-                >
-                  {metaText ? (
-                    <Typography noWrap sx={{ color: mutedText, fontSize: 11 }}>
-                      {metaText}
-                    </Typography>
-                  ) : null}
-                  {categoryTags.map((tag) => (
-                    <Chip
-                      key={tag}
-                      label={tag}
-                      size="small"
-                      sx={{
-                        bgcolor: "var(--user-theme-badge-bg)",
-                        color: "var(--user-theme-badge-color)",
-                        fontSize: 11,
-                        fontWeight: 800,
-                        height: 22,
-                      }}
-                    />
-                  ))}
-                </Stack>
-              ) : null}
-            </Stack>
-
-            <Stack
-              spacing={0.35}
-              sx={{ alignItems: "flex-end", flexShrink: 0 }}
+            <Typography
+              noWrap
+              sx={{
+                color: textColor,
+                flex: 1,
+                fontSize: 15,
+                fontWeight: 900,
+                minWidth: 0,
+              }}
             >
-              <Typography
-                sx={{
-                  color: amountColor,
-                  fontSize: receiptCard ? 18 : 15,
-                  fontWeight: 900,
-                  lineHeight: 1.15,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {signedAmount}
-              </Typography>
-              {item.categoryItems.length > 1 ? (
-                <Typography sx={{ color: mutedText, fontSize: 10 }}>
-                  {item.categoryItems.length} 条明细
-                </Typography>
-              ) : null}
-            </Stack>
+              {merchantName}
+            </Typography>
+
+            <Typography
+              sx={{
+                color: amountColor,
+                flexShrink: 0,
+                fontSize: receiptCard ? 18 : 15,
+                fontWeight: 900,
+                lineHeight: 1.15,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {signedAmount}
+            </Typography>
           </Stack>
 
-          {!receiptCard && (categoryLabel || (showNote && item.note)) ? (
-            <Typography noWrap sx={{ color: mutedText, fontSize: 11 }}>
-              {[categoryLabel, showNote ? item.note : null]
-                .filter(Boolean)
-                .join(" · ")}
-            </Typography>
+          {metaSegments.length > 0 ? (
+            <Stack
+              direction="row"
+              sx={{ alignItems: "center", minWidth: 0, overflow: "hidden" }}
+            >
+              {metaSegments.map((segment, i) => (
+                <Fragment key={i}>
+                  {i > 0 && (
+                    <Typography
+                      sx={{
+                        color: mutedText,
+                        flexShrink: 0,
+                        fontSize: 11,
+                        mx: 0.6,
+                      }}
+                    >
+                      {"|"}
+                    </Typography>
+                  )}
+                  {segment === "tags" ? (
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      sx={{
+                        alignItems: "center",
+                        minWidth: 0,
+                        overflow: "hidden",
+                      }}
+                    >
+                      {uniqueTagItems.map((tag) => (
+                        <Box
+                          key={tag.name}
+                          sx={{
+                            bgcolor: tag.color ?? mutedText,
+                            border: "1px solid",
+                            borderColor: "rgba(0,0,0,0.12)",
+                            borderRadius: "999px",
+                            flexShrink: 0,
+                            px: 0.75,
+                            py: 0.1,
+                          }}
+                        >
+                          <Typography
+                            noWrap
+                            sx={{
+                              color: getTagTextColor(tag.color),
+                              fontSize: 10,
+                              fontWeight: 700,
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {tag.name}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Typography noWrap sx={{ color: mutedText, fontSize: 11 }}>
+                      {segment}
+                    </Typography>
+                  )}
+                </Fragment>
+              ))}
+            </Stack>
           ) : null}
         </Stack>
       </Stack>
 
-      {shouldShowBreakdown ? (
-        <Box
+      {detailText ? (
+        <Typography
+          noWrap
           sx={{
-            bgcolor: "var(--user-theme-tx-summary-bg)",
-            borderRadius: 1,
-            px: 1.35,
-            py: 0.8,
+            color: mutedText,
+            fontSize: 11,
+            fontWeight: 700,
           }}
         >
-          <Stack spacing={0.4}>
-            {receiptCategoryItems.map((category, index) => (
-              <Stack
-                direction="row"
-                key={`${category.parentCategoryName ?? "root"}-${category.categoryName}-${index}`}
-                spacing={1}
-                sx={{ alignItems: "center", justifyContent: "space-between" }}
-              >
-                <Stack
-                  direction="row"
-                  spacing={0.75}
-                  sx={{ alignItems: "center", minWidth: 0 }}
-                >
-                  <Box
-                    sx={{
-                      bgcolor: themeDotColor,
-                      borderRadius: "50%",
-                      flexShrink: 0,
-                      height: 5,
-                      width: 5,
-                    }}
-                  />
-                  <Typography
-                    sx={{ color: textColor, fontSize: 12, lineHeight: 1.2 }}
-                  >
-                    {formatCategoryBreakdownLabel(category)}
-                  </Typography>
-                  {category.specialLabel ? (
-                    <Chip
-                      label={category.specialLabel}
-                      size="small"
-                      sx={{
-                        ...getSpecialStatusStyle(category.specialTone),
-                        fontSize: 10,
-                        fontWeight: 900,
-                        height: 20,
-                      }}
-                    />
-                  ) : null}
-                </Stack>
-                <Typography
-                  sx={{ color: textColor, fontSize: 13, fontWeight: 900 }}
-                >
-                  {/* TODO: 暂时以日元固定显示 ¥，后续需根据 currency 字段使用 formatAmount */}
-                  ¥{formatNumber(category.amount)}
-                </Typography>
-              </Stack>
-            ))}
-          </Stack>
-        </Box>
-      ) : null}
-
-      {showEdit || voidAction ? (
-        <Stack
-          direction="row"
-          spacing={0.5}
-          sx={{ justifyContent: "flex-end" }}
-        >
-          {showEdit ? (
-            <Button
-              component={Link}
-              href={transactionEditHref(item.id)}
-              size="small"
-              sx={{ color: themeDotColor, minWidth: 0, typography: "caption" }}
-              variant="text"
-            >
-              编辑
-            </Button>
-          ) : null}
-
-          {voidAction ? (
-            <form
-              action={voidAction}
-              onSubmit={(event) => {
-                if (!window.confirm("确定要删除这条记录吗？")) {
-                  event.preventDefault();
-                }
-              }}
-            >
-              <input name="transactionRecordId" type="hidden" value={item.id} />
-              <Button
-                color="error"
-                size="small"
-                sx={{ minWidth: 0, typography: "caption" }}
-                type="submit"
-                variant="text"
-              >
-                删除
-              </Button>
-            </form>
-          ) : null}
-        </Stack>
+          {detailText}
+        </Typography>
       ) : null}
     </Stack>
   );
+}
+
+function formatRowAmount(item: TransactionRowItem) {
+  const amountValue = Number(item.amount);
+
+  if (
+    item.type !== "transfer" &&
+    Number.isFinite(amountValue) &&
+    amountValue === 0
+  ) {
+    return "0";
+  }
+
+  if (
+    item.type !== "transfer" &&
+    Number.isFinite(amountValue) &&
+    amountValue < 0
+  ) {
+    return `-${formatNumber(String(Math.abs(amountValue)))}`;
+  }
+
+  return formatTransactionRowAmount(item.type, item.amount);
+}
+
+function getTransactionCategorySummaryText(item: TransactionRowItem) {
+  if (item.type === "transfer" || item.categoryItems.length === 0) return null;
+
+  if (item.categoryItems.length === 1) {
+    return item.categoryItems[0]?.categoryName ?? null;
+  }
+
+  if (item.categoryItems.length <= 3) {
+    return item.categoryItems
+      .map((category) => category.categoryName)
+      .join("、");
+  }
+
+  const targetTone = getCategoryTargetTone(item);
+  const topCategories = item.categoryItems
+    .filter(
+      (category) =>
+        getCategoryTone(category.statType, item.type) === targetTone,
+    )
+    .sort(compareCategoryAmountDesc)
+    .slice(0, 3);
+
+  if (topCategories.length === 0) return null;
+
+  return `${topCategories
+    .map((category) => category.categoryName)
+    .join("、")}等 ${item.categoryItems.length} 项`;
+}
+
+function getCategoryTargetTone(item: TransactionRowItem): "income" | "expense" {
+  return item.type === "income" ? "income" : "expense";
+}
+
+function getCategoryTone(
+  statType: TransactionItemSummaryStatType | undefined,
+  fallbackType: TransactionRowItem["type"],
+): "income" | "expense" {
+  const normalizedType = statType ?? fallbackType;
+
+  if (normalizedType === "income" || normalizedType === "expense_offset") {
+    return "income";
+  }
+
+  return "expense";
+}
+
+function compareCategoryAmountDesc(
+  categoryA: CategorySummaryItem,
+  categoryB: CategorySummaryItem,
+) {
+  const amountA = Number(categoryA.amount);
+  const amountB = Number(categoryB.amount);
+
+  if (!Number.isFinite(amountA) && !Number.isFinite(amountB)) return 0;
+  if (!Number.isFinite(amountA)) return 1;
+  if (!Number.isFinite(amountB)) return -1;
+
+  return amountB - amountA;
 }
 
 function getAvatarBackground(type: TransactionRowItem["type"]) {
@@ -338,58 +324,22 @@ function getAvatarColor(type: TransactionRowItem["type"]) {
   return expenseColor;
 }
 
-function getCategoryTags(tagNames: string[] | undefined) {
-  return Array.from(new Set(tagNames ?? [])).slice(0, 4);
+function getAvatarFallback(item: TransactionRowItem, merchantName: string) {
+  if (item.type === "transfer") return <SyncAltIcon fontSize="small" />;
+  if (item.merchant_name === null) return "?";
+  return getMerchantInitial(merchantName, "?");
 }
 
-function formatCategoryBreakdownLabel(category: CategorySummaryItem) {
-  return category.parentCategoryName
-    ? `${category.parentCategoryName} > ${category.categoryName}`
-    : category.categoryName;
-}
-
-// TODO: 待报销 / 待退款等特殊标签后续需要从每条明细的数据结构中正式提供，
-// 当前仅用于 Storybook 假数据验证样式。
-function getSpecialStatusStyle(
-  tone: ReceiptCategoryItem["specialTone"] = "orange",
-) {
-  if (tone === "blue") {
-    return {
-      bgcolor: "var(--user-theme-business-refund-bg)",
-      color: "var(--user-theme-business-refund-text)",
-    };
+function getTagTextColor(bgColor: string | null | undefined): string {
+  if (!bgColor || !bgColor.startsWith("#") || bgColor.length < 7) {
+    return "#ffffff";
   }
-
-  if (tone === "pink") {
-    return {
-      bgcolor: "var(--user-theme-business-excluded-bg)",
-      color: "var(--user-theme-business-excluded-text)",
-    };
-  }
-
-  if (tone === "teal") {
-    return {
-      bgcolor: "var(--user-theme-business-completed-bg)",
-      color: "var(--user-theme-business-completed-text)",
-    };
-  }
-
-  return {
-    bgcolor: "var(--user-theme-business-pending-bg)",
-    color: "var(--user-theme-business-pending-text)",
-  };
-}
-
-function getTypeLabel(type: TransactionRowItem["type"]) {
-  if (type === "expense") return "支出";
-  if (type === "income") return "收入";
-  return "转账";
-}
-
-function getTypeChipColor(type: TransactionRowItem["type"]) {
-  if (type === "expense") return "default";
-  if (type === "income") return "success";
-  return "info";
+  const r = parseInt(bgColor.slice(1, 3), 16);
+  const g = parseInt(bgColor.slice(3, 5), 16);
+  const b = parseInt(bgColor.slice(5, 7), 16);
+  // relative luminance (simplified)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? "#000000" : "#ffffff";
 }
 
 function subscribeToTimeZone() {

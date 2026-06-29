@@ -11,11 +11,8 @@ import type { TransactionRowProps } from "molecules/transactions/TransactionRow"
 import { TransactionGroupList } from "./TransactionGroupList";
 
 vi.mock("molecules/transactions/TransactionRow", () => ({
-  TransactionRow: ({ item, showEdit }: TransactionRowProps): ReactNode => (
-    <div
-      data-show-edit={showEdit ? "true" : "false"}
-      data-testid={`row-${item.id}`}
-    >
+  TransactionRow: ({ item }: TransactionRowProps): ReactNode => (
+    <div data-testid={`row-${item.id}`}>
       {item.merchant_name ?? "未指定商家"}
     </div>
   ),
@@ -49,9 +46,9 @@ describe("TransactionGroupList", () => {
     ).toBeInTheDocument();
   });
 
-  it("点击记账记录后显示编辑和删除入口", () => {
+  it("点击记账记录后显示编辑入口且不显示删除入口", () => {
     const { container } = render(
-      <TransactionGroupList groups={[defaultGroup]} voidAction={vi.fn()} />,
+      <TransactionGroupList groups={[defaultGroup]} />,
     );
 
     fireEvent.click(
@@ -62,8 +59,8 @@ describe("TransactionGroupList", () => {
       within(container).getByRole("link", { name: "编辑" }),
     ).toBeInTheDocument();
     expect(
-      within(container).getByRole("button", { name: "删除" }),
-    ).toBeInTheDocument();
+      within(container).queryByRole("button", { name: "删除" }),
+    ).toBeNull();
   });
 
   it("显示多个分组", () => {
