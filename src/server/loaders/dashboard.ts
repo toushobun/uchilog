@@ -5,6 +5,7 @@ import { createClient } from "lib/supabase/server";
 
 import type {
   AccountOptionDbRow,
+  CategorySummaryDbRow,
   MerchantSummaryDbRow,
   TransactionItemDbRow,
   TransactionRecordDbRow,
@@ -37,7 +38,7 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
         .select("id, type, transaction_at, merchant_id, note, created_at")
         .eq("ledger_id", currentLedger.id)
         .eq("status", "active")
-        .in("type", ["expense", "income"])
+        .eq("type", "normal")
         .gte("transaction_at", monthStartIso)
         .lt("transaction_at", monthEndIso)
         .order("transaction_at", { ascending: false })
@@ -89,22 +90,6 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
     itemsByRecordId.set(item.transaction_record_id, recordItems);
   }
 
-  const monthSummary = createTransactionAmountSummary(
-    currentLedger.baseCurrency,
-  );
-
-  for (const record of records) {
-    const recordItems = itemsByRecordId.get(record.id) ?? [];
-    const total = recordItems.reduce(
-      (sum, item) => sum + Number(item.amount),
-      0,
-    );
-
-    if (!Number.isFinite(total) || total === 0) continue;
-
-    addTransactionAmount(monthSummary, record.type, String(total));
-  }
-
   const recentRecords = records.slice(0, 5);
   const recentRecordItems = recentRecords.flatMap(
     (record) => itemsByRecordId.get(record.id) ?? [],
@@ -129,7 +114,7 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   );
   const categoryIds = [
     ...new Set(
-      recentRecordItems
+      items
         .map((item) => item.category_id)
         .filter((categoryId): categoryId is string => categoryId !== null),
     ),
@@ -198,6 +183,26 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
   const merchantById = new Map(
     merchants.map((merchant) => [merchant.id, merchant] as const),
   );
+  const monthSummary = createTransactionAmountSummary(
+    currentLedger.baseCurrency,
+  );
+
+  for (const record of records) {
+    const recordItems = itemsByRecordId.get(record.id) ?? [];
+    const netAmount = recordItems.reduce(
+      (sum, item) => sum + getSignedDashboardItemAmount(item, categoryById),
+      0,
+    );
+
+    if (!Number.isFinite(netAmount) || netAmount === 0) continue;
+
+    addTransactionAmount(
+      monthSummary,
+      netAmount > 0 ? "income" : "expense",
+      String(Math.abs(netAmount)),
+    );
+  }
+
   const recentTransactions = recentRecords.map((record) =>
     buildTransactionListItem({
       accountById,
@@ -225,6 +230,24 @@ export async function loadDashboardView(): Promise<DashboardViewData> {
     })),
     recentTransactions,
   };
+}
+
+function getSignedDashboardItemAmount(
+  item: TransactionItemDbRow,
+  categoryById: Map<string, CategorySummaryDbRow>,
+) {
+  const amount = Number(item.amount);
+
+  if (!Number.isFinite(amount)) return 0;
+
+  const categoryType = item.category_id
+    ? categoryById.get(item.category_id)?.type
+    : undefined;
+
+  if (categoryType === "income") return amount;
+  if (categoryType === "expense") return -amount;
+
+  return 0;
 }
 
 function getRecentlyUsedAccountIds(
