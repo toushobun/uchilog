@@ -209,14 +209,14 @@ describe("buildTransactionListItem", () => {
       {
         amount: "1200",
         categoryName: "餐饮",
+        categoryType: "expense",
         parentCategoryName: null,
-        statType: "expense",
       },
       {
         amount: "260000",
         categoryName: "工资",
+        categoryType: "income",
         parentCategoryName: null,
-        statType: "income",
       },
     ]);
   });

@@ -65,8 +65,8 @@ export function buildTransactionListItem({
       {
         amount: item.amount,
         categoryName: category?.name ?? "",
+        categoryType: category?.type,
         parentCategoryName: parent?.name ?? null,
-        statType: category?.type,
       },
     ];
   });

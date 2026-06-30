@@ -3,6 +3,8 @@ import type {
   TransactionRecordStorageType,
 } from "types/transactions";
 
+// stat_type is kept only for legacy DB compatibility during the transition.
+// Business logic must derive normal transaction direction from category.type.
 export type TransactionItemStatType =
   | TransactionCategoryType
   | "expense_offset"
