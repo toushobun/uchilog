@@ -31,17 +31,26 @@ alter table public.transaction_item
     drop constraint if exists transaction_item_category_required_check;
 
 update public.transaction_item ti
-set stat_type = case
-    when tr.type = 'transfer' or ti.category_id is null then 'transfer'
-    when c.type in ('expense', 'income') then c.type
-    else null
-end
-from public.transaction_record tr
-left join public.category c
-  on c.id = ti.category_id
- and c.ledger_id = ti.ledger_id
-where tr.id = ti.transaction_record_id
-  and tr.ledger_id = ti.ledger_id;
+set stat_type = sub.new_stat_type
+from (
+    select
+        ti2.id,
+        ti2.ledger_id,
+        case
+            when tr.type = 'transfer' or ti2.category_id is null then 'transfer'
+            when c.type in ('expense', 'income') then c.type
+            else null
+        end as new_stat_type
+    from public.transaction_item ti2
+    join public.transaction_record tr
+      on tr.id = ti2.transaction_record_id
+     and tr.ledger_id = ti2.ledger_id
+    left join public.category c
+      on c.id = ti2.category_id
+     and c.ledger_id = ti2.ledger_id
+) sub
+where ti.id = sub.id
+  and ti.ledger_id = sub.ledger_id;
 
 alter table public.transaction_item
     alter column stat_type drop not null;
