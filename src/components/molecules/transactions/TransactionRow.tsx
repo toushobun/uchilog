@@ -53,7 +53,7 @@ export function TransactionRow({
     ? "账户周转"
     : (item.merchant_name ?? "未知商家");
   const amountColor = isTransfer
-    ? themeDotColor
+    ? textColor
     : item.type === "income"
       ? incomeColor
       : expenseColor;
