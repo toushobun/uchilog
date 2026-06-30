@@ -56,7 +56,6 @@ function item(
     balance_delta: "0",
     category_id: "dinner",
     note: null,
-    stat_type: "expense",
     ...value,
   };
 }
@@ -73,13 +72,11 @@ describe("transactionListGroups", () => {
         item({
           amount: "300",
           category_id: null,
-          stat_type: "transfer",
           transaction_record_id: "transfer",
         }),
         item({
           amount: "500",
           category_id: "bonus",
-          stat_type: "income",
           transaction_record_id: "july",
         }),
       ],
@@ -170,7 +167,6 @@ describe("transactionListGroups", () => {
         item({
           amount: "300",
           category_id: "bonus",
-          stat_type: "income",
           transaction_record_id: "mixed",
         }),
       ],
@@ -215,7 +211,6 @@ describe("transactionListGroups", () => {
         item({
           amount: "100",
           category_id: "bonus",
-          stat_type: "income",
           transaction_record_id: "negative-mixed",
         }),
       ],
@@ -243,7 +238,7 @@ describe("transactionListGroups", () => {
     });
   });
 
-  it("普通明细方向按 category.type 处理，不再依赖 stat_type", () => {
+  it("普通明细方向按 category.type 处理", () => {
     const result = buildTransactionGroupSummaryPage({
       accounts,
       categories,
@@ -254,7 +249,6 @@ describe("transactionListGroups", () => {
         item({
           amount: "80",
           category_id: "bonus",
-          stat_type: "expense",
           transaction_record_id: "category-type",
         }),
       ],
@@ -293,7 +287,6 @@ describe("transactionListGroups", () => {
         item({
           amount: "500",
           category_id: "bonus",
-          stat_type: "income",
           transaction_record_id: "user-b-income",
         }),
       ],
@@ -360,7 +353,6 @@ describe("transactionListGroups", () => {
           account_id: "account-bank",
           amount: "300",
           category_id: "bonus",
-          stat_type: "income",
           transaction_record_id: "mixed",
         }),
       ],

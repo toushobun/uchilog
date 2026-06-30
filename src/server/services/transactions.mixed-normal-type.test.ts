@@ -7,6 +7,10 @@ const migrationPath = path.join(
   process.cwd(),
   "supabase/migrations/20260630010000_refactor_transaction_type_model.sql",
 );
+const dropStatTypeMigrationPath = path.join(
+  process.cwd(),
+  "supabase/migrations/20260630020000_drop_transaction_item_stat_type.sql",
+);
 
 function readMigration(filePath: string) {
   return readFileSync(filePath, "utf8");
@@ -49,5 +53,41 @@ describe("普通记账 normal 类型后端规则", () => {
     expect(migration).toContain("public.sync_transaction_record_tags(");
     expect(migration).toContain("public.create_transaction(");
     expect(migration).toContain("public.update_transaction(");
+  });
+
+  it("最终物理删除 transaction_item.stat_type", () => {
+    const migration = readMigration(dropStatTypeMigrationPath);
+
+    expect(migration).toContain("drop column if exists stat_type");
+    expect(migration).toContain(
+      "create or replace function public.create_transaction(",
+    );
+    expect(migration).toContain(
+      "create or replace function public.update_transaction(",
+    );
+    expect(migration).toContain(
+      "create or replace function public.create_transfer_transaction(",
+    );
+    expect(migration).toContain(
+      "create or replace function public.update_transfer_transaction(",
+    );
+    expect(migration).toContain(
+      "create or replace function public.void_transaction(",
+    );
+    expect(migration).toContain(
+      "create or replace function public.convert_transaction_type(",
+    );
+    expect(migration).not.toContain("expense_offset");
+  });
+
+  it("同一个 migration 中删除仍引用 stat_type 的旧 RPC 重载", () => {
+    const migration = readMigration(dropStatTypeMigrationPath);
+
+    expect(migration).toContain(
+      "drop function if exists public.create_transaction(",
+    );
+    expect(migration).toContain(
+      "drop function if exists public.update_transaction(",
+    );
   });
 });

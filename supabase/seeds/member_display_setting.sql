@@ -124,7 +124,6 @@ insert into public.transaction_item (
     transaction_record_id,
     account_id,
     category_id,
-    stat_type,
     amount,
     discount_amount,
     balance_delta,
@@ -141,7 +140,6 @@ select
     record_id,
     account_id,
     category_id,
-    transaction_type,
     amount,
     0,
     case when transaction_type = 'income' then amount else -amount end,
@@ -156,7 +154,6 @@ on conflict (id) do update
 set
     account_id = excluded.account_id,
     category_id = excluded.category_id,
-    stat_type = excluded.stat_type,
     amount = excluded.amount,
     balance_delta = excluded.balance_delta,
     updated_by = excluded.updated_by,
