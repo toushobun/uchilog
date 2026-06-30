@@ -65,7 +65,9 @@ export function TransactionRow({
   const time = formatTransactionTime(item.transaction_at, { timeZone });
   const signedAmount = formatRowAmount(item);
   const categorySummaryText = getTransactionCategorySummaryText(item);
-  const detailText = [categorySummaryText, item.note].filter(Boolean).join(" | ");
+  const detailText = [categorySummaryText, item.note]
+    .filter(Boolean)
+    .join(" | ");
   const nonTagMetaItems = [
     showAccount ? item.account_name : null,
     showRecorder ? (item.recorder_name ?? null) : null,
