@@ -91,6 +91,11 @@ revoke all on function public.validate_transaction_item_category_shape() from pu
 revoke all on function public.validate_transaction_item_category_shape() from anon;
 revoke all on function public.validate_transaction_item_category_shape() from authenticated;
 
+drop trigger if exists transaction_item_validate on public.transaction_item;
+drop function if exists public.validate_transaction_item();
+drop trigger if exists transaction_item_validate_balance_delta on public.transaction_item;
+drop function if exists public.validate_transaction_item_balance_delta();
+
 drop trigger if exists transaction_item_validate_category_shape on public.transaction_item;
 create trigger transaction_item_validate_category_shape
 before insert or update of ledger_id, transaction_record_id, category_id on public.transaction_item
