@@ -59,15 +59,21 @@ describe("普通记账 normal 类型后端规则", () => {
     const migration = readMigration(dropStatTypeMigrationPath);
 
     expect(migration).toContain("drop column if exists stat_type");
-    expect(migration).toContain("create or replace function public.create_transaction(");
-    expect(migration).toContain("create or replace function public.update_transaction(");
+    expect(migration).toContain(
+      "create or replace function public.create_transaction(",
+    );
+    expect(migration).toContain(
+      "create or replace function public.update_transaction(",
+    );
     expect(migration).toContain(
       "create or replace function public.create_transfer_transaction(",
     );
     expect(migration).toContain(
       "create or replace function public.update_transfer_transaction(",
     );
-    expect(migration).toContain("create or replace function public.void_transaction(");
+    expect(migration).toContain(
+      "create or replace function public.void_transaction(",
+    );
     expect(migration).toContain(
       "create or replace function public.convert_transaction_type(",
     );
@@ -77,7 +83,11 @@ describe("普通记账 normal 类型后端规则", () => {
   it("同一个 migration 中删除仍引用 stat_type 的旧 RPC 重载", () => {
     const migration = readMigration(dropStatTypeMigrationPath);
 
-    expect(migration).toContain("drop function if exists public.create_transaction(");
-    expect(migration).toContain("drop function if exists public.update_transaction(");
+    expect(migration).toContain(
+      "drop function if exists public.create_transaction(",
+    );
+    expect(migration).toContain(
+      "drop function if exists public.update_transaction(",
+    );
   });
 });
