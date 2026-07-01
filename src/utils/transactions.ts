@@ -6,6 +6,7 @@ import type {
   TransactionListItem,
   TransactionRecordType,
 } from "types/transactions";
+import { getCurrencySymbol } from "utils/currency";
 
 const weekDayLabels = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
@@ -44,12 +45,20 @@ export function formatTransactionRowAmount(
   amount: string,
   currency = "",
 ) {
-  if (type === "transfer") return formatPlainAmount(amount, currency);
+  const formattedAmount = formatNumber(amount);
+  const displayAmount = currency
+    ? `${getCurrencySymbol(currency)} ${formattedAmount}`
+    : formattedAmount;
+  const amountValue = Number(amount);
 
-  return `${type === "expense" ? "-" : "+"}${formatPlainAmount(
-    amount,
-    currency,
-  )}`;
+  if (
+    type === "transfer" ||
+    (Number.isFinite(amountValue) && amountValue === 0)
+  ) {
+    return displayAmount;
+  }
+
+  return `${type === "expense" ? "-" : "+"} ${displayAmount}`;
 }
 
 export function getCategoryLabel(items: CategorySummaryItem[]): string | null {
@@ -96,27 +105,21 @@ export function addTransactionAmount(
 }
 
 export function normalizeMonth(month?: string | null) {
-  if (month && /^\d{4}-\d{2}$/.test(month)) {
+  if (month && isMonthText(month)) {
     return month;
   }
 
-  const current = new Date();
-  const year = current.getUTCFullYear();
-  const monthValue = String(current.getUTCMonth() + 1).padStart(2, "0");
-
-  return `${year}-${monthValue}`;
+  return getDateInTimeZone(new Date().toISOString(), serverFallbackTimeZone).slice(0, 7);
 }
 
 export function getMonthBounds(month: string) {
   const [yearText, monthText] = month.split("-");
   const year = Number(yearText);
   const monthIndex = Number(monthText) - 1;
-  const start = new Date(Date.UTC(year, monthIndex, 1, 0, 0, 0));
-  const end = new Date(Date.UTC(year, monthIndex + 1, 1, 0, 0, 0));
 
   return {
-    endIso: end.toISOString(),
-    startIso: start.toISOString(),
+    endIso: getMonthStartUtcIso(year, monthIndex + 1, serverFallbackTimeZone),
+    startIso: getMonthStartUtcIso(year, monthIndex, serverFallbackTimeZone),
   };
 }
 
@@ -138,15 +141,15 @@ export function formatMonthLabel(month: string) {
 }
 
 export function formatDateKey(value: string) {
-  return value.slice(0, 10);
+  return getDateInTimeZone(value, serverFallbackTimeZone);
 }
 
 export function formatDateLabel(dateKey: string) {
   const date = new Date(`${dateKey}T00:00:00Z`);
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
+  const day = date.getUTCDate();
+  const relativeLabel = getRelativeDateLabel(dateKey);
 
-  return `${month}/${day} ${weekDayLabels[date.getUTCDay()]}`;
+  return `${day}日（${relativeLabel ?? weekDayLabels[date.getUTCDay()]}）`;
 }
 
 export function getCurrentMonthRange() {
@@ -219,15 +222,16 @@ export function formatDateTimeLocalInputValue(value: string) {
 }
 
 export function splitDateTimeLocalValue(value: string) {
-  const match = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}(?::\d{2})?)$/);
+  const [date = "", time = "", extra] = value.split("T");
+  const normalizedTime = normalizeTransactionTimeValue(time);
 
-  if (!match) {
+  if (extra !== undefined || !isDateText(date) || !normalizedTime) {
     return { date: "", time: "" };
   }
 
   return {
-    date: match[1],
-    time: normalizeTransactionTimeValue(match[2]),
+    date,
+    time: normalizedTime,
   };
 }
 
@@ -237,22 +241,154 @@ export function composeTransactionDateTimeLocalValue(
 ) {
   const normalizedTime = normalizeTransactionTimeValue(time);
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !normalizedTime) {
+  if (!isDateText(date) || !normalizedTime) {
     return "";
   }
 
   return `${date}T${normalizedTime}`;
 }
 
+function getRelativeDateLabel(dateKey: string) {
+  const current = new Date();
+  const todayKey = getDateKeyFromParts(
+    new Intl.DateTimeFormat(transactionTimeLocale, {
+      day: "2-digit",
+      month: "2-digit",
+      timeZone: serverFallbackTimeZone,
+      year: "numeric",
+    }).formatToParts(current),
+  );
+
+  if (dateKey === todayKey) return "今天";
+  if (dateKey === shiftDateKey(todayKey, -1)) return "昨天";
+  if (dateKey === shiftDateKey(todayKey, 1)) return "明天";
+
+  return null;
+}
+
+function getDateKeyFromParts(parts: Intl.DateTimeFormatPart[]) {
+  const getPart = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+
+  return `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+}
+
+function shiftDateKey(dateKey: string, delta: number) {
+  const [yearText, monthText, dayText] = dateKey.split("-");
+  const date = new Date(
+    Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText) + delta),
+  );
+
+  return `${date.getUTCFullYear()}-${padDatePart(
+    date.getUTCMonth() + 1,
+  )}-${padDatePart(date.getUTCDate())}`;
+}
+
 function normalizeTransactionTimeValue(value: string) {
-  if (/^\d{2}:\d{2}$/.test(value)) return `${value}:00`;
-  if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value;
+  const parts = value.split(":");
+
+  if (
+    parts.length === 2 &&
+    isFixedDigits(parts[0], 2) &&
+    isFixedDigits(parts[1], 2)
+  ) {
+    return `${value}:00`;
+  }
+
+  if (
+    parts.length === 3 &&
+    isFixedDigits(parts[0], 2) &&
+    isFixedDigits(parts[1], 2) &&
+    isFixedDigits(parts[2], 2)
+  ) {
+    return value;
+  }
 
   return "";
 }
 
+function isDateText(value: string) {
+  const parts = value.split("-");
+
+  return (
+    parts.length === 3 &&
+    isFixedDigits(parts[0], 4) &&
+    isFixedDigits(parts[1], 2) &&
+    isFixedDigits(parts[2], 2)
+  );
+}
+
+function isMonthText(value: string) {
+  const parts = value.split("-");
+
+  return (
+    parts.length === 2 &&
+    isFixedDigits(parts[0], 4) &&
+    isFixedDigits(parts[1], 2)
+  );
+}
+
+function isFixedDigits(value: string | undefined, length: number) {
+  if (value === undefined || value.length !== length) return false;
+
+  return [...value].every(isDigit);
+}
+
+function isDigit(value: string) {
+  return value >= "0" && value <= "9";
+}
+
 function padDatePart(value: number) {
   return String(value).padStart(2, "0");
+}
+
+function getDateInTimeZone(isoString: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(new Date(isoString));
+
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+function getMonthStartUtcIso(
+  year: number,
+  monthIndex: number,
+  timeZone: string,
+): string {
+  // probe: UTC midnight on the 1st of the month (monthIndex may overflow, Date.UTC handles it)
+  const probe = new Date(Date.UTC(year, monthIndex, 1));
+
+  const localParts = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    hour: "2-digit",
+    hour12: false,
+    minute: "2-digit",
+    month: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(probe);
+
+  const get = (type: string) =>
+    Number(localParts.find((p) => p.type === type)?.value ?? "0");
+
+  const localYear = get("year");
+  const localMonth = get("month") - 1;
+  const localDay = get("day");
+  const localHour = get("hour") % 24;
+  const localMinute = get("minute");
+
+  // offset: naive-local-as-UTC minus actual-UTC
+  const naiveLocalMs = Date.UTC(localYear, localMonth, localDay, localHour, localMinute);
+  const offsetMs = naiveLocalMs - probe.getTime();
+
+  // local midnight on 1st expressed as UTC
+  return new Date(Date.UTC(year, monthIndex, 1) - offsetMs).toISOString();
 }
 
 export function getNowDateTimeLocalValue() {

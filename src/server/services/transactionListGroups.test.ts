@@ -478,4 +478,91 @@ describe("transactionListGroups", () => {
       "无标签",
     ]);
   });
+
+  it("按月分组时以 Asia/Tokyo 时区日期归入月份", () => {
+    const commonParams = {
+      accounts,
+      categories,
+      currency: "JPY",
+      merchants,
+      offset: 0,
+      pageSize: 20,
+      recorders,
+      tagAssignments: [],
+    };
+
+    // 2026-06-30T15:30:00Z = 2026-07-01T00:30:00+09:00 → 应归入 2026-07
+    const result1 = buildTransactionGroupSummaryPage({
+      ...commonParams,
+      groupBy: "month",
+      items: [item({ amount: "100", transaction_record_id: "tz-july" })],
+      records: [
+        record({
+          id: "tz-july",
+          transaction_at: "2026-06-30T15:30:00.000Z",
+        }),
+      ],
+    });
+
+    expect(result1.groups).toHaveLength(1);
+    expect(result1.groups[0]).toMatchObject({
+      id: "month:2026-07",
+      key: "2026-07",
+      label: "2026年7月",
+    });
+
+    // 2026-06-30T14:59:59Z = 2026-06-30T23:59:59+09:00 → 应归入 2026-06
+    const result2 = buildTransactionGroupSummaryPage({
+      ...commonParams,
+      groupBy: "month",
+      items: [item({ amount: "100", transaction_record_id: "tz-june" })],
+      records: [
+        record({
+          id: "tz-june",
+          transaction_at: "2026-06-30T14:59:59.000Z",
+        }),
+      ],
+    });
+
+    expect(result2.groups).toHaveLength(1);
+    expect(result2.groups[0]).toMatchObject({
+      id: "month:2026-06",
+      key: "2026-06",
+      label: "2026年6月",
+    });
+  });
+
+  it("大 item 统计来自完整传入数据，不依赖小 item 分页加载数量", () => {
+    const manyItems = Array.from({ length: 25 }, (_, i) => ({
+      ...item({ amount: "100", transaction_record_id: `r${i}` }),
+    }));
+    const manyRecords = Array.from({ length: 25 }, (_, i) =>
+      record({ id: `r${i}`, transaction_at: "2026-06-15T10:00:00.000Z" }),
+    );
+
+    const fullResult = buildTransactionGroupSummaryPage({
+      accounts,
+      categories,
+      currency: "JPY",
+      groupBy: "month",
+      items: manyItems,
+      merchants,
+      offset: 0,
+      pageSize: 20,
+      records: manyRecords,
+      recorders,
+      tagAssignments: [],
+    });
+
+    // 全 25 笔都在同一个月，summary 应基于全部数据，与 pageSize 无关
+    expect(fullResult.groups).toHaveLength(1);
+    expect(fullResult.groups[0]).toMatchObject({
+      summary: {
+        balance: "-2500",
+        expense: "2500",
+        income: "0",
+      },
+      transactionCount: 25,
+    });
+  });
 });

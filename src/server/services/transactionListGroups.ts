@@ -1,3 +1,4 @@
+import { serverFallbackTimeZone } from "config/dateTime";
 import type {
   AccountOptionDbRow,
   AppUserSummaryDbRow,
@@ -379,10 +380,11 @@ function getTimeGroupInfo(
   groupBy: (typeof timeGroupByValues)[number],
   transactionAt: string,
 ) {
-  const date = new Date(transactionAt);
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth() + 1;
-  const day = date.getUTCDate();
+  const dateKey = getDateKeyInTimeZone(transactionAt, serverFallbackTimeZone);
+  const [yearText, monthText, dayText] = dateKey.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
 
   if (groupBy === "year") {
     return { key: String(year), label: `${year}年` };
@@ -399,36 +401,42 @@ function getTimeGroupInfo(
   }
 
   if (groupBy === "week") {
-    const start = getUtcWeekStart(date);
+    const weekStartKey = getWeekStartDateKey(dateKey);
+    const [wy, wm, wd] = weekStartKey.split("-").map(Number);
     return {
-      key: formatDateKey(start),
-      label: `${start.getUTCFullYear()}年${start.getUTCMonth() + 1}月${start.getUTCDate()}日周`,
+      key: weekStartKey,
+      label: `${wy}年${wm}月${wd}日周`,
     };
   }
 
   return {
-    key: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
-      2,
-      "0",
-    )}`,
+    key: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
     label: `${year}年${month}月${day}日`,
   };
 }
 
-function getUtcWeekStart(date: Date) {
-  const start = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-  );
-  const day = start.getUTCDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  start.setUTCDate(start.getUTCDate() + mondayOffset);
+function getDateKeyInTimeZone(isoString: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(new Date(isoString));
 
-  return start;
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+
+  return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
-function formatDateKey(date: Date) {
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(date.getUTCDate()).padStart(2, "0")}`;
+function getWeekStartDateKey(dateKey: string): string {
+  const [yearText, monthText, dayText] = dateKey.split("-");
+  const date = new Date(
+    Date.UTC(Number(yearText), Number(monthText) - 1, Number(dayText)),
+  );
+  const day = date.getUTCDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const start = new Date(date.getTime() + mondayOffset * 86400000);
+
+  return `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}-${String(start.getUTCDate()).padStart(2, "0")}`;
 }

@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import type {
+  TransactionGroupSummaryItem,
   TransactionListItem,
-  TransactionMonthView,
+  TransactionTimeGroupViewData,
 } from "types/transactions";
 
 import { TransactionMonthList } from "./TransactionMonthList";
@@ -22,6 +23,7 @@ function createItem(
       {
         amount,
         categoryName: isExpense ? "餐饮" : "工资",
+        categoryType: isExpense ? "expense" : "income",
         parentCategoryName: isExpense ? "饮食" : null,
       },
     ],
@@ -40,62 +42,126 @@ function createItem(
   };
 }
 
-const monthView: TransactionMonthView = {
-  groups: [
-    {
-      date: "2026-05-29",
-      items: [createItem(1), createItem(2), createItem(3)],
-      label: "05/29 周五",
-      summary: {
-        balance: "-3120",
-        currency: "JPY",
-        expense: "3120",
-        income: "0",
+const currentMonthGroup = createMonthGroup({
+  balance: "-3120",
+  expense: "3120",
+  income: "0",
+  key: "2026-05",
+  label: "2026年5月",
+  transactionCount: 3,
+});
+const previousMonthGroup = createMonthGroup({
+  balance: "258600",
+  expense: "1400",
+  income: "260000",
+  key: "2026-04",
+  label: "2026年4月",
+  transactionCount: 2,
+});
+
+const timeGroupView: TransactionTimeGroupViewData = {
+  groupBy: "month",
+  groups: [currentMonthGroup, previousMonthGroup],
+  initialDateGroupsByGroupId: {
+    [currentMonthGroup.id]: [
+      {
+        date: "2026-05-29",
+        items: [createItem(1), createItem(2), createItem(3)],
+        label: "29日（周五）",
+        summary: {
+          balance: "-3120",
+          currency: "JPY",
+          expense: "3120",
+          income: "0",
+        },
       },
-    },
-    {
-      date: "2026-05-28",
-      items: [
-        createItem(4, {
-          amount: "260000",
-          categoryItems: [
-            {
-              amount: "260000",
-              categoryName: "工资",
-              parentCategoryName: null,
-            },
-          ],
-          merchant_name: "共達",
-          type: "income",
-        }),
-        createItem(5),
-      ],
-      label: "05/28 周四",
-      summary: {
-        balance: "258600",
-        currency: "JPY",
-        expense: "1400",
-        income: "260000",
+      {
+        date: "2026-05-28",
+        items: [
+          createItem(4, {
+            amount: "260000",
+            categoryItems: [
+              {
+                amount: "260000",
+                categoryName: "工资",
+                categoryType: "income",
+                parentCategoryName: null,
+              },
+            ],
+            merchant_name: "共達",
+            type: "income",
+          }),
+          createItem(5),
+        ],
+        label: "28日（周四）",
+        summary: {
+          balance: "258600",
+          currency: "JPY",
+          expense: "1400",
+          income: "260000",
+        },
       },
-    },
-  ],
-  month: "2026-05",
-  monthLabel: "2026年5月",
-  nextMonth: "2026-06",
-  previousMonth: "2026-04",
+    ],
+  },
+  initialExpandedGroupId: currentMonthGroup.id,
+  initialNextItemOffsetByGroupId: {
+    [currentMonthGroup.id]: null,
+  },
   nextOffset: null,
 };
 
-const emptyMonthView: TransactionMonthView = {
-  ...monthView,
+const emptyTimeGroupView: TransactionTimeGroupViewData = {
+  ...timeGroupView,
   groups: [],
+  initialDateGroupsByGroupId: {},
+  initialExpandedGroupId: null,
+  initialNextItemOffsetByGroupId: {},
 };
+
+async function loadGroupItemsAction() {
+  return { groups: [], nextOffset: null };
+}
+
+async function loadMoreGroupsAction() {
+  return { groupBy: "month" as const, groups: [], nextOffset: null };
+}
+
+function createMonthGroup({
+  balance,
+  expense,
+  income,
+  key,
+  label,
+  transactionCount,
+}: {
+  balance: string;
+  expense: string;
+  income: string;
+  key: string;
+  label: string;
+  transactionCount: number;
+}): TransactionGroupSummaryItem {
+  return {
+    id: `month:${key}`,
+    key,
+    label,
+    summary: {
+      balance,
+      currency: "JPY",
+      expense,
+      income,
+    },
+    transactionCount,
+  };
+}
 
 const meta = {
   title: "Organisms/Transactions/TransactionMonthList",
   component: TransactionMonthList,
   args: {
-    monthView,
+    loadGroupItemsAction,
+    loadMoreGroupsAction,
+    timeGroupView,
   },
 } satisfies Meta<typeof TransactionMonthList>;
 
@@ -107,6 +173,6 @@ export const Default: Story = {};
 
 export const Empty: Story = {
   args: {
-    monthView: emptyMonthView,
+    timeGroupView: emptyTimeGroupView,
   },
 };

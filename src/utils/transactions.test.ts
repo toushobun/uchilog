@@ -80,16 +80,17 @@ describe("transactions utils", () => {
 
   it("按交易类型给行金额添加符号", () => {
     expect(formatTransactionRowAmount("expense", "1200", "JPY")).toBe(
-      `-${numberFormatter.format(1200)} JPY`,
+      `- ¥ ${numberFormatter.format(1200)}`,
     );
-    expect(formatTransactionRowAmount("income", "1200", "JPY")).toBe(
-      `+${numberFormatter.format(1200)} JPY`,
+    expect(formatTransactionRowAmount("income", "1200", "USD")).toBe(
+      `+ $ ${numberFormatter.format(1200)}`,
     );
+    expect(formatTransactionRowAmount("expense", "0", "JPY")).toBe("¥ 0");
   });
 
   it("转账行金额不带正负号", () => {
     expect(formatTransactionRowAmount("transfer", "1200", "JPY")).toBe(
-      `${numberFormatter.format(1200)} JPY`,
+      `¥ ${numberFormatter.format(1200)}`,
     );
     expect(formatTransactionRowAmount("transfer", "5000")).toBe(
       numberFormatter.format(5000),
@@ -153,15 +154,17 @@ describe("transactions utils", () => {
     });
   });
 
-  it("正则化月份字符串并返回 UTC ISO 月边界", () => {
+  it("正则化月份字符串并返回 Asia/Tokyo 时区下的月份边界 UTC ISO", () => {
     vi.setSystemTime(new Date("2026-06-10T03:04:05.000Z"));
 
     expect(normalizeMonth("2026-05")).toBe("2026-05");
     expect(normalizeMonth("2026-5")).toBe("2026-06");
     expect(normalizeMonth()).toBe("2026-06");
+    // 2024-02 在 Asia/Tokyo 下：start = 2024-02-01 00:00 JST = 2024-01-31T15:00:00Z
+    // end = 2024-03-01 00:00 JST = 2024-02-29T15:00:00Z（2024 是闰年）
     expect(getMonthBounds("2024-02")).toEqual({
-      endIso: "2024-03-01T00:00:00.000Z",
-      startIso: "2024-02-01T00:00:00.000Z",
+      endIso: "2024-02-29T15:00:00.000Z",
+      startIso: "2024-01-31T15:00:00.000Z",
     });
   });
 
@@ -172,8 +175,26 @@ describe("transactions utils", () => {
   });
 
   it("生成日期 key 和日期标签", () => {
+    vi.setSystemTime(new Date("2026-06-20T03:00:00.000Z"));
+
     expect(formatDateKey("2026-06-10T12:34:56.000Z")).toBe("2026-06-10");
-    expect(formatDateLabel("2026-06-10")).toBe("06/10 周三");
+    expect(formatDateLabel("2026-06-10")).toBe("10日（周三）");
+  });
+
+  it("formatDateKey 按 Asia/Tokyo 时区归入日期", () => {
+    // 2026-06-30T15:30:00Z = 2026-07-01T00:30:00+09:00 → 应归入 2026-07-01
+    expect(formatDateKey("2026-06-30T15:30:00.000Z")).toBe("2026-07-01");
+    // 2026-06-30T14:59:59Z = 2026-06-30T23:59:59+09:00 → 应归入 2026-06-30
+    expect(formatDateKey("2026-06-30T14:59:59.000Z")).toBe("2026-06-30");
+  });
+
+  it("根据当前日期生成今天昨天明天标签", () => {
+    vi.setSystemTime(new Date("2026-06-30T03:00:00.000Z"));
+
+    expect(formatDateLabel("2026-06-30")).toBe("30日（今天）");
+    expect(formatDateLabel("2026-06-29")).toBe("29日（昨天）");
+    expect(formatDateLabel("2026-07-01")).toBe("1日（明天）");
+    expect(formatDateLabel("2026-06-28")).toBe("28日（周日）");
   });
 
   it("格式化交易发生时间", () => {
@@ -201,6 +222,8 @@ describe("transactions utils", () => {
   });
 
   it("按日期分组交易并生成日别汇总", () => {
+    vi.setSystemTime(new Date("2026-06-20T03:00:00.000Z"));
+
     const groups = groupTransactionItemsByDate(
       [
         createTransactionItem({
@@ -228,7 +251,7 @@ describe("transactions utils", () => {
     expect(groups).toHaveLength(2);
     expect(groups[0]).toMatchObject({
       date: "2026-06-10",
-      label: "06/10 周三",
+      label: "10日（周三）",
       summary: {
         balance: "3800",
         currency: "JPY",
@@ -279,14 +302,17 @@ describe("transactions utils", () => {
     expect(groups[0].items).toHaveLength(2);
   });
 
-  it("根据 UTC 当前时间生成当前月份范围", () => {
+  it("根据 Asia/Tokyo 当前时间生成当前月份范围（UTC 边界）", () => {
+    // 2026-06-10T09:08:07Z = 2026-06-10T18:08:07+09:00 → Tokyo 6月
     vi.setSystemTime(new Date("2026-06-10T09:08:07.000Z"));
 
     expect(getCurrentMonthRange()).toEqual({
-      endIso: "2026-07-01T00:00:00.000Z",
+      // 6月 start: 2026-06-01 00:00 JST = 2026-05-31T15:00:00Z
+      // 6月 end:   2026-07-01 00:00 JST = 2026-06-30T15:00:00Z
+      endIso: "2026-06-30T15:00:00.000Z",
       month: "2026-06",
       monthLabel: "2026年6月",
-      startIso: "2026-06-01T00:00:00.000Z",
+      startIso: "2026-05-31T15:00:00.000Z",
     });
   });
 
@@ -321,6 +347,14 @@ describe("transactions utils", () => {
       time: "09:08:00",
     });
     expect(splitDateTimeLocalValue("invalid")).toEqual({ date: "", time: "" });
+    expect(splitDateTimeLocalValue("2026-06-10T")).toEqual({
+      date: "",
+      time: "",
+    });
+    expect(splitDateTimeLocalValue("2026-06-10")).toEqual({
+      date: "",
+      time: "",
+    });
     expect(composeTransactionDateTimeLocalValue("2026-06-10", "09:08")).toBe(
       "2026-06-10T09:08:00",
     );

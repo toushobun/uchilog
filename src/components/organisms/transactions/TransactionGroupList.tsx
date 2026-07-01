@@ -1,45 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Collapse from "@mui/material/Collapse";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 
 import { transactionEditHref } from "config/paths";
 import { TransactionRow } from "molecules/transactions/TransactionRow";
-import { ReceiptCard } from "molecules/ui/ReceiptCard";
 import type { TransactionDateGroup } from "types/transactions";
 import { formatNumber } from "utils/transactions";
 
 type TransactionGroupListProps = {
   groups: TransactionDateGroup[];
+  showSummary?: boolean;
 };
 
-export function TransactionGroupList({ groups }: TransactionGroupListProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!expandedId) return;
-    const handleScroll = () => setExpandedId(null);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [expandedId]);
-
+export function TransactionGroupList({
+  groups,
+  showSummary = true,
+}: TransactionGroupListProps) {
   return (
-    <Stack spacing={2.2}>
+    <Stack spacing={1.2}>
       {groups.map((group, groupIndex) => (
-        <Stack key={group.date} spacing={0.9}>
+        <Stack key={group.date} spacing={0.55}>
           {groupIndex > 0 ? (
             <Box
               aria-hidden="true"
-              sx={{
-                borderTop: "1px solid var(--user-theme-card-border)",
-                mx: 0.2,
-              }}
+              sx={{ borderTop: "1px solid var(--user-theme-card-border)" }}
             />
           ) : null}
 
@@ -54,7 +41,7 @@ export function TransactionGroupList({ groups }: TransactionGroupListProps) {
               sx={{ alignItems: "center", flex: 1, minWidth: 0 }}
             >
               <Typography
-                sx={{ color: "text.primary", fontSize: 15, fontWeight: 900 }}
+                sx={{ color: "text.primary", fontSize: 15, fontWeight: 700 }}
               >
                 {group.label}
               </Typography>
@@ -66,42 +53,36 @@ export function TransactionGroupList({ groups }: TransactionGroupListProps) {
                 }}
               />
             </Stack>
-            <Typography
-              sx={{
-                color: "text.secondary",
-                fontSize: 12,
-                fontWeight: 900,
-              }}
-            >
-              {getGroupSummaryText(group)}
-            </Typography>
+            {showSummary ? (
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                  fontSize: 12,
+                  fontWeight: 900,
+                }}
+              >
+                {getGroupSummaryText(group)}
+              </Typography>
+            ) : null}
           </Stack>
 
-          <Stack spacing={1.4}>
-            {group.items.map((item) => {
-              const isExpanded = expandedId === item.id;
+          <Box>
+            {group.items.map((item, itemIndex) => {
+              const isLastItem = itemIndex === group.items.length - 1;
               return (
-                <ReceiptCard
+                <Box
                   key={item.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setExpandedId(isExpanded ? null : item.id);
-                    }
-                  }}
+                  component={Link}
+                  href={transactionEditHref(item.id)}
                   sx={{
-                    borderRadius: 1.5,
-                    cursor: "pointer",
+                    borderBottom: isLastItem
+                      ? "none"
+                      : "1px solid var(--user-theme-card-border)",
+                    color: "inherit",
+                    display: "block",
                     outline: "none",
-                    pb: "12px",
-                    pt: "15px",
-                    px: 0,
-                    userSelect: "none",
+                    textDecoration: "none",
                     WebkitTapHighlightColor: "transparent",
-                    "&:focus:not(:focus-visible)": { outline: "none" },
                     "&:focus-visible": {
                       outline: "2px solid var(--user-theme-action-text)",
                       outlineOffset: "-2px",
@@ -110,51 +91,14 @@ export function TransactionGroupList({ groups }: TransactionGroupListProps) {
                 >
                   <TransactionRow
                     item={item}
-                    receiptCard
                     showAccount
                     showTime
                     showRecorder
                   />
-
-                  <Box onClick={(e) => e.stopPropagation()}>
-                    <Collapse in={isExpanded}>
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{
-                          borderTop:
-                            "1px solid var(--user-theme-receipt-border)",
-                          p: 1,
-                        }}
-                      >
-                        <Button
-                          component={Link}
-                          href={transactionEditHref(item.id)}
-                          size="small"
-                          startIcon={<EditRoundedIcon />}
-                          sx={{
-                            bgcolor: "var(--user-theme-badge-bg)",
-                            borderRadius: 2,
-                            color: "var(--user-theme-action-text)",
-                            flex: 1,
-                            fontSize: 12,
-                            fontWeight: 800,
-                            "&:hover": {
-                              bgcolor:
-                                "var(--user-theme-field-card-selected-bg)",
-                            },
-                          }}
-                          variant="text"
-                        >
-                          编辑
-                        </Button>
-                      </Stack>
-                    </Collapse>
-                  </Box>
-                </ReceiptCard>
+                </Box>
               );
             })}
-          </Stack>
+          </Box>
         </Stack>
       ))}
     </Stack>

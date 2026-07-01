@@ -124,3 +124,12 @@ export type TransactionGroupPage = {
   groups: TransactionGroupSummaryItem[];
   nextOffset: number | null;
 };
+
+export type TransactionTimeGroupViewData = {
+  groupBy: "month";
+  groups: TransactionGroupSummaryItem[];
+  initialDateGroupsByGroupId: Record<string, TransactionDateGroup[]>;
+  initialExpandedGroupId: string | null;
+  initialNextItemOffsetByGroupId: Record<string, number | null>;
+  nextOffset: number | null;
+};
