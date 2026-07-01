@@ -230,17 +230,11 @@ export function TransactionRow({
 }
 
 function formatRowAmount(item: TransactionRowItem) {
-  const amountValue = Number(item.amount);
-
-  if (
-    item.type !== "transfer" &&
-    Number.isFinite(amountValue) &&
-    amountValue === 0
-  ) {
-    return "0";
-  }
-
-  return formatTransactionRowAmount(item.type, item.amount);
+  return formatTransactionRowAmount(
+    item.type,
+    item.amount,
+    item.account_currency,
+  );
 }
 
 function getTransactionCategorySummaryText(item: TransactionRowItem) {

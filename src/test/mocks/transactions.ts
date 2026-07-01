@@ -49,7 +49,7 @@ function summarizeItems(
 export function createTransactionDateGroup({
   date = "2026-05-29",
   items = [createTransactionListItem()],
-  label = "05/29 周五",
+  label = "29日（周五）",
   summary,
 }: {
   date?: string;

@@ -47,26 +47,30 @@ describe("TransactionRow", () => {
     expect(screen.getByText("便利店")).toBeInTheDocument();
   });
 
-  it("支出记录显示负号金额", () => {
+  it("支出记录显示币种符号和负号金额", () => {
     render(<TransactionRow item={createItem()} />);
 
-    expect(screen.getByText("-1,234")).toBeInTheDocument();
+    expect(screen.getByText("- ¥ 1,234")).toBeInTheDocument();
   });
 
-  it("收入记录显示正号金额", () => {
+  it("收入记录显示对应币种符号和正号金额", () => {
     render(
       <TransactionRow
-        item={createItem({ type: "income", amount: "260000" })}
+        item={createItem({
+          account_currency: "USD",
+          type: "income",
+          amount: "260000",
+        })}
       />,
     );
 
-    expect(screen.getByText("+260,000")).toBeInTheDocument();
+    expect(screen.getByText("+ $ 260,000")).toBeInTheDocument();
   });
 
   it("金额为 0 时仍显示记录金额", () => {
     render(<TransactionRow item={createItem({ amount: "0" })} />);
 
-    expect(screen.getByText("0")).toBeInTheDocument();
+    expect(screen.getByText("¥ 0")).toBeInTheDocument();
   });
 
   it("转账记录显示账户周转和转账图标，且不显示类型标签", () => {

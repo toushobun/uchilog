@@ -2,18 +2,24 @@ import { cleanup, render, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { createTransactionMonthView } from "@/test/mocks/transactions";
+import type {
+  TransactionGroupPage,
+  TransactionMonthPage,
+  TransactionTimeGroupViewData,
+} from "types/transactions";
 import { transactionListPageErrorMessages } from "utils/transactionMessages";
 
 import { TransactionsTemplate } from "./Transactions";
 
 vi.mock("organisms/transactions/TransactionMonthList", () => ({
   TransactionMonthList: ({
-    monthView,
+    timeGroupView,
   }: {
-    monthView: { monthLabel: string };
+    timeGroupView: TransactionTimeGroupViewData;
   }): ReactNode => (
-    <div data-testid="transaction-month-list">{monthView.monthLabel}</div>
+    <div data-testid="transaction-month-list">
+      {timeGroupView.groups.map((group) => group.label).join(" / ")}
+    </div>
   ),
 }));
 
@@ -21,20 +27,50 @@ afterEach(() => {
   cleanup();
 });
 
-const monthView = createTransactionMonthView({
-  month: "2026-06",
-  monthLabel: "2026年6月",
-  nextMonth: "2026-07",
-  previousMonth: "2026-05",
-  groups: [],
-});
+const timeGroupView: TransactionTimeGroupViewData = {
+  groupBy: "month",
+  groups: [
+    {
+      id: "month:2026-06",
+      key: "2026-06",
+      label: "2026年6月",
+      summary: {
+        balance: "0",
+        currency: "JPY",
+        expense: "0",
+        income: "0",
+      },
+      transactionCount: 0,
+    },
+  ],
+  initialDateGroupsByGroupId: {},
+  initialExpandedGroupId: null,
+  initialNextItemOffsetByGroupId: {},
+  nextOffset: null,
+};
+
+const loadGroupItemsAction = vi.fn(
+  async (): Promise<TransactionMonthPage> => ({
+    groups: [],
+    nextOffset: null,
+  }),
+);
+
+const loadMoreGroupsAction = vi.fn(
+  async (): Promise<TransactionGroupPage> => ({
+    groupBy: "month",
+    groups: [],
+    nextOffset: null,
+  }),
+);
 
 function renderPage(errorMessage: string | null = null) {
   return render(
     <TransactionsTemplate
       errorMessage={errorMessage}
-      loadMoreAction={vi.fn(async () => ({ groups: [], nextOffset: null }))}
-      monthView={monthView}
+      loadGroupItemsAction={loadGroupItemsAction}
+      loadMoreGroupsAction={loadMoreGroupsAction}
+      timeGroupView={timeGroupView}
     />,
   );
 }
@@ -48,21 +84,21 @@ describe("TransactionsTemplate", () => {
     ).toBeInTheDocument();
   });
 
-  it("显示当前月份标签", () => {
+  it("显示搜索和筛选图标入口", () => {
     const { container } = renderPage();
 
-    expect(within(container).getAllByText("2026年6月").length).toBeGreaterThan(
-      0,
-    );
+    expect(
+      within(container).getByRole("button", { name: "搜索" }),
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByRole("button", { name: "筛选" }),
+    ).toBeInTheDocument();
+    expect(
+      within(container).getByTestId("FilterAltOutlinedIcon"),
+    ).toBeInTheDocument();
   });
 
-  it("显示筛选入口", () => {
-    const { container } = renderPage();
-
-    expect(within(container).getByText("筛选")).toBeInTheDocument();
-  });
-
-  it("向月度列表传递当前月份", () => {
+  it("向时间分组列表传递当前分组", () => {
     const { container } = renderPage();
 
     expect(
@@ -70,14 +106,19 @@ describe("TransactionsTemplate", () => {
     ).toHaveTextContent("2026年6月");
   });
 
-  it("传入错误信息时显示错误提示", () => {
+  it("传入错误信息时显示整页错误状态", () => {
     const { container } = renderPage(
       transactionListPageErrorMessages.voidFailed,
     );
 
+    expect(within(container).getByText("明细读取失败")).toBeInTheDocument();
     expect(
       within(container).getByText(transactionListPageErrorMessages.voidFailed),
     ).toBeInTheDocument();
+    expect(within(container).getByText("重新读取")).toBeInTheDocument();
+    expect(
+      within(container).queryByTestId("transaction-month-list"),
+    ).toBeNull();
   });
 
   it("无错误信息时不显示错误提示", () => {

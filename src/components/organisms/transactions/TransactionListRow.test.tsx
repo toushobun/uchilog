@@ -63,7 +63,7 @@ describe("TransactionListRow", () => {
   it("支出金额显示负号格式", () => {
     render(<TransactionListRow item={createItem()} />);
 
-    expect(screen.getByText("-1,234 JPY")).toBeInTheDocument();
+    expect(screen.getByText("- ¥ 1,234")).toBeInTheDocument();
   });
 
   it("收入金额显示正号格式", () => {
@@ -73,7 +73,7 @@ describe("TransactionListRow", () => {
       />,
     );
 
-    expect(screen.getByText("+120,000 JPY")).toBeInTheDocument();
+    expect(screen.getByText("+ ¥ 120,000")).toBeInTheDocument();
   });
 
   it("有备注时显示备注内容", () => {
@@ -128,7 +128,7 @@ describe("TransactionListRow", () => {
       />,
     );
 
-    expect(screen.getByText("5,000 JPY")).toBeInTheDocument();
+    expect(screen.getByText("¥ 5,000")).toBeInTheDocument();
   });
 
   it("转账不需要商家/分类", () => {
