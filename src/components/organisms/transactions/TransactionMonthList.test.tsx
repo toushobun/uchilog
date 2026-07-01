@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, act } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  act,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
@@ -302,9 +308,7 @@ describe("TransactionMonthList", () => {
 
     fireEvent.click(screen.getByText("2026年6月"));
 
-    expect(
-      await screen.findByText("分组内流水读取失败。"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("分组内流水读取失败。")).toBeInTheDocument();
 
     const retryButton = screen.getByRole("button", { name: "重试" });
     fireEvent.click(retryButton);

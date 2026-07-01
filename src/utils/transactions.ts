@@ -109,7 +109,10 @@ export function normalizeMonth(month?: string | null) {
     return month;
   }
 
-  return getDateInTimeZone(new Date().toISOString(), serverFallbackTimeZone).slice(0, 7);
+  return getDateInTimeZone(
+    new Date().toISOString(),
+    serverFallbackTimeZone,
+  ).slice(0, 7);
 }
 
 export function getMonthBounds(month: string) {
@@ -350,8 +353,7 @@ function getDateInTimeZone(isoString: string, timeZone: string): string {
     year: "numeric",
   }).formatToParts(new Date(isoString));
 
-  const get = (type: string) =>
-    parts.find((p) => p.type === type)?.value ?? "";
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
 
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
@@ -384,7 +386,13 @@ function getMonthStartUtcIso(
   const localMinute = get("minute");
 
   // offset: naive-local-as-UTC minus actual-UTC
-  const naiveLocalMs = Date.UTC(localYear, localMonth, localDay, localHour, localMinute);
+  const naiveLocalMs = Date.UTC(
+    localYear,
+    localMonth,
+    localDay,
+    localHour,
+    localMinute,
+  );
   const offsetMs = naiveLocalMs - probe.getTime();
 
   // local midnight on 1st expressed as UTC

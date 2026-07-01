@@ -423,8 +423,7 @@ function getDateKeyInTimeZone(isoString: string, timeZone: string): string {
     year: "numeric",
   }).formatToParts(new Date(isoString));
 
-  const get = (type: string) =>
-    parts.find((p) => p.type === type)?.value ?? "";
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
 
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
