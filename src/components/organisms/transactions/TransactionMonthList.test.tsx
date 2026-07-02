@@ -16,7 +16,10 @@ import type {
   TransactionTimeGroupViewData,
 } from "types/transactions";
 
-import { TransactionMonthList } from "./TransactionMonthList";
+import {
+  TransactionMonthList,
+  transactionGroupCollapseDuration,
+} from "./TransactionMonthList";
 
 afterEach(() => {
   cleanup();
@@ -170,6 +173,10 @@ describe("TransactionMonthList", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("折叠动画使用固定时长且不随内容高度增长", () => {
+    expect(transactionGroupCollapseDuration).toBe(280);
   });
 
   it("首次进入时默认展开第一条时间分组", () => {

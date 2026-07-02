@@ -2,40 +2,102 @@
 
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import Badge from "@mui/material/Badge";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
-import Skeleton from "@mui/material/Skeleton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+import { EmptyState } from "molecules/ui/EmptyState";
 import { bottomNavigationLayout } from "organisms/navigation/bottomNavigationLayout";
 import { TransactionMonthList } from "organisms/transactions/TransactionMonthList";
-import { EmptyState } from "molecules/ui/EmptyState";
 import { designTokens } from "theme/theme";
 import type {
+  TransactionFilterOptions,
+  TransactionFilters,
+  TransactionGroupBy,
   TransactionGroupPage,
   TransactionMonthPage,
   TransactionTimeGroupViewData,
 } from "types/transactions";
 
+import { TransactionFilterDialog } from "./TransactionFilterDialog";
+import { TransactionFilterResultSummary } from "./TransactionFilterResultSummary";
+import { TransactionsSkeleton } from "./TransactionsSkeleton";
+import { useTransactions } from "./useTransactions";
+
 type TransactionsTemplateProps = {
   errorMessage: string | null;
+  filterOptions?: TransactionFilterOptions;
   isLoading?: boolean;
-  loadGroupItemsAction: (
+  loadFilteredGroupItemsAction?: (
+    groupBy: TransactionGroupBy,
+    groupKey: string,
+    offset: number,
+    filters: TransactionFilters,
+  ) => Promise<TransactionMonthPage>;
+  loadFilteredGroupsAction?: (
+    groupBy: TransactionGroupBy,
+    offset: number,
+    filters: TransactionFilters,
+  ) => Promise<TransactionGroupPage>;
+  loadGroupItemsAction?: (
     groupKey: string,
     offset: number,
   ) => Promise<TransactionMonthPage>;
-  loadMoreGroupsAction: (offset: number) => Promise<TransactionGroupPage>;
+  loadGroupViewAction?: (
+    groupBy: TransactionGroupBy,
+    filters: TransactionFilters,
+  ) => Promise<TransactionTimeGroupViewData>;
+  loadMoreGroupsAction?: (offset: number) => Promise<TransactionGroupPage>;
   timeGroupView: TransactionTimeGroupViewData;
 };
 
 export function TransactionsTemplate({
   errorMessage,
+  filterOptions = emptyFilterOptions,
   isLoading = false,
+  loadFilteredGroupItemsAction,
+  loadFilteredGroupsAction,
   loadGroupItemsAction,
+  loadGroupViewAction,
   loadMoreGroupsAction,
   timeGroupView,
 }: TransactionsTemplateProps) {
+  const {
+    activeFilterChips,
+    appliedFilterKey,
+    clearFilters,
+    closeFilterDialog,
+    displayLoading,
+    draftFilters,
+    draftGroupBy,
+    filterDialogErrorMessage,
+    groupView,
+    hasActiveDisplaySettings,
+    hasActiveFilters,
+    isFilterOpen,
+    isPending,
+    loadGroupItems,
+    loadMoreGroups,
+    onApplyDraftFilters,
+    onChangeDraftFilters,
+    onChangeDraftGroupBy,
+    openFilterDialog,
+    resetDraftFilters,
+    resultLabel,
+    showFilterEmptyState,
+  } = useTransactions({
+    filterOptions,
+    isLoading,
+    loadFilteredGroupItemsAction,
+    loadFilteredGroupsAction,
+    loadGroupItemsAction,
+    loadGroupViewAction,
+    loadMoreGroupsAction,
+    timeGroupView,
+  });
+
   return (
     <Stack spacing={2.2} sx={pageContentSx}>
       <Stack
@@ -50,19 +112,30 @@ export function TransactionsTemplate({
           <IconButton aria-label="搜索" sx={headerActionSx}>
             <SearchRoundedIcon />
           </IconButton>
-          <IconButton aria-label="筛选" sx={headerActionSx}>
-            <FilterAltOutlinedIcon />
+          <IconButton
+            aria-label="筛选"
+            onClick={openFilterDialog}
+            sx={headerActionSx}
+          >
+            <Badge
+              color="warning"
+              invisible={!hasActiveDisplaySettings}
+              overlap="circular"
+              variant="dot"
+            >
+              <FilterAltOutlinedIcon />
+            </Badge>
           </IconButton>
         </Stack>
       </Stack>
 
-      {isLoading ? (
+      {displayLoading ? (
         <TransactionsSkeleton />
       ) : errorMessage ? (
         <EmptyState
           action={
             <Button
-              onClick={() => window.location.reload()}
+              onClick={() => globalThis.location.reload()}
               sx={{
                 bgcolor: "var(--user-theme-action-bg)",
                 borderRadius: 999,
@@ -82,45 +155,57 @@ export function TransactionsTemplate({
           title="明细读取失败"
         />
       ) : (
-        <TransactionMonthList
-          loadGroupItemsAction={loadGroupItemsAction}
-          loadMoreGroupsAction={loadMoreGroupsAction}
-          timeGroupView={timeGroupView}
-        />
+        <>
+          {resultLabel ? (
+            <TransactionFilterResultSummary
+              chips={activeFilterChips}
+              hasActiveFilters={hasActiveFilters}
+              label={resultLabel}
+              onClear={clearFilters}
+            />
+          ) : null}
+          {showFilterEmptyState ? (
+            <EmptyState title="没有找到符合条件的流水。" />
+          ) : (
+            <TransactionMonthList
+              key={`${groupView.groupBy}:${appliedFilterKey}:${groupView.groups
+                .map((group) => group.id)
+                .join("|")}`}
+              loadGroupItemsAction={loadGroupItems}
+              loadMoreGroupsAction={loadMoreGroups}
+              timeGroupView={groupView}
+            />
+          )}
+        </>
       )}
+
+      <TransactionFilterDialog
+        draftFilters={draftFilters}
+        draftGroupBy={draftGroupBy}
+        errorMessage={filterDialogErrorMessage}
+        filterOptions={filterOptions}
+        isPending={isPending}
+        onApply={onApplyDraftFilters}
+        onChangeFilters={onChangeDraftFilters}
+        onChangeGroupBy={onChangeDraftGroupBy}
+        onClose={closeFilterDialog}
+        onReset={resetDraftFilters}
+        open={isFilterOpen}
+      />
     </Stack>
   );
 }
 
-function TransactionsSkeleton() {
-  return (
-    <Stack spacing={1.2}>
-      {[0, 1, 2].map((index) => (
-        <Stack
-          key={index}
-          spacing={1.2}
-          sx={{
-            borderBottom: "1px solid var(--user-theme-card-border)",
-            py: 1.1,
-          }}
-        >
-          <Stack
-            direction="row"
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
-          >
-            <Skeleton height={24} sx={{ borderRadius: 1 }} width="36%" />
-            <Skeleton height={24} sx={{ borderRadius: 1 }} width="42%" />
-          </Stack>
-          <Skeleton height={60} sx={{ borderRadius: 0.75 }} variant="rounded" />
-          <Skeleton height={60} sx={{ borderRadius: 0.75 }} variant="rounded" />
-        </Stack>
-      ))}
-    </Stack>
-  );
-}
+const emptyFilterOptions: TransactionFilterOptions = {
+  accounts: [],
+  categories: [],
+  members: [],
+  merchants: [],
+  tags: [],
+};
 
 const pageContentSx = {
-  bgcolor: "var(--user-theme-card-bg)",
+  bgcolor: "var(--user-theme-tx-page-bg)",
   mb: bottomNavigationLayout.shellPaddingBottomOffset,
   minHeight: "100dvh",
   mt: -4,

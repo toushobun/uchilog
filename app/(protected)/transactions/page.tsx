@@ -1,12 +1,16 @@
 import { unstable_rethrow } from "next/navigation";
 
 import {
-  loadTransactionTimeGroupItems,
-  loadTransactionTimeGroupPage,
-  loadTransactionTimeGroupView,
-} from "server/loaders/transactionTimeGroups";
+  loadStep4TransactionGroupItems,
+  loadStep4TransactionGroupPage,
+  loadStep4TransactionGroupView,
+  loadTransactionFilterOptions,
+} from "server/loaders/transactionStep4Groups";
 import { TransactionsTemplate } from "templates/transactions/Transactions";
-import type { TransactionTimeGroupViewData } from "types/transactions";
+import type {
+  TransactionFilterOptions,
+  TransactionTimeGroupViewData,
+} from "types/transactions";
 import { getTransactionErrorMessage } from "utils/pageErrors";
 
 export default async function TransactionsPage({
@@ -17,10 +21,14 @@ export default async function TransactionsPage({
   const params = await searchParams;
   const queryErrorMessage = getTransactionErrorMessage(params.error);
   let timeGroupView: TransactionTimeGroupViewData = emptyTimeGroupView;
+  let filterOptions: TransactionFilterOptions = emptyFilterOptions;
   let loadErrorMessage: string | null = null;
 
   try {
-    timeGroupView = await loadTransactionTimeGroupView();
+    [timeGroupView, filterOptions] = await Promise.all([
+      loadStep4TransactionGroupView("month"),
+      loadTransactionFilterOptions(),
+    ]);
   } catch (error) {
     unstable_rethrow(error);
     loadErrorMessage = "明细读取失败，请稍后重新读取。";
@@ -29,8 +37,10 @@ export default async function TransactionsPage({
   return (
     <TransactionsTemplate
       errorMessage={loadErrorMessage ?? queryErrorMessage}
-      loadGroupItemsAction={loadTransactionTimeGroupItems}
-      loadMoreGroupsAction={loadTransactionTimeGroupPage}
+      filterOptions={filterOptions}
+      loadFilteredGroupItemsAction={loadStep4TransactionGroupItems}
+      loadFilteredGroupsAction={loadStep4TransactionGroupPage}
+      loadGroupViewAction={loadStep4TransactionGroupView}
       timeGroupView={timeGroupView}
     />
   );
@@ -43,4 +53,12 @@ const emptyTimeGroupView: TransactionTimeGroupViewData = {
   initialExpandedGroupId: null,
   initialNextItemOffsetByGroupId: {},
   nextOffset: null,
+};
+
+const emptyFilterOptions: TransactionFilterOptions = {
+  accounts: [],
+  categories: [],
+  members: [],
+  merchants: [],
+  tags: [],
 };

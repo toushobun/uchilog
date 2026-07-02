@@ -9,6 +9,41 @@ export type TransactionRecordType = TransactionType | "transfer";
 // 分类类型目前只对应支出 / 收入，用语义别名和包含 transfer 的展示类型区分。
 export type TransactionCategoryType = TransactionType;
 
+export type TransactionGroupBy =
+  | "year"
+  | "quarter"
+  | "month"
+  | "week"
+  | "day"
+  | "merchant"
+  | "account"
+  | "parentCategory"
+  | "category"
+  | "tag"
+  | "member";
+
+export type TransactionFilterRecordType =
+  | "all"
+  | "income"
+  | "expense"
+  | "transfer";
+
+export type TransactionFilters = {
+  accountId?: string;
+  categoryId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  memberId?: string;
+  merchantId?: string;
+  parentCategoryId?: string;
+  recordType: TransactionFilterRecordType;
+  tagId?: string;
+};
+
+export const defaultTransactionFilters = {
+  recordType: "all",
+} satisfies TransactionFilters;
+
 export type CategorySummaryItem = {
   categoryName: string;
   parentCategoryName: string | null;
@@ -57,6 +92,19 @@ export type TransactionTagOption = {
   color: string | null;
 };
 
+export type TransactionMemberOption = {
+  id: string;
+  name: string;
+};
+
+export type TransactionFilterOptions = {
+  accounts: TransactionAccountOption[];
+  categories: TransactionCategoryOption[];
+  members: TransactionMemberOption[];
+  merchants: TransactionMerchantOption[];
+  tags: TransactionTagOption[];
+};
+
 export type TransactionListItem = TransactionRowItem & {
   note: string | null;
   recorder_name: string | null;
@@ -98,19 +146,6 @@ export type TransactionListPage = {
   nextOffset: number | null;
 };
 
-export type TransactionGroupBy =
-  | "year"
-  | "quarter"
-  | "month"
-  | "week"
-  | "day"
-  | "merchant"
-  | "account"
-  | "parentCategory"
-  | "category"
-  | "tag"
-  | "member";
-
 export type TransactionGroupSummaryItem = {
   id: string;
   key: string;
@@ -126,7 +161,7 @@ export type TransactionGroupPage = {
 };
 
 export type TransactionTimeGroupViewData = {
-  groupBy: "month";
+  groupBy: TransactionGroupBy;
   groups: TransactionGroupSummaryItem[];
   initialDateGroupsByGroupId: Record<string, TransactionDateGroup[]>;
   initialExpandedGroupId: string | null;

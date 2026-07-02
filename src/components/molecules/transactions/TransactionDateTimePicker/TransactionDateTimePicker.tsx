@@ -19,6 +19,7 @@ import { MonthPicker } from "./MonthPicker";
 import { TimePickerColumns } from "./TimePickerColumns";
 import {
   buildCalendarDays,
+  formatDateOnlyLabel,
   formatDateTimeLabel,
   formatDateValue,
   formatTimeDisplay,
@@ -30,9 +31,12 @@ import {
 
 type TransactionDateTimePickerProps = {
   date: string;
+  fieldLabel?: string;
   onDateChange: (value: string) => void;
-  onTimeChange: (value: string) => void;
-  time: string;
+  onTimeChange?: (value: string) => void;
+  openPickerLabel?: string;
+  showTime?: boolean;
+  time?: string;
 };
 
 const slideMonthFromLeft = keyframes`
@@ -61,9 +65,12 @@ const COLLAPSE_TIMEOUT = 280;
 
 export function TransactionDateTimePicker({
   date,
+  fieldLabel = messages.fieldLabel,
   onDateChange,
   onTimeChange,
-  time,
+  openPickerLabel = messages.openPicker,
+  showTime = true,
+  time = "00:00:00",
 }: TransactionDateTimePickerProps) {
   const [open, setOpen] = useState(false);
   const [monthPickerOpen, setMonthPickerOpen] = useState(false);
@@ -154,6 +161,8 @@ export function TransactionDateTimePicker({
   }
 
   function handleDateRowClick() {
+    if (!showTime) return;
+
     setMonthPickerOpen(false);
 
     const nextExpanded = !calendarExpanded;
@@ -176,7 +185,7 @@ export function TransactionDateTimePicker({
   }
 
   function handleTimePartChange(hour: number, minute: number, second: number) {
-    onTimeChange(`${pad(hour)}:${pad(minute)}:${pad(second)}`);
+    onTimeChange?.(`${pad(hour)}:${pad(minute)}:${pad(second)}`);
   }
 
   function handleTimeCollapseEntered() {
@@ -193,10 +202,10 @@ export function TransactionDateTimePicker({
           sx={{ fontSize: "0.8125rem", fontWeight: 800, mb: 0.75, px: 0.25 }}
           variant="body2"
         >
-          {messages.fieldLabel}
+          {fieldLabel}
         </Typography>
         <Button
-          aria-label={messages.openPicker}
+          aria-label={openPickerLabel}
           fullWidth
           onClick={() => {
             setVisibleMonth(getMonthStart(date));
@@ -218,7 +227,9 @@ export function TransactionDateTimePicker({
             px: 1.5,
           }}
         >
-          {formatDateTimeLabel(date, time, today)}
+          {showTime
+            ? formatDateTimeLabel(date, time, today)
+            : formatDateOnlyLabel(date, today)}
         </Button>
       </Box>
 
@@ -350,26 +361,30 @@ export function TransactionDateTimePicker({
               </Collapse>
 
               {/* 时刻 行 */}
-              <TimeSettingRow
-                expanded={timePickerOpen}
-                onTimeClick={handleTimeRowClick}
-                time={formatTimeDisplay(time)}
-              />
+              {showTime ? (
+                <>
+                  <TimeSettingRow
+                    expanded={timePickerOpen}
+                    onTimeClick={handleTimeRowClick}
+                    time={formatTimeDisplay(time)}
+                  />
 
-              {/* 时间列展开区 */}
-              <Collapse
-                in={timePickerOpen}
-                timeout={COLLAPSE_TIMEOUT}
-                onEntered={handleTimeCollapseEntered}
-              >
-                <TimePickerColumns
-                  hourRef={hourRef}
-                  minuteRef={minuteRef}
-                  onTimePartChange={handleTimePartChange}
-                  secondRef={secondRef}
-                  timeParts={timeParts}
-                />
-              </Collapse>
+                  {/* 时间列展开区 */}
+                  <Collapse
+                    in={timePickerOpen}
+                    timeout={COLLAPSE_TIMEOUT}
+                    onEntered={handleTimeCollapseEntered}
+                  >
+                    <TimePickerColumns
+                      hourRef={hourRef}
+                      minuteRef={minuteRef}
+                      onTimePartChange={handleTimePartChange}
+                      secondRef={secondRef}
+                      timeParts={timeParts}
+                    />
+                  </Collapse>
+                </>
+              ) : null}
             </Stack>
           </Box>
         </Stack>

@@ -310,15 +310,26 @@ function normalizeTransactionTimeValue(value: string) {
   return "";
 }
 
-function isDateText(value: string) {
+export function isDateText(value: string) {
   const parts = value.split("-");
 
-  return (
-    parts.length === 3 &&
-    isFixedDigits(parts[0], 4) &&
-    isFixedDigits(parts[1], 2) &&
-    isFixedDigits(parts[2], 2)
-  );
+  if (
+    parts.length !== 3 ||
+    !isFixedDigits(parts[0], 4) ||
+    !isFixedDigits(parts[1], 2) ||
+    !isFixedDigits(parts[2], 2)
+  ) {
+    return false;
+  }
+
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+
+  if (month < 1 || month > 12) return false;
+
+  const daysInMonth = new Date(Number(parts[0]), month, 0).getDate();
+
+  return day >= 1 && day <= daysInMonth;
 }
 
 function isMonthText(value: string) {

@@ -21,6 +21,7 @@ import {
   getMonthBounds,
   getNowDateTimeLocalValue,
   groupTransactionItemsByDate,
+  isDateText,
   normalizeMonth,
   shiftMonth,
   splitDateTimeLocalValue,
@@ -362,5 +363,26 @@ describe("transactions utils", () => {
       "2026-06-10T09:08:07",
     );
     expect(composeTransactionDateTimeLocalValue("invalid", "09:08")).toBe("");
+  });
+
+  it("校验字符串是否为合法的 YYYY-MM-DD 日期 key", () => {
+    expect(isDateText("2026-07-01")).toBe(true);
+    expect(isDateText("2026-7-1")).toBe(false);
+    expect(isDateText("not-a-date")).toBe(false);
+    expect(isDateText("2026-07-01T00:00:00")).toBe(false);
+  });
+
+  it("拒绝格式正确但日历上不存在的日期", () => {
+    expect(isDateText("2026-99-99")).toBe(false);
+    expect(isDateText("2026-13-01")).toBe(false);
+    expect(isDateText("2026-00-01")).toBe(false);
+    expect(isDateText("2026-02-31")).toBe(false);
+    expect(isDateText("2026-04-31")).toBe(false);
+    expect(isDateText("2026-02-30")).toBe(false);
+  });
+
+  it("闰年 2 月 29 日合法，平年 2 月 29 日不合法", () => {
+    expect(isDateText("2024-02-29")).toBe(true);
+    expect(isDateText("2026-02-29")).toBe(false);
   });
 });
