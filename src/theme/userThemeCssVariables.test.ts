@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { userThemeKeys } from "./userThemeTokens";
+import { userThemeKeys, userThemeTokens } from "./userThemeTokens";
 import { getUserThemeCssVariables } from "./userThemeCssVariables";
 
 describe("getUserThemeCssVariables", () => {
@@ -134,5 +134,30 @@ describe("getUserThemeCssVariables", () => {
       expect(themeVars["--user-theme-transfer-bg"]).toEqual(expect.any(String));
       expect(themeVars["--user-theme-negative-bg"]).toEqual(expect.any(String));
     });
+  });
+
+  it("所有主题均输出对应的筛选结果浅色背景", () => {
+    userThemeKeys.forEach((themeKey) => {
+      const themeVars = getUserThemeCssVariables(themeKey);
+
+      expect(themeVars["--user-theme-filter-summary-bg"]).toBe(
+        userThemeTokens[themeKey].palette.page,
+      );
+    });
+  });
+
+  it("六款主题分别输出接近白色的明细页背景", () => {
+    const backgrounds = userThemeKeys.map((themeKey) => {
+      const background =
+        getUserThemeCssVariables(themeKey)["--user-theme-tx-page-bg"];
+
+      expect(background).toContain("color-mix(");
+      expect(background).toContain("#ffffff");
+      expect(background).toContain(userThemeTokens[themeKey].palette.accent);
+
+      return background;
+    });
+
+    expect(new Set(backgrounds).size).toBe(userThemeKeys.length);
   });
 });

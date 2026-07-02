@@ -33,19 +33,24 @@ export function formatAccessibleDate(date: Date) {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
-export function formatDateTimeLabel(date: string, time: string, today: string) {
+export function formatDateOnlyLabel(date: string, today: string) {
   const parsedDate = parseDateValue(date);
 
   if (!parsedDate) return "请选择日期";
 
-  const dateLabel =
-    date === today
-      ? `${messages.today} ${pad(parsedDate.getMonth() + 1)}月${pad(
-          parsedDate.getDate(),
-        )}日`
-      : `${parsedDate.getFullYear()}年${pad(
-          parsedDate.getMonth() + 1,
-        )}月${pad(parsedDate.getDate())}日`;
+  return date === today
+    ? `${messages.today} ${pad(parsedDate.getMonth() + 1)}月${pad(
+        parsedDate.getDate(),
+      )}日`
+    : `${parsedDate.getFullYear()}年${pad(parsedDate.getMonth() + 1)}月${pad(
+        parsedDate.getDate(),
+      )}日`;
+}
+
+export function formatDateTimeLabel(date: string, time: string, today: string) {
+  const dateLabel = formatDateOnlyLabel(date, today);
+
+  if (dateLabel === "请选择日期") return dateLabel;
 
   return `${dateLabel} ${formatTimeDisplay(time)}`;
 }

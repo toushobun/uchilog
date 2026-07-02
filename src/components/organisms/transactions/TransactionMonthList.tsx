@@ -32,6 +32,8 @@ type TransactionMonthListProps = {
   timeGroupView: TransactionTimeGroupViewData;
 };
 
+export const transactionGroupCollapseDuration = 280;
+
 export function TransactionMonthList(props: TransactionMonthListProps) {
   return (
     <TransactionMonthListContent
@@ -268,13 +270,17 @@ function TransactionMonthListContent({
                       flexShrink: 0,
                       fontSize: 20,
                       transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 160ms ease",
+                      transition: `transform ${transactionGroupCollapseDuration}ms ease`,
                     }}
                   />
                 </Stack>
               </Box>
 
-              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+              <Collapse
+                in={isExpanded}
+                timeout={transactionGroupCollapseDuration}
+                unmountOnExit
+              >
                 <Stack
                   spacing={1.4}
                   sx={{

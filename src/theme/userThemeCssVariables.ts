@@ -100,6 +100,7 @@ export function getUserThemeCssVariables(themeKey: UserThemeKey) {
     "--user-theme-field-card-selected-bg": palette.accentPale,
     "--user-theme-field-card-selected-border": palette.accent,
     "--user-theme-field-card-text": palette.text,
+    "--user-theme-filter-summary-bg": palette.page,
     "--user-theme-business-pending-bg": semantic.warningBg,
     "--user-theme-business-pending-text": semantic.warning,
     "--user-theme-business-refund-bg": semantic.transferBg,
@@ -115,6 +116,7 @@ export function getUserThemeCssVariables(themeKey: UserThemeKey) {
     "--user-theme-tx-avatar-bg": component.iconBadgeBg,
     "--user-theme-tx-accent": palette.accent,
     "--user-theme-tx-border": palette.border,
+    "--user-theme-tx-page-bg": `color-mix(in srgb, #ffffff 97%, ${palette.accent} 3%)`,
   } as const;
 }
 
